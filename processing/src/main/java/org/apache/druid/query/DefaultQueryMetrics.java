@@ -19,7 +19,6 @@
 
 package org.apache.druid.query;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.druid.collections.bitmap.BitmapFactory;
 import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
@@ -123,7 +122,10 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   @Override
   public void context(QueryType query)
   {
-    setDimension("context", query.getContext() == null ? ImmutableMap.of() : query.getContext());
+    if (query.getContext() != null) {
+      query.getContext().entrySet()
+          .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
+    }
   }
 
   @Override
