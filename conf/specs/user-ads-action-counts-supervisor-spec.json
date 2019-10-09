@@ -1,0 +1,52 @@
+{
+	"type": "kafka",
+	"dataSchema": {
+		"dataSource": "user_ads_action_counts",
+		"parser": {
+			"type": "string",
+			"parseSpec": {
+				"format": "json",
+				"timestampSpec": {
+					"column": "timestampNs",
+					"format": "nano"
+				},
+				"dimensionsSpec": {
+					"dimensions": [
+						"gPinPromotionID",
+						"gAdvertiserID",
+						"isShopping",
+						"imageSignature"
+					]
+				}
+			}
+		},
+		"metricsSpec": [
+			{
+				"type": "longSum",
+				"name": "hide",
+				"fieldName": "hide"
+			}
+		],
+		"granularitySpec": {
+			"type": "uniform",
+			"segmentGranularity": "day",
+			"queryGranularity": "hour",
+			"rollup": true
+		}
+	},
+	"tuningConfig": {
+		"type": "kafka",
+		"maxRowsPerSegment": 15000000,
+		"resetOffsetAutomatically": "true"
+	},
+	"ioConfig": {
+		"topic": "user_ads_action_counts",
+		"consumerProperties": {
+			"bootstrap.servers": "m10nkafka02010:9092,m10nkafka02011:9092,m10nkafka02012:9092,m10nkafka02013:9092,m10nkafka02014:9092,m10nkafka02015:9092,m10nkafka02016:9092,m10nkafka02017:9092,m10nkafka02018:9092,m10nkafka02019:9092"
+		},
+		"taskCount": 3,
+		"replicas": 1,
+		"taskDuration": "PT1H",
+		"useEarliestOffset": "true"
+	}
+}
