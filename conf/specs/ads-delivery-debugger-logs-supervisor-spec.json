@@ -1,0 +1,58 @@
+{
+	"type": "kafka",
+	"dataSchema": {
+		"dataSource": "ad_delivery_history",
+		"parser": {
+			"type": "string",
+			"parseSpec": {
+				"format": "json",
+				"timestampSpec": {
+					"column": "timestampMs",
+					"format": "nano"
+				},
+				"dimensionsSpec": {
+					"dimensions": [
+						"gAdGroupID",
+						"gCampaignID",
+						"gAdvertiserID",
+						"viewType",
+						"trafficType",
+						"actionType",
+						"creativeType",
+						"candidateSource",
+						"trimmedStage",
+						"objectiveType"
+					]
+				}
+			}
+		},
+		"metricsSpec": [
+			{
+				"type": "longSum",
+				"name": "count",
+				"fieldName": "count"
+			}
+		],
+		"granularitySpec": {
+			"type": "uniform",
+			"segmentGranularity": "hour",
+			"queryGranularity": "fifteen_minute",
+			"rollup": true
+		}
+	},
+	"tuningConfig": {
+		"type": "kafka",
+		"maxRowsPerSegment": 15000000,
+		"resetOffsetAutomatically": "true"
+	},
+	"ioConfig": {
+		"topic": "delivery_debugger_ad_funnel",
+		"consumerProperties": {
+			"bootstrap.servers": "m10nkafka02014:9092,m10nkafka02015:9092,m10nkafka02016:9092,m10nkafka02017:9092,m10nkafka02018:9092,m10nkafka02019:9092,m10nkafka02020:9092,m10nkafka02021:9092,m10nkafka02022:9092,m10nkafka02023:9092,m10nkafka02024:9092,m10nkafka02025:9092"
+		},
+		"taskCount": 5,
+		"replicas": 1,
+		"taskDuration": "PT1H",
+		"useEarliestOffset": "true"
+	}
+}

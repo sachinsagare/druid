@@ -112,6 +112,9 @@
 
         <!-- Allow the handful of flaky tests with transient failures to pass. -->
         <surefire.rerunFailingTestsCount>3</surefire.rerunFailingTestsCount>
+
+        <!-- Pinterest docker registry -->
+        <docker.repository>998131032990.dkr.ecr.us-east-1.amazonaws.com/</docker.repository>
     </properties>
 
     <modules>
@@ -175,6 +178,9 @@
         <module>extensions-contrib/moving-average-query</module>
         <module>extensions-contrib/tdigestsketch</module>
         <module>extensions-contrib/influxdb-emitter</module>
+        <module>extensions-contrib/name-numbered-shard-spec</module>
+        <module>extensions-contrib/knox-password-provider</module>
+        <module>extensions-contrib/hash-name-numbered-shard-spec</module>
         <!-- distribution packaging -->
         <module>distribution</module>
     </modules>
