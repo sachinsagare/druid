@@ -2,7 +2,7 @@ FROM 998131032990.dkr.ecr.us-east-1.amazonaws.com/openjdk8-xenial:latest
 
 WORKDIR /opt/druid
 
-ARG ARTIFACT_PATH=target/druid-*-bin.tar.gz
+ARG ARTIFACT_PATH=target/apache-druid-*-bin.tar.gz
 ADD $ARTIFACT_PATH /opt/druid/
 
 RUN find -name '*.tgz' -type f -exec tar xzf {} \; && mv apache-druid-*/* . && rm -r druid-*/
