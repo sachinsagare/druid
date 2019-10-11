@@ -114,7 +114,7 @@
         <surefire.rerunFailingTestsCount>3</surefire.rerunFailingTestsCount>
 
         <!-- Pinterest docker registry -->
-        <docker.repository>pinregistry.pinadmin.com</docker.repository>
+        <docker.repository>998131032990.dkr.ecr.us-east-1.amazonaws.com/</docker.repository>
     </properties>
 
     <modules>
