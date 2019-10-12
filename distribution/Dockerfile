@@ -5,7 +5,7 @@ WORKDIR /opt/druid
 ARG ARTIFACT_PATH=target/apache-druid-*-bin.tar.gz
 ADD $ARTIFACT_PATH /opt/druid/
 
-RUN find -name '*.tgz' -type f -exec tar xzf {} \; && mv apache-druid-*/* . && rm -r druid-*/
+RUN find -name '*.tgz' -type f -exec tar xzf {} \; && mv apache-druid-*/* . && rm -r apache-druid-*/
 
 RUN addgroup --gid 1001 druid \
  && adduser --home /opt/druid --shell /bin/sh --no-create-home --uid 1001 --gecos '' --gid 1001 --disabled-password druid \
