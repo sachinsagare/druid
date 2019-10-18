@@ -20,6 +20,9 @@ else
         adsexp)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.adsexp.conf
             ;;
+        shared)
+            configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.shared.conf
+            ;;
 
         *)
             echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"
