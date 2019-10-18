@@ -81,6 +81,7 @@ case ${STAGE_NAME} in
     sed -i "s/<GROUP_BY_PARALLEL_COMBINE_THREADS>/${TELETRAAN_GROUP_BY_PARALLEL_COMBINE_THREADS:-16}/" $DRUID_CONF_DIR/historical/runtime.properties
 
     sed -i "s/<TIER>/${TELETRAAN_DRUID_TIER:-_default_tier}/" $DRUID_CONF_DIR/historical/runtime.properties
+    sed -i "s/<DRUID_SERVER_PRIORITY>/${TELETRAAN_DRUID_SERVER_PRIORITY:-0}/" $DRUID_CONF_DIR/historical/runtime.properties
     sed -i "s/<MAX_SIZE>/${TELETRAAN_DRUID_MAX_SIZE:-1000000000000}/g" $DRUID_CONF_DIR/historical/runtime.properties
     sed -i "s/<LOCATIONS_MAX_SIZE>/${TELETRAAN_DRUID_LOCATIONS_MAX_SIZE:-1000000000000}/g" $DRUID_CONF_DIR/historical/runtime.properties
     sed -i "s/<DRUID_HISTORICAL_CACHE_USE_CACHE>/${TELETRAAN_DRUID_HISTORICAL_CACHE_USE_CACHE:-true}/g" $DRUID_CONF_DIR/historical/runtime.properties

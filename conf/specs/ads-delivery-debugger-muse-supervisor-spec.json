@@ -1,21 +1,25 @@
 {
 	"type": "kafka",
 	"dataSchema": {
-		"dataSource": "user_ads_action_counts",
+		"dataSource": "ad_delivery_history_muse",
 		"parser": {
 			"type": "string",
 			"parseSpec": {
 				"format": "json",
 				"timestampSpec": {
-					"column": "timestampNs",
-					"format": "nano"
+					"column": "timestampMs",
+					"format": "millis"
 				},
 				"dimensionsSpec": {
 					"dimensions": [
-						"gPinPromotionID",
+						"gAdGroupID",
+						"gCampaignID",
 						"gAdvertiserID",
-						"isShopping",
-						"imageSignature"
+						"viewType",
+						"creativeType",
+						"candidateSource",
+						"muse",
+						"trimmedStage"
 					]
 				}
 			}
@@ -23,14 +27,14 @@
 		"metricsSpec": [
 			{
 				"type": "longSum",
-				"name": "hide",
-				"fieldName": "hide"
+				"name": "count",
+				"fieldName": "count"
 			}
 		],
 		"granularitySpec": {
 			"type": "uniform",
-			"segmentGranularity": "day",
-			"queryGranularity": "hour",
+			"segmentGranularity": "hour",
+			"queryGranularity": "fifteen_minute",
 			"rollup": true
 		}
 	},
@@ -40,11 +44,11 @@
 		"resetOffsetAutomatically": "true"
 	},
 	"ioConfig": {
-		"topic": "user_ads_action_counts",
+		"topic": "delivery_debugger_muse",
 		"consumerProperties": {
 			"bootstrap.servers": "m10nkafka02160:9092,m10nkafka02159:9092,m10nkafka02158:9092,m10nkafka02157:9092,m10nkafka02156:9092,m10nkafka02155:9092,m10nkafka02154:9092,m10nkafka02153:9092,m10nkafka02152:9092,m10nkafka02151:9092"
 		},
-		"taskCount": 3,
+		"taskCount": 5,
 		"replicas": 1,
 		"taskDuration": "PT1H",
 		"useEarliestOffset": "true"

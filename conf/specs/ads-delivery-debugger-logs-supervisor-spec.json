@@ -48,7 +48,7 @@
 	"ioConfig": {
 		"topic": "delivery_debugger_ad_funnel",
 		"consumerProperties": {
-			"bootstrap.servers": "m10nkafka02014:9092,m10nkafka02015:9092,m10nkafka02016:9092,m10nkafka02017:9092,m10nkafka02018:9092,m10nkafka02019:9092,m10nkafka02020:9092,m10nkafka02021:9092,m10nkafka02022:9092,m10nkafka02023:9092,m10nkafka02024:9092,m10nkafka02025:9092"
+			"bootstrap.servers": "m10nkafka02160:9092,m10nkafka02159:9092,m10nkafka02158:9092,m10nkafka02157:9092,m10nkafka02156:9092,m10nkafka02155:9092,m10nkafka02154:9092,m10nkafka02153:9092,m10nkafka02152:9092,m10nkafka02151:9092"
 		},
 		"taskCount": 5,
 		"replicas": 1,

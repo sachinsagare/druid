@@ -641,6 +641,12 @@ public class DruidCoordinator
           }
         }
 
+        boolean skipCoordinatorRun = getDynamicConfigs().isSkipCoordinatorRun();
+        if (skipCoordinatorRun) {
+          log.warn("Coordinator run skipped.");
+          return;
+        }
+
         balancerExec = MoreExecutors.listeningDecorator(Execs.multiThreaded(
             getDynamicConfigs().getBalancerComputeThreads(),
             "coordinator-cost-balancer-%s"
