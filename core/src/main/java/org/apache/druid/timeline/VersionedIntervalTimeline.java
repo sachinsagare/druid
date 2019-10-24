@@ -30,6 +30,7 @@ import org.apache.druid.timeline.partition.ImmutablePartitionHolder;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.apache.druid.utils.CollectionUtils;
+import org.joda.time.Duration;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
@@ -46,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -90,6 +92,10 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
 
   private final Comparator<? super VersionType> versionComparator;
 
+  // We keep track of the upper bound for faster lookup by avoid scanning intervals that would have no overlap with
+  // the given interval. This will be updated every time we add an interval to the timeline
+  private Duration upperBoundIntervalDuration = Duration.ZERO;
+
   public VersionedIntervalTimeline(Comparator<? super VersionType> versionComparator)
   {
     this.versionComparator = versionComparator;
@@ -108,7 +114,7 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
     return timeline;
   }
 
-  public static void addSegments(
+  private static void addSegments(
       VersionedIntervalTimeline<String, DataSegment> timeline,
       Iterator<DataSegment> segments
   )
@@ -477,6 +483,10 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
       TimelineEntry entry
   )
   {
+    Duration currentDuration = interval.toDuration();
+    if (currentDuration.isLongerThan(upperBoundIntervalDuration)) {
+      upperBoundIntervalDuration = currentDuration;
+    }
     TimelineEntry existsInTimeline = timeline.get(interval);
 
     if (existsInTimeline != null) {
@@ -680,8 +690,22 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
     NavigableMap<Interval, TimelineEntry> timeline = (incompleteOk)
                                                      ? incompletePartitionsTimeline
                                                      : completePartitionsTimeline;
-
-    for (Entry<Interval, TimelineEntry> entry : timeline.entrySet()) {
+    // keys are intervals which are sorted based on start then end, to search for interval having overlap, we just need
+    // to search all the intervals having start between the interval's start - max duration and interval's end
+    if (timeline.isEmpty()) {
+      return retVal;
+    }
+    long firstIntervalMillis = timeline.firstKey().getStartMillis();
+    SortedMap<Interval, TimelineEntry> lookupMap =
+        interval.getStart().getMillis() - firstIntervalMillis > upperBoundIntervalDuration.getMillis() ?
+        timeline.subMap(
+            new Interval(
+                interval.getStart().minus(upperBoundIntervalDuration),
+                interval.getStart().minus(upperBoundIntervalDuration)
+            ),
+            new Interval(interval.getEnd(), interval.getEnd())
+        ) : timeline.headMap(new Interval(interval.getEnd(), interval.getEnd()));
+    for (Map.Entry<Interval, TimelineEntry> entry : lookupMap.entrySet()) {
       Interval timelineInterval = entry.getKey();
       TimelineEntry val = entry.getValue();
 

@@ -27,7 +27,7 @@ import org.apache.druid.server.coordinator.DruidCoordinator;
 import org.apache.druid.server.coordinator.DruidCoordinatorRuntimeParams;
 import org.apache.druid.server.coordinator.ServerHolder;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -54,28 +54,32 @@ public class DruidCoordinatorCleanupOvershadowed implements DruidCoordinatorHelp
     CoordinatorStats stats = new CoordinatorStats();
 
     DruidCluster cluster = params.getDruidCluster();
-    Map<String, VersionedIntervalTimeline<String, DataSegment>> timelines = new HashMap<>();
+    Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> timelines = new HashMap<>();
 
     for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTier()) {
       for (ServerHolder serverHolder : serverHolders) {
         ImmutableDruidServer server = serverHolder.getServer();
 
         for (ImmutableDruidDataSource dataSource : server.getDataSources()) {
-          VersionedIntervalTimeline<String, DataSegment> timeline = timelines
-              .computeIfAbsent(
-                  dataSource.getName(),
-                  dsName -> new VersionedIntervalTimeline<>(Comparator.naturalOrder())
-              );
-          VersionedIntervalTimeline.addSegments(timeline, dataSource.getSegments().iterator());
+          NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = timelines.get(dataSource.getName());
+          if (timeline == null) {
+            timeline = new NamespacedVersionedIntervalTimeline<>(Comparator.naturalOrder());
+            timelines.put(dataSource.getName(), timeline);
+          }
+          NamespacedVersionedIntervalTimeline.addSegments(timeline, dataSource.getSegments().iterator());
         }
       }
     }
 
     // Mark all segments as unused in db that are overshadowed by served segments
     for (DataSegment dataSegment : params.getUsedSegments()) {
-      VersionedIntervalTimeline<String, DataSegment> timeline = timelines.get(dataSegment.getDataSource());
-      if (timeline != null
-          && timeline.isOvershadowed(dataSegment.getInterval(), dataSegment.getVersion(), dataSegment)) {
+      NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = timelines.get(dataSegment.getDataSource());
+
+      if (timeline != null && timeline.isOvershadowed(
+          NamespacedVersionedIntervalTimeline.getNamespace(dataSegment.getShardSpec().getIdentifier()),
+          dataSegment.getInterval(),
+          dataSegment.getVersion(),
+          dataSegment)) {
         coordinator.markSegmentAsUnused(dataSegment);
         stats.addToGlobalStat("overShadowedCount", 1);
       }

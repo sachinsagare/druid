@@ -84,6 +84,15 @@ public interface ShardSpec
   boolean possibleInDomain(Map<String, RangeSet<String>> domain);
 
   /**
+   * Added in for NamedNumberedShardSpec
+   * @return unique identifier for ShardSpec
+   */
+  default Object getIdentifier()
+  {
+    return this.getPartitionNum();
+  }
+
+  /**
    * Returns true if two segments of this and other shardSpecs can exist in the same timeChunk.
    */
   boolean isCompatible(Class<? extends ShardSpec> other);
