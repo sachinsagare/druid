@@ -99,7 +99,7 @@ case ${STAGE_NAME} in
 
     node=historical
   ;;
-  *"middleManager"*)
+  *"middleManager"*)COORDINATOR_PORT
     node=middleManager
     sed -i "s/<MIDDLE_MANAGER_PORT>/${TELETRAAN_MIDDLE_MANAGER_PORT:-8091}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<DRUID_INDEXER_RUNNER_START_PORT>/${TELETRAAN_DRUID_INDEXER_RUNNER_START_PORT:-8100}/" $DRUID_CONF_DIR/middleManager/runtime.properties

@@ -109,7 +109,7 @@ public interface DataSegmentPusher
         segment.getDataSource(),
         StringUtils.format("%s_%s", segment.getInterval().getStart(), segment.getInterval().getEnd()),
         segment.getVersion(),
-        segment.getShardSpec().getPartitionNum(),
+        segment.getShardSpec().getIdentifier(),
         useUniquePath ? generateUniquePath() : null
     );
   }

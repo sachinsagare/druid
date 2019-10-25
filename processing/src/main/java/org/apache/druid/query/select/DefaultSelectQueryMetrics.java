@@ -238,6 +238,12 @@ public class DefaultSelectQueryMetrics implements SelectQueryMetrics
   }
 
   @Override
+  public QueryMetrics reportTimeToAcquireHttpResource(long timeNs)
+  {
+    return delegateQueryMetrics.reportTimeToAcquireHttpResource(timeNs);
+  }
+
+  @Override
   public QueryMetrics reportBitmapConstructionTime(long timeNs)
   {
     return delegateQueryMetrics.reportBitmapConstructionTime(timeNs);

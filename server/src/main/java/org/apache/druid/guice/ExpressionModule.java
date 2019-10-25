@@ -26,6 +26,7 @@ import com.google.inject.multibindings.Multibinder;
 import org.apache.druid.initialization.DruidModule;
 import org.apache.druid.math.expr.ExprMacroTable;
 import org.apache.druid.query.expression.GuiceExprMacroTable;
+import org.apache.druid.query.expression.HashExprMacro;
 import org.apache.druid.query.expression.IPv4AddressMatchExprMacro;
 import org.apache.druid.query.expression.IPv4AddressParseExprMacro;
 import org.apache.druid.query.expression.IPv4AddressStringifyExprMacro;
@@ -61,6 +62,7 @@ public class ExpressionModule implements DruidModule
           .add(TrimExprMacro.BothTrimExprMacro.class)
           .add(TrimExprMacro.LeftTrimExprMacro.class)
           .add(TrimExprMacro.RightTrimExprMacro.class)
+          .add(HashExprMacro.class)
           .build();
 
   @Override

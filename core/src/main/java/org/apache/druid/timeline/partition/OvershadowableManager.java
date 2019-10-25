@@ -84,7 +84,7 @@ class OvershadowableManager<T extends Overshadowable<T>>
     OVERSHADOWED
   }
 
-  private final Map<Integer, PartitionChunk<T>> knownPartitionChunks; // served segments
+  private final Map<Object, PartitionChunk<T>> knownPartitionChunks; // served segments
 
   // (start partitionId, end partitionId) -> minorVersion -> atomicUpdateGroup
   private final TreeMap<RootPartitionRange, Short2ObjectSortedMap<AtomicUpdateGroup<T>>> standbyGroups;
@@ -894,9 +894,9 @@ class OvershadowableManager<T extends Overshadowable<T>>
   }
 
   @Nullable
-  PartitionChunk<T> getChunk(int partitionId)
+  PartitionChunk<T> getChunk(Object partitionIdentifier)
   {
-    final PartitionChunk<T> chunk = knownPartitionChunks.get(partitionId);
+    final PartitionChunk<T> chunk = knownPartitionChunks.get(partitionIdentifier);
     if (chunk == null) {
       return null;
     }
@@ -905,9 +905,9 @@ class OvershadowableManager<T extends Overshadowable<T>>
       return null;
     } else {
       return Preconditions.checkNotNull(
-          aug.findChunk(partitionId),
+          aug.findChunk(partitionIdentifier),
           "Can't find partitionChunk for partitionId[%s] in atomicUpdateGroup[%s]",
-          partitionId,
+          partitionIdentifier,
           aug
       );
     }

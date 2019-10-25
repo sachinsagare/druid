@@ -254,7 +254,7 @@ public class DruidCoordinatorRuntimeParams
     private DateTime balancerReferenceTimestamp;
     private BalancerStrategy balancerStrategy;
 
-    private Builder()
+    public Builder()
     {
       this.startTimeNanos = null;
       this.druidCluster = null;

@@ -34,6 +34,36 @@ public class TestDruidCoordinatorConfig extends DruidCoordinatorConfig
   private final int coordinatorKillMaxSegments;
 
   private final String consoleStatic;
+  private String tierMirroringMap = null;
+
+  public TestDruidCoordinatorConfig(
+      Duration coordinatorStartDelay,
+      Duration coordinatorPeriod,
+      Duration coordinatorIndexingPeriod,
+      Duration loadTimeoutDelay,
+      Duration coordinatorKillPeriod,
+      Duration coordinatorKillDurationToRetain,
+      int coordinatorKillMaxSegments,
+      String consoleStatic,
+      boolean mergeSegments,
+      boolean convertSegments,
+      Duration getLoadQueuePeonRepeatDelay,
+      String tierMirroringMap
+  )
+  {
+    this(
+        coordinatorStartDelay,
+        coordinatorPeriod,
+        coordinatorIndexingPeriod,
+        loadTimeoutDelay,
+        coordinatorKillPeriod,
+        coordinatorKillDurationToRetain,
+        coordinatorKillMaxSegments,
+        consoleStatic,
+        getLoadQueuePeonRepeatDelay
+    );
+    this.tierMirroringMap = tierMirroringMap;
+  }
 
   public TestDruidCoordinatorConfig(
       Duration coordinatorStartDelay,
@@ -110,6 +140,11 @@ public class TestDruidCoordinatorConfig extends DruidCoordinatorConfig
   public Duration getLoadQueuePeonRepeatDelay()
   {
     return getLoadQueuePeonRepeatDelay;
+  }
+
+  @Override public String getTierMirroringMapConfigured()
+  {
+    return tierMirroringMap;
   }
 
 }

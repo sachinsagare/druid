@@ -129,6 +129,14 @@ public class SqlResource
                       for (int i = 0; i < fieldList.size(); i++) {
                         final Object value;
 
+                        // If there's no Timeseries query, this check have no effect
+                        // Else if there's Timeseries query, the last row can be for the summary
+                        // result without a timestamp if grandTotal is passed in query context,
+                        // don't throw NPE
+                        if ((timeColumns[i] || dateColumns[i]) && row[i] == null) {
+                          continue;
+                        }
+
                         if (timeColumns[i]) {
                           value = ISODateTimeFormat.dateTime().print(
                               Calcites.calciteTimestampToJoda((long) row[i], timeZone)

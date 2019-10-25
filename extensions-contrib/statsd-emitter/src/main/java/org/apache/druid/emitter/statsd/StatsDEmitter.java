@@ -110,7 +110,10 @@ public class StatsDEmitter implements Emitter
       }
       nameBuilder.add(metric);
 
-      StatsDMetric statsDMetric = converter.addFilteredUserDims(service, metric, userDims, dimsBuilder);
+      if (!config.getIncludeHost()) {
+        host = null;
+      }
+      StatsDMetric statsDMetric = converter.addFilteredUserDims(service, host, metric, userDims, dimsBuilder);
 
       if (statsDMetric != null) {
         List<String> fullNameList;
@@ -127,9 +130,6 @@ public class StatsDEmitter implements Emitter
             .toArray(String[]::new);
         } else {
           ImmutableList.Builder<String> fullNameBuilder = new ImmutableList.Builder<>();
-          if (config.getIncludeHost()) {
-            fullNameBuilder.add(host);
-          }
           fullNameBuilder.addAll(nameBuilder.build());
           fullNameBuilder.addAll(dimsBuilder.build().values());
 

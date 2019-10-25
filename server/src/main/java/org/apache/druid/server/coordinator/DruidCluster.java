@@ -62,7 +62,7 @@ public class DruidCluster
     this.historicals = new HashMap<>();
   }
 
-  private DruidCluster(
+  public DruidCluster(
       @Nullable Set<ServerHolder> realtimes,
       Map<String, Iterable<ServerHolder>> historicals
   )

@@ -66,6 +66,7 @@ import org.apache.druid.server.coordinator.helper.DruidCoordinatorCleanupOversha
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorCleanupUnneeded;
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorHelper;
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorLogger;
+import org.apache.druid.server.coordinator.helper.DruidCoordinatorMirroringTierSegmentCopier;
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorRuleRunner;
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorSegmentCompactor;
 import org.apache.druid.server.coordinator.helper.DruidCoordinatorSegmentInfoLoader;
@@ -83,6 +84,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,7 +118,7 @@ public class DruidCoordinator
    * cluster has availability problems and struggling to make all segments available immediately, at least we try to
    * make more "important" (more recent) segments available as soon as possible.
    */
-  static final Comparator<DataSegment> SEGMENT_COMPARATOR_RECENT_FIRST = Ordering
+  public static final Comparator<DataSegment> SEGMENT_COMPARATOR_RECENT_FIRST = Ordering
       .from(Comparators.intervalsByEndThenStart())
       .onResultOf(DataSegment::getInterval)
       .compound(Ordering.<DataSegment>natural())
@@ -236,6 +238,11 @@ public class DruidCoordinator
     this.coordLeaderSelector = coordLeaderSelector;
 
     this.segmentCompactor = new DruidCoordinatorSegmentCompactor(indexingServiceClient);
+  }
+
+  public DruidCoordinatorConfig getConfig()
+  {
+    return config;
   }
 
   public boolean isLeader()
@@ -719,6 +726,8 @@ public class DruidCoordinator
 
                 // Find all historical servers, group them by subType and sort by ascending usage
                 Set<String> decommissioningServers = params.getCoordinatorDynamicConfig().getDecommissioningNodes();
+
+                Set<String> mirroringTiers = new HashSet<>(config.getTierToMirroringTierMap().values());
                 final DruidCluster cluster = new DruidCluster();
                 for (ImmutableDruidServer server : servers) {
                   if (!loadManagementPeons.containsKey(server.getName())) {
@@ -733,7 +742,8 @@ public class DruidCoordinator
                       new ServerHolder(
                           server,
                           loadManagementPeons.get(server.getName()),
-                          decommissioningServers.contains(server.getHost())
+                          decommissioningServers.contains(server.getHost()),
+                          mirroringTiers.contains(server.getTier())
                       )
                   );
                 }
@@ -760,6 +770,7 @@ public class DruidCoordinator
                              .build();
               },
               new DruidCoordinatorRuleRunner(DruidCoordinator.this),
+              new DruidCoordinatorMirroringTierSegmentCopier(config),
               new DruidCoordinatorCleanupUnneeded(),
               new DruidCoordinatorCleanupOvershadowed(DruidCoordinator.this),
               new DruidCoordinatorBalancer(DruidCoordinator.this),

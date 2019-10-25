@@ -28,11 +28,14 @@ import org.apache.druid.server.coordinator.DruidCluster;
 import org.apache.druid.server.coordinator.DruidCoordinator;
 import org.apache.druid.server.coordinator.DruidCoordinatorRuntimeParams;
 import org.apache.druid.server.coordinator.ReplicationThrottler;
+import org.apache.druid.server.coordinator.rules.LoadRule;
 import org.apache.druid.server.coordinator.rules.Rule;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.SegmentId;
 import org.joda.time.DateTime;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -101,6 +104,7 @@ public class DruidCoordinatorRuleRunner implements DruidCoordinatorHelper
 
     final List<SegmentId> segmentsWithMissingRules = Lists.newArrayListWithCapacity(MAX_MISSING_RULES);
     int missingRules = 0;
+    Set<String> mirrorTiers = new HashSet<>(coordinator.getConfig().getTierToMirroringTierMap().values());
     for (DataSegment segment : params.getUsedSegments()) {
       if (overshadowed.contains(segment.getId())) {
         // Skipping overshadowed segments
@@ -109,7 +113,7 @@ public class DruidCoordinatorRuleRunner implements DruidCoordinatorHelper
       List<Rule> rules = databaseRuleManager.getRulesWithDefault(segment.getDataSource());
       boolean foundMatchingRule = false;
       for (Rule rule : rules) {
-        if (rule.appliesTo(segment, now)) {
+        if (isValidRule(rule, mirrorTiers) && rule.appliesTo(segment, now)) {
           stats.accumulate(rule.run(coordinator, paramsWithReplicationManager, segment));
           foundMatchingRule = true;
           break;
@@ -132,5 +136,15 @@ public class DruidCoordinatorRuleRunner implements DruidCoordinatorHelper
     }
 
     return params.buildFromExisting().withCoordinatorStats(stats).build();
+  }
+
+  private boolean isValidRule(Rule rule, Set<String> mirrorTiers)
+  {
+    // Load rule must not contain any mirroring tier
+    if (rule instanceof LoadRule) {
+      LoadRule loadRule = (LoadRule) rule;
+      return Collections.disjoint(loadRule.getTieredReplicants().keySet(), mirrorTiers);
+    }
+    return true;
   }
 }
