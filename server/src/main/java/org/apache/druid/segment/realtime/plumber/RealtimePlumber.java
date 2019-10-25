@@ -69,8 +69,8 @@ import org.apache.druid.segment.realtime.SegmentPublisher;
 import org.apache.druid.segment.realtime.appenderator.SinkQuerySegmentWalker;
 import org.apache.druid.server.coordination.DataSegmentAnnouncer;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.SingleElementPartitionChunk;
 import org.apache.druid.utils.JvmUtils;
 import org.joda.time.DateTime;
@@ -110,7 +110,7 @@ public class RealtimePlumber implements Plumber
   private final SegmentHandoffNotifier handoffNotifier;
   private final Object handoffCondition = new Object();
   private final ConcurrentMap<Long, Sink> sinks = new ConcurrentHashMap<>();
-  private final VersionedIntervalTimeline<String, Sink> sinkTimeline = new VersionedIntervalTimeline<String, Sink>(
+  private final NamespacedVersionedIntervalTimeline<String, Sink> sinkTimeline = new NamespacedVersionedIntervalTimeline<>(
       String.CASE_INSENSITIVE_ORDER
   );
   private final QuerySegmentWalker texasRanger;
@@ -734,6 +734,7 @@ public class RealtimePlumber implements Plumber
     sinks.put(sink.getInterval().getStartMillis(), sink);
     metrics.setSinkCount(sinks.size());
     sinkTimeline.add(
+        NamespacedVersionedIntervalTimeline.getNamespace(sink.getSegment().getShardSpec().getIdentifier()),
         sink.getInterval(),
         sink.getVersion(),
         new SingleElementPartitionChunk<>(sink)
@@ -878,6 +879,7 @@ public class RealtimePlumber implements Plumber
         sinks.remove(truncatedTime);
         metrics.setSinkCount(sinks.size());
         sinkTimeline.remove(
+            NamespacedVersionedIntervalTimeline.getNamespace(sink.getSegment().getShardSpec().getIdentifier()),
             sink.getInterval(),
             sink.getVersion(),
             new SingleElementPartitionChunk<>(sink)

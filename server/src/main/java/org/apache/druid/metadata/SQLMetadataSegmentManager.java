@@ -43,8 +43,8 @@ import org.apache.druid.java.util.common.lifecycle.LifecycleStart;
 import org.apache.druid.java.util.common.lifecycle.LifecycleStop;
 import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -525,7 +525,8 @@ public class SQLMetadataSegmentManager implements MetadataSegmentManager
         }
     );
 
-    VersionedIntervalTimeline<String, DataSegment> versionedIntervalTimeline = VersionedIntervalTimeline.forSegments(
+    NamespacedVersionedIntervalTimeline<String, DataSegment> versionedIntervalTimeline = NamespacedVersionedIntervalTimeline
+        .forSegments(
         Iterators.concat(usedSegmentsOverlappingInterval.iterator(), unusedSegmentsInInterval.iterator())
     );
 
@@ -541,12 +542,14 @@ public class SQLMetadataSegmentManager implements MetadataSegmentManager
 
   private int markNonOvershadowedSegmentsAsUsed(
       List<DataSegment> unusedSegments,
-      VersionedIntervalTimeline<String, DataSegment> timeline
+      NamespacedVersionedIntervalTimeline<String, DataSegment> timeline
   )
   {
     List<String> segmentIdsToMarkAsUsed = new ArrayList<>();
     for (DataSegment segment : unusedSegments) {
-      if (timeline.isOvershadowed(segment.getInterval(), segment.getVersion(), segment)) {
+      if (timeline.isOvershadowed(
+          NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+          segment.getInterval(), segment.getVersion(), segment)) {
         continue;
       }
       segmentIdsToMarkAsUsed.add(segment.getId().toString());
@@ -560,7 +563,7 @@ public class SQLMetadataSegmentManager implements MetadataSegmentManager
       throws UnknownSegmentIdException
   {
     try {
-      Pair<List<DataSegment>, VersionedIntervalTimeline<String, DataSegment>> unusedSegmentsAndTimeline = connector
+      Pair<List<DataSegment>, NamespacedVersionedIntervalTimeline<String, DataSegment>> unusedSegmentsAndTimeline = connector
           .inReadOnlyTransaction(
               (handle, status) -> {
                 List<DataSegment> unusedSegments = retrieveUnusedSegments(dataSource, segmentIds, handle);
@@ -569,7 +572,7 @@ public class SQLMetadataSegmentManager implements MetadataSegmentManager
                 );
                 Iterator<DataSegment> usedSegmentsOverlappingUnusedSegmentsIntervals =
                     retrieveUsedSegmentsOverlappingIntervals(dataSource, unusedSegmentsIntervals, handle);
-                VersionedIntervalTimeline<String, DataSegment> timeline = VersionedIntervalTimeline.forSegments(
+                NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = NamespacedVersionedIntervalTimeline.forSegments(
                     Iterators.concat(usedSegmentsOverlappingUnusedSegmentsIntervals, unusedSegments.iterator())
                 );
                 return new Pair<>(unusedSegments, timeline);
@@ -577,7 +580,7 @@ public class SQLMetadataSegmentManager implements MetadataSegmentManager
           );
 
       List<DataSegment> unusedSegments = unusedSegmentsAndTimeline.lhs;
-      VersionedIntervalTimeline<String, DataSegment> timeline = unusedSegmentsAndTimeline.rhs;
+      NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = unusedSegmentsAndTimeline.rhs;
       return markNonOvershadowedSegmentsAsUsed(unusedSegments, timeline);
     }
     catch (Exception e) {

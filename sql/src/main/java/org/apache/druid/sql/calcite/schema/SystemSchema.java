@@ -134,6 +134,7 @@ public class SystemSchema extends AbstractSchema
       .add("end", ValueType.STRING)
       .add("size", ValueType.LONG)
       .add("version", ValueType.STRING)
+      .add("partition_identifier", ValueType.STRING)
       .add("partition_num", ValueType.LONG)
       .add("num_replicas", ValueType.LONG)
       .add("num_rows", ValueType.LONG)
@@ -300,6 +301,7 @@ public class SystemSchema extends AbstractSchema
                   segment.getInterval().getEnd().toString(),
                   segment.getSize(),
                   segment.getVersion(),
+                  segment.getShardSpec().getIdentifier().toString(),
                   Long.valueOf(segment.getShardSpec().getPartitionNum()),
                   numReplicas,
                   numRows,
@@ -334,6 +336,7 @@ public class SystemSchema extends AbstractSchema
                   val.getKey().getInterval().getEnd().toString(),
                   val.getValue().getSegment().getSize(),
                   val.getKey().getVersion(),
+                  val.getValue().getSegment().getShardSpec().getIdentifier().toString(),
                   (long) val.getValue().getSegment().getShardSpec().getPartitionNum(),
                   numReplicas,
                   val.getValue().getNumRows(),

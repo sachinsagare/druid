@@ -81,9 +81,9 @@ import org.apache.druid.segment.realtime.firehose.ChatHandlerProvider;
 import org.apache.druid.server.coordinator.DataSourceCompactionConfig;
 import org.apache.druid.server.security.AuthorizerMapper;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineLookup;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.joda.time.Interval;
@@ -539,7 +539,7 @@ public class CompactionTask extends AbstractBatchIndexTask
   {
     final List<DataSegment> usedSegments = segmentProvider.checkAndGetSegments(toolbox.getTaskActionClient());
     final Map<DataSegment, File> segmentFileMap = toolbox.fetchSegments(usedSegments);
-    final List<TimelineObjectHolder<String, DataSegment>> timelineSegments = VersionedIntervalTimeline
+    final List<TimelineObjectHolder<String, DataSegment>> timelineSegments = NamespacedVersionedIntervalTimeline
         .forSegments(usedSegments)
         .lookup(segmentProvider.interval);
     return Pair.of(segmentFileMap, timelineSegments);
@@ -795,7 +795,7 @@ public class CompactionTask extends AbstractBatchIndexTask
       final List<DataSegment> usedSegments = actionClient.submit(
           new SegmentListUsedAction(dataSource, interval, null)
       );
-      final TimelineLookup<String, DataSegment> timeline = VersionedIntervalTimeline.forSegments(usedSegments);
+      final TimelineLookup<String, DataSegment> timeline = NamespacedVersionedIntervalTimeline.forSegments(usedSegments);
       final List<DataSegment> latestSegments = timeline
           .lookup(interval)
           .stream()

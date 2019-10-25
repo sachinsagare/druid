@@ -52,8 +52,8 @@ import org.apache.druid.segment.realtime.firehose.IngestSegmentFirehose;
 import org.apache.druid.segment.realtime.firehose.WindowedStorageAdapter;
 import org.apache.druid.segment.transform.TransformSpec;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.joda.time.Duration;
@@ -337,7 +337,7 @@ public class IngestSegmentFirehoseFactory implements FiniteFirehoseFactory<Input
       }
     }
 
-    return VersionedIntervalTimeline.forSegments(usedSegments).lookup(interval);
+    return NamespacedVersionedIntervalTimeline.forSegments(usedSegments).lookup(interval);
   }
 
   private List<TimelineObjectHolder<String, DataSegment>> getTimelineForSegmentIds()

@@ -42,8 +42,8 @@ import org.apache.druid.java.util.common.lifecycle.LifecycleStart;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NoneShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
@@ -119,7 +119,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   {
     return connector.retryWithHandle(
         handle -> {
-          final VersionedIntervalTimeline<String, DataSegment> timeline = getTimelineForIntervalsWithHandle(
+          final NamespacedVersionedIntervalTimeline<String, DataSegment>
+              timeline = getTimelineForIntervalsWithHandle(
               handle,
               dataSource,
               intervals
@@ -172,7 +173,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     return identifiers;
   }
 
-  private VersionedIntervalTimeline<String, DataSegment> getTimelineForIntervalsWithHandle(
+  private NamespacedVersionedIntervalTimeline<String, DataSegment> getTimelineForIntervalsWithHandle(
       final Handle handle,
       final String dataSource,
       final List<Interval> intervals
@@ -210,7 +211,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     }
 
     try (final ResultIterator<byte[]> dbSegments = sql.map(ByteArrayMapper.FIRST).iterator()) {
-      return VersionedIntervalTimeline.forSegments(
+      return NamespacedVersionedIntervalTimeline.forSegments(
           Iterators.transform(
               dbSegments,
               payload -> {
@@ -272,7 +273,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     // Find which segments are used (i.e. not overshadowed).
     final Set<DataSegment> usedSegments = new HashSet<>();
     List<TimelineObjectHolder<String, DataSegment>> segmentHolders =
-        VersionedIntervalTimeline.forSegments(segments).lookupWithIncompletePartitions(Intervals.ETERNITY);
+        NamespacedVersionedIntervalTimeline.forSegments(segments).lookupWithIncompletePartitions(Intervals.ETERNITY);
     for (TimelineObjectHolder<String, DataSegment> holder : segmentHolders) {
       for (PartitionChunk<DataSegment> chunk : holder.getObject()) {
         usedSegments.add(chunk.getObject());

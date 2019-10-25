@@ -29,7 +29,7 @@ import org.apache.druid.segment.Segment;
 import org.apache.druid.segment.loading.SegmentLoader;
 import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.apache.druid.timeline.partition.ShardSpec;
@@ -55,8 +55,8 @@ public class SegmentManager
    */
   public static class DataSourceState
   {
-    private final VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline =
-        new VersionedIntervalTimeline<>(Ordering.natural());
+    private final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> timeline =
+        new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
     private long totalSegmentSize;
     private long numSegments;
 
@@ -72,7 +72,7 @@ public class SegmentManager
       numSegments--;
     }
 
-    public VersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline()
+    public NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline()
     {
       return timeline;
     }
@@ -135,7 +135,7 @@ public class SegmentManager
   }
 
   @Nullable
-  public VersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline(String dataSource)
+  public NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline(String dataSource)
   {
     final DataSourceState dataSourceState = dataSources.get(dataSource);
     return dataSourceState == null ? null : dataSourceState.getTimeline();
@@ -161,18 +161,19 @@ public class SegmentManager
         segment.getDataSource(),
         (k, v) -> {
           final DataSourceState dataSourceState = v == null ? new DataSourceState() : v;
-          final VersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
+          final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
               dataSourceState.getTimeline();
           final PartitionHolder<ReferenceCountingSegment> entry = loadedIntervals.findEntry(
               segment.getInterval(),
               segment.getVersion()
           );
 
-          if ((entry != null) && (entry.getChunk(segment.getShardSpec().getPartitionNum()) != null)) {
+          if ((entry != null) && (entry.getChunk(segment.getShardSpec().getIdentifier()) != null)) {
             log.warn("Told to load an adapter for segment[%s] that already exists", segment.getId());
             resultSupplier.set(false);
           } else {
             loadedIntervals.add(
+                NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
                 segment.getInterval(),
                 segment.getVersion(),
                 segment.getShardSpec().createChunk(
@@ -218,11 +219,12 @@ public class SegmentManager
             log.info("Told to delete a queryable for a dataSource[%s] that doesn't exist.", dataSourceName);
             return null;
           } else {
-            final VersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
+            final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
                 dataSourceState.getTimeline();
 
             final ShardSpec shardSpec = segment.getShardSpec();
             final PartitionChunk<ReferenceCountingSegment> removed = loadedIntervals.remove(
+                NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
                 segment.getInterval(),
                 segment.getVersion(),
                 // remove() internally searches for a partitionChunk to remove which is *equal* to the given

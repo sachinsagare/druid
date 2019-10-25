@@ -58,9 +58,9 @@ import org.apache.druid.query.spec.SpecificSegmentSpec;
 import org.apache.druid.segment.Segment;
 import org.apache.druid.segment.realtime.FireHydrant;
 import org.apache.druid.segment.realtime.plumber.Sink;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.joda.time.Interval;
@@ -76,7 +76,7 @@ public class SinkQuerySegmentWalker implements QuerySegmentWalker
 
   private final String dataSource;
 
-  private final VersionedIntervalTimeline<String, Sink> sinkTimeline;
+  private final NamespacedVersionedIntervalTimeline<String, Sink> sinkTimeline;
   private final ObjectMapper objectMapper;
   private final ServiceEmitter emitter;
   private final QueryRunnerFactoryConglomerate conglomerate;
@@ -87,7 +87,7 @@ public class SinkQuerySegmentWalker implements QuerySegmentWalker
 
   public SinkQuerySegmentWalker(
       String dataSource,
-      VersionedIntervalTimeline<String, Sink> sinkTimeline,
+      NamespacedVersionedIntervalTimeline<String, Sink> sinkTimeline,
       ObjectMapper objectMapper,
       ServiceEmitter emitter,
       QueryRunnerFactoryConglomerate conglomerate,
@@ -318,7 +318,7 @@ public class SinkQuerySegmentWalker implements QuerySegmentWalker
     );
   }
 
-  public VersionedIntervalTimeline<String, Sink> getSinkTimeline()
+  public NamespacedVersionedIntervalTimeline<String, Sink> getSinkTimeline()
   {
     return sinkTimeline;
   }

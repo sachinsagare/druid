@@ -68,10 +68,10 @@ import org.apache.druid.server.QueryResource;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.TimelineLookup;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.joda.time.Interval;
@@ -234,14 +234,16 @@ public class CachingClusteredClient implements QuerySegmentWalker
             queryPlus,
             responseContext,
             timeline -> {
-              final VersionedIntervalTimeline<String, ServerSelector> timeline2 =
-                  new VersionedIntervalTimeline<>(Ordering.natural());
+              final NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline2 =
+                  new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
               for (SegmentDescriptor spec : specs) {
                 final PartitionHolder<ServerSelector> entry = timeline.findEntry(spec.getInterval(), spec.getVersion());
                 if (entry != null) {
                   final PartitionChunk<ServerSelector> chunk = entry.getChunk(spec.getPartitionNumber());
                   if (chunk != null) {
-                    timeline2.add(spec.getInterval(), spec.getVersion(), chunk);
+                    timeline2.add(NamespacedVersionedIntervalTimeline.getNamespace(
+                        spec.getPartitionIdentifier()),
+                        spec.getInterval(), spec.getVersion(), chunk);
                   }
                 }
               }

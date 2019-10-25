@@ -59,9 +59,9 @@ import org.apache.druid.segment.ReferenceCountingSegment;
 import org.apache.druid.server.SegmentManager;
 import org.apache.druid.server.SetAndVerifyContextQueryRunner;
 import org.apache.druid.server.initialization.ServerConfig;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.joda.time.Interval;
@@ -137,7 +137,8 @@ public class ServerManager implements QuerySegmentWalker
     }
     String dataSourceName = getDataSourceName(dataSource);
 
-    final VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline = segmentManager.getTimeline(
+    final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment>
+        timeline = segmentManager.getTimeline(
         dataSourceName
     );
 
@@ -228,7 +229,7 @@ public class ServerManager implements QuerySegmentWalker
 
     String dataSourceName = getDataSourceName(query.getDataSource());
 
-    final VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline = segmentManager.getTimeline(
+    final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> timeline = segmentManager.getTimeline(
         dataSourceName
     );
 
