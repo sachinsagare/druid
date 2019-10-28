@@ -357,20 +357,14 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       final Set<ServerToSegment> segments = new LinkedHashSet<>();
       final Map<String, Optional<RangeSet<String>>> dimensionRangeCache = new HashMap<>();
-      Optional<Set<String>> requiredFields = QueryUtil.getRequiredFields(query);
       // Filter unneeded chunks based on partition dimension
       for (TimelineObjectHolder<String, ServerSelector> holder : serversLookup) {
-        Set<PartitionChunk<ServerSelector>> filteredChunks = DimFilterUtils.filterShards(
+        final Set<PartitionChunk<ServerSelector>> filteredChunks = DimFilterUtils.filterShards(
             query.getFilter(),
             holder.getObject(),
             partitionChunk -> partitionChunk.getObject().getSegment().getShardSpec(),
             dimensionRangeCache
         );
-        if (requiredFields.isPresent()) {
-          // Filter unneeded chunks based on required fields
-          filteredChunks = QueryUtil.filterShards(requiredFields.get(), filteredChunks,
-              partitionChunk -> partitionChunk.getObject().getSegment());
-        }
         for (PartitionChunk<ServerSelector> chunk : filteredChunks) {
           ServerSelector server = chunk.getObject();
           final SegmentDescriptor segment = new SegmentDescriptor(
