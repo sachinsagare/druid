@@ -27,7 +27,7 @@ import org.apache.druid.server.coordinator.helper.CompactionSegmentIterator;
 import org.apache.druid.server.coordinator.helper.CompactionSegmentSearchPolicy;
 import org.apache.druid.server.coordinator.helper.NewestSegmentFirstPolicy;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.joda.time.DateTime;
@@ -81,7 +81,7 @@ public class NewestSegmentFirstPolicyBenchmark
   private int numCompactionTaskSlots;
 
   private Map<String, DataSourceCompactionConfig> compactionConfigs;
-  private Map<String, VersionedIntervalTimeline<String, DataSegment>> dataSources;
+  private Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> dataSources;
 
   @Setup(Level.Trial)
   public void setup()
