@@ -114,5 +114,9 @@
   "sys/cpu" : { "dimensions" : ["cpuName", "cpuTime"], "type" : "gauge"},
 
   "coordinator-segment/count" : { "dimensions" : ["dataSource"], "type" : "gauge" },
-  "historical-segment/count" : { "dimensions" : ["dataSource", "tier", "priority"], "type" : "gauge" }
+  "historical-segment/count" : { "dimensions" : ["dataSource", "tier", "priority"], "type" : "gauge" },
+
+  "ingest/kafka/lag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/kafka/maxLag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/kafka/avgLag" : { "dimensions" : ["dataSource"], "type" : "gauge" }
 }

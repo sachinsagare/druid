@@ -50,7 +50,7 @@
 		"consumerProperties": {
 			"bootstrap.servers": "m10nkafka02160:9092,m10nkafka02159:9092,m10nkafka02158:9092,m10nkafka02157:9092,m10nkafka02156:9092,m10nkafka02155:9092,m10nkafka02154:9092,m10nkafka02153:9092,m10nkafka02152:9092,m10nkafka02151:9092"
 		},
-		"taskCount": 5,
+		"taskCount": 15,
 		"replicas": 1,
 		"taskDuration": "PT1H",
 		"useEarliestOffset": "true"
