@@ -132,6 +132,14 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
   }
 
   /**
+   * Required for NamespacedVersionedIntervalTimeline
+   */
+  public AtomicInteger getNumObjects()
+  {
+    return numObjects;
+  }
+
+  /**
    * Returns a lazy collection with all objects (including overshadowed, see {@link #findFullyOvershadowed}) in this
    * VersionedIntervalTimeline to be used for iteration or {@link Collection#stream()} transformation. The order of
    * objects in this collection is unspecified.

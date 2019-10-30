@@ -27,7 +27,7 @@ import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.metadata.MetadataRuleManager;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -126,7 +126,7 @@ public class DruidCoordinatorRuntimeParams
    * Creates and returns a "dataSource -> VersionedIntervalTimeline[version String, DataSegment]" map with "used"
    * segments.
    */
-  public Map<String, VersionedIntervalTimeline<String, DataSegment>> getUsedSegmentsTimelinesPerDataSource()
+  public Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> getUsedSegmentsTimelinesPerDataSource()
   {
     Preconditions.checkState(dataSourcesSnapshot != null, "dataSourcesSnapshot or usedSegments must be set");
     return dataSourcesSnapshot.getUsedSegmentsTimelinesPerDataSource();
@@ -375,7 +375,7 @@ public class DruidCoordinatorRuntimeParams
     /** This method must be used in test code only. */
     @VisibleForTesting
     public Builder withUsedSegmentsTimelinesPerDataSourceInTest(
-        Map<String, VersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource
+        Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource
     )
     {
       this.dataSourcesSnapshot = DataSourcesSnapshot.fromUsedSegmentsTimelines(

@@ -27,7 +27,7 @@ import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.java.util.common.guava.Comparators;
 import org.apache.druid.server.coordinator.DataSourceCompactionConfig;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
@@ -410,7 +410,7 @@ public class NewestSegmentFirstPolicyTest
   public void testClearSegmentsToCompactWhenSkippingSegments()
   {
     final long maxSizeOfSegmentsToCompact = 800000;
-    final VersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
+    final NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
         new SegmentGenerateSpec(
             Intervals.of("2017-12-03T00:00:00/2017-12-04T00:00:00"),
             new Period("P1D"),
@@ -451,7 +451,7 @@ public class NewestSegmentFirstPolicyTest
   @Test
   public void testIfFirstSegmentIsInSkipOffset()
   {
-    final VersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
+    final NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
         new SegmentGenerateSpec(
             Intervals.of("2017-12-02T14:00:00/2017-12-03T00:00:00"),
             new Period("PT5H"),
@@ -472,7 +472,7 @@ public class NewestSegmentFirstPolicyTest
   @Test
   public void testIfFirstSegmentOverlapsSkipOffset()
   {
-    final VersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
+    final NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = createTimeline(
         new SegmentGenerateSpec(
             Intervals.of("2017-12-01T23:00:00/2017-12-03T00:00:00"),
             new Period("PT5H"),
@@ -621,7 +621,7 @@ public class NewestSegmentFirstPolicyTest
     }
   }
 
-  private static VersionedIntervalTimeline<String, DataSegment> createTimeline(
+  private static NamespacedVersionedIntervalTimeline<String, DataSegment> createTimeline(
       SegmentGenerateSpec... specs
   )
   {
@@ -663,7 +663,7 @@ public class NewestSegmentFirstPolicyTest
       }
     }
 
-    return VersionedIntervalTimeline.forSegments(segments);
+    return NamespacedVersionedIntervalTimeline.forSegments(segments);
   }
 
   private DataSourceCompactionConfig createCompactionConfig(

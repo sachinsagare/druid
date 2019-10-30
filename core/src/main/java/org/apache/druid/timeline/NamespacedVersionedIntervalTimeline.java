@@ -24,9 +24,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
+import org.apache.druid.utils.CollectionUtils;
 import org.joda.time.Interval;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.StreamSupport;
 
 public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends Overshadowable<ObjectType>> implements TimelineLookup<VersionType, ObjectType>
 {
@@ -101,6 +104,35 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
     }
 
     return timelines.get(null).getAllTimelineEntries();
+  }
+
+  /**
+   * Returns a lazy collection with all objects (including overshadowed, see {@link #findFullyOvershadowed}) in this
+   * NamespacedVersionedIntervalTimeline to be used for iteration or {@link Collection#stream()} transformation.
+   * The order of objects in this collection is unspecified.
+   *
+   * Note: iteration over the returned collection may not be as trivially cheap as, for example, iteration over an
+   * ArrayList. Try (to some reasonable extent) to organize the code so that it iterates the returned collection only
+   * once rather than several times.
+   */
+  public Collection<ObjectType> iterateAllObjects()
+  {
+    return CollectionUtils.createLazyCollectionFromStream(
+        () -> getAllTimelineEntries()
+            .values()
+            .stream()
+            .flatMap((TreeMap<VersionType, VersionedIntervalTimeline<VersionType, ObjectType>.TimelineEntry> entryMap) -> entryMap.values().stream())
+            .flatMap((VersionedIntervalTimeline<VersionType, ObjectType>.TimelineEntry entry) -> StreamSupport.stream(entry.getPartitionHolder().spliterator(), false))
+            .map(PartitionChunk::getObject),
+        timelines.entrySet().stream()
+            .map(entry -> entry.getValue().getNumObjects().get())
+            .reduce(0, (subtotal, element) -> subtotal + element)
+    );
+  }
+
+  public Map<String, VersionedIntervalTimeline<VersionType, ObjectType>> getTimelines()
+  {
+    return timelines;
   }
 
   public NamespacedVersionedIntervalTimeline()
@@ -228,7 +260,11 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
     }
   }
 
-  public Set<TimelineObjectHolder<VersionType, ObjectType>> findOvershadowed()
+  /**
+   * This method should be deduplicated with DataSourcesSnapshot.determineOvershadowedSegments(): see
+   * https://github.com/apache/incubator-druid/issues/8070.
+   */
+  public Set<TimelineObjectHolder<VersionType, ObjectType>> findFullyOvershadowed()
   {
     try {
       lock.readLock().lock();

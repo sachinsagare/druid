@@ -36,6 +36,7 @@ import org.apache.druid.server.coordinator.CoordinatorStats;
 import org.apache.druid.server.coordinator.DataSourceCompactionConfig;
 import org.apache.druid.server.coordinator.DruidCoordinatorRuntimeParams;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
@@ -78,36 +79,36 @@ public class DruidCoordinatorSegmentCompactorTest
           segments.get(0).getInterval().getStart(),
           segments.get(segments.size() - 1).getInterval().getEnd()
       );
-      final VersionedIntervalTimeline<String, DataSegment> timeline = dataSources.get(segments.get(0).getDataSource());
-      segments.forEach(
-          segment -> timeline.remove(
-              segment.getInterval(),
-              segment.getVersion(),
-              segment.getShardSpec().createChunk(segment)
-          )
-      );
-      final String version = "newVersion_" + compactVersionSuffix++;
-      final long segmentSize = segments.stream().mapToLong(DataSegment::getSize).sum() / 2;
-      for (int i = 0; i < 2; i++) {
-        DataSegment compactSegment = new DataSegment(
-            segments.get(0).getDataSource(),
-            compactInterval,
-            version,
-            null,
-            segments.get(0).getDimensions(),
-            segments.get(0).getMetrics(),
-            new NumberedShardSpec(i, 0),
-            1,
-            segmentSize
+      for (VersionedIntervalTimeline timeline : dataSources.get(segments.get(0).getDataSource()).getTimelines().values()) {
+        segments.forEach(
+            segment -> timeline.remove(
+                segment.getInterval(),
+                segment.getVersion(),
+                segment.getShardSpec().createChunk(segment)
+            )
         );
+        final String version = "newVersion_" + compactVersionSuffix++;
+        final long segmentSize = segments.stream().mapToLong(DataSegment::getSize).sum() / 2;
+        for (int i = 0; i < 2; i++) {
+          DataSegment compactSegment = new DataSegment(
+              segments.get(0).getDataSource(),
+              compactInterval,
+              version,
+              null,
+              segments.get(0).getDimensions(),
+              segments.get(0).getMetrics(),
+              new NumberedShardSpec(i, 0),
+              1,
+              segmentSize
+          );
 
-        timeline.add(
-            compactInterval,
-            compactSegment.getVersion(),
-            compactSegment.getShardSpec().createChunk(compactSegment)
-        );
+          timeline.add(
+              compactInterval,
+              compactSegment.getVersion(),
+              compactSegment.getShardSpec().createChunk(compactSegment)
+          );
+        }
       }
-
       return "task_" + idSuffix++;
     }
 
@@ -124,7 +125,7 @@ public class DruidCoordinatorSegmentCompactorTest
     }
   };
 
-  private Map<String, VersionedIntervalTimeline<String, DataSegment>> dataSources;
+  private Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> dataSources;
 
   @Before
   public void setup()
@@ -352,12 +353,14 @@ public class DruidCoordinatorSegmentCompactorTest
     for (int i = 0; i < 2; i++) {
       DataSegment newSegment = createSegment(dataSource, day, true, i);
       dataSources.get(dataSource).add(
+          NamespacedVersionedIntervalTimeline.getNamespace(newSegment.getShardSpec().getIdentifier()),
           newSegment.getInterval(),
           newSegment.getVersion(),
           newSegment.getShardSpec().createChunk(newSegment)
       );
       newSegment = createSegment(dataSource, day, false, i);
       dataSources.get(dataSource).add(
+          NamespacedVersionedIntervalTimeline.getNamespace(newSegment.getShardSpec().getIdentifier()),
           newSegment.getInterval(),
           newSegment.getVersion(),
           newSegment.getShardSpec().createChunk(newSegment)

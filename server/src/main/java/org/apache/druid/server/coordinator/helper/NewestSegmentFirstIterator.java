@@ -29,6 +29,7 @@ import org.apache.druid.java.util.common.guava.Comparators;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.server.coordinator.DataSourceCompactionConfig;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
@@ -57,7 +58,7 @@ public class NewestSegmentFirstIterator implements CompactionSegmentIterator
   private static final Logger log = new Logger(NewestSegmentFirstIterator.class);
 
   private final Map<String, DataSourceCompactionConfig> compactionConfigs;
-  private final Map<String, VersionedIntervalTimeline<String, DataSegment>> dataSources;
+  private final Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> dataSources;
 
   // dataSource -> intervalToFind
   // searchIntervals keeps track of the current state of which interval should be considered to search segments to
@@ -70,7 +71,7 @@ public class NewestSegmentFirstIterator implements CompactionSegmentIterator
 
   NewestSegmentFirstIterator(
       Map<String, DataSourceCompactionConfig> compactionConfigs,
-      Map<String, VersionedIntervalTimeline<String, DataSegment>> dataSources,
+      Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> dataSources,
       Map<String, List<Interval>> skipIntervals
   )
   {
@@ -78,15 +79,16 @@ public class NewestSegmentFirstIterator implements CompactionSegmentIterator
     this.dataSources = dataSources;
     this.timelineIterators = new HashMap<>(dataSources.size());
 
-    for (Entry<String, VersionedIntervalTimeline<String, DataSegment>> entry : dataSources.entrySet()) {
+    for (Entry<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> entry : dataSources.entrySet()) {
       final String dataSource = entry.getKey();
-      final VersionedIntervalTimeline<String, DataSegment> timeline = entry.getValue();
       final DataSourceCompactionConfig config = compactionConfigs.get(dataSource);
 
-      if (config != null && !timeline.isEmpty()) {
-        final List<Interval> searchIntervals = findInitialSearchInterval(timeline, config.getSkipOffsetFromLatest(), skipIntervals.get(dataSource));
-        if (!searchIntervals.isEmpty()) {
-          timelineIterators.put(dataSource, new CompactibleTimelineObjectHolderCursor(timeline, searchIntervals));
+      for (VersionedIntervalTimeline timeline : entry.getValue().getTimelines().values()) {
+        if (config != null && !timeline.isEmpty()) {
+          final List<Interval> searchIntervals = findInitialSearchInterval(timeline, config.getSkipOffsetFromLatest(), skipIntervals.get(dataSource));
+          if (!searchIntervals.isEmpty()) {
+            timelineIterators.put(dataSource, new CompactibleTimelineObjectHolderCursor(timeline, searchIntervals));
+          }
         }
       }
     }
@@ -109,18 +111,19 @@ public class NewestSegmentFirstIterator implements CompactionSegmentIterator
     final Object2LongOpenHashMap<String> resultMap = new Object2LongOpenHashMap<>();
     resultMap.defaultReturnValue(UNKNOWN_REMAINING_SEGMENT_SIZE);
     for (QueueEntry entry : queue) {
-      final VersionedIntervalTimeline<String, DataSegment> timeline = dataSources.get(entry.getDataSource());
-      final Interval interval = new Interval(timeline.first().getInterval().getStart(), entry.interval.getEnd());
+      for (VersionedIntervalTimeline timeline : dataSources.get(entry.getDataSource()).getTimelines().values()) {
+        final Interval interval = new Interval(timeline.first().getInterval().getStart(), entry.interval.getEnd());
 
-      final List<TimelineObjectHolder<String, DataSegment>> holders = timeline.lookup(interval);
+        final List<TimelineObjectHolder<String, DataSegment>> holders = timeline.lookup(interval);
 
-      resultMap.put(
-          entry.getDataSource(),
-          holders.stream()
-                 .flatMap(holder -> StreamSupport.stream(holder.getObject().spliterator(), false))
-                 .mapToLong(chunk -> chunk.getObject().getSize())
-                 .sum()
-      );
+        resultMap.put(
+            entry.getDataSource(),
+            holders.stream()
+                .flatMap(holder -> StreamSupport.stream(holder.getObject().spliterator(), false))
+                .mapToLong(chunk -> chunk.getObject().getSize())
+                .sum()
+        );
+      }
     }
     return resultMap;
   }

@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.utils.CollectionUtils;
 
 import javax.annotation.Nullable;
@@ -55,7 +55,7 @@ public class DataSourcesSnapshot
   }
 
   public static DataSourcesSnapshot fromUsedSegmentsTimelines(
-      Map<String, VersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource,
+      Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource,
       ImmutableMap<String, String> dataSourceProperties
   )
   {
@@ -72,7 +72,7 @@ public class DataSourcesSnapshot
   }
 
   private final Map<String, ImmutableDruidDataSource> dataSourcesWithAllUsedSegments;
-  private final Map<String, VersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource;
+  private final Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource;
   private final ImmutableSet<SegmentId> overshadowedSegments;
 
   public DataSourcesSnapshot(Map<String, ImmutableDruidDataSource> dataSourcesWithAllUsedSegments)
@@ -81,14 +81,14 @@ public class DataSourcesSnapshot
         dataSourcesWithAllUsedSegments,
         CollectionUtils.mapValues(
             dataSourcesWithAllUsedSegments,
-            dataSource -> VersionedIntervalTimeline.forSegments(dataSource.getSegments())
+            dataSource -> NamespacedVersionedIntervalTimeline.forSegments(dataSource.getSegments())
         )
     );
   }
 
   private DataSourcesSnapshot(
       Map<String, ImmutableDruidDataSource> dataSourcesWithAllUsedSegments,
-      Map<String, VersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource
+      Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> usedSegmentsTimelinesPerDataSource
   )
   {
     this.dataSourcesWithAllUsedSegments = dataSourcesWithAllUsedSegments;
@@ -112,7 +112,7 @@ public class DataSourcesSnapshot
     return dataSourcesWithAllUsedSegments.get(dataSourceName);
   }
 
-  public Map<String, VersionedIntervalTimeline<String, DataSegment>> getUsedSegmentsTimelinesPerDataSource()
+  public Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> getUsedSegmentsTimelinesPerDataSource()
   {
     return usedSegmentsTimelinesPerDataSource;
   }
@@ -146,7 +146,7 @@ public class DataSourcesSnapshot
   /**
    * This method builds timelines from all data sources and finds the overshadowed segments list
    *
-   * This method should be deduplicated with {@link VersionedIntervalTimeline#findFullyOvershadowed()}: see
+   * This method should be deduplicated with {@link NamespacedVersionedIntervalTimeline#findFullyOvershadowed()}: see
    * https://github.com/apache/incubator-druid/issues/8070.
    *
    * @return overshadowed segment Ids list
@@ -158,10 +158,12 @@ public class DataSourcesSnapshot
     // so building this collection shouldn't generate a lot of garbage.
     final List<SegmentId> overshadowedSegments = new ArrayList<>();
     for (ImmutableDruidDataSource dataSource : dataSourcesWithAllUsedSegments.values()) {
-      VersionedIntervalTimeline<String, DataSegment> usedSegmentsTimeline =
+      NamespacedVersionedIntervalTimeline<String, DataSegment> usedSegmentsTimeline =
           usedSegmentsTimelinesPerDataSource.get(dataSource.getName());
       for (DataSegment segment : dataSource.getSegments()) {
-        if (usedSegmentsTimeline.isOvershadowed(segment.getInterval(), segment.getVersion(), segment)) {
+        if (usedSegmentsTimeline.isOvershadowed(
+            NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+            segment.getInterval(), segment.getVersion(), segment)) {
           overshadowedSegments.add(segment.getId());
         }
       }
