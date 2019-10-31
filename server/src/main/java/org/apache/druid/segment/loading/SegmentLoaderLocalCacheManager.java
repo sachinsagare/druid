@@ -23,19 +23,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.druid.guice.annotations.Json;
 import org.apache.druid.java.util.common.ISE;
+import org.apache.druid.java.util.common.concurrent.Execs;
 import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.segment.IndexIO;
 import org.apache.druid.segment.Segment;
 import org.apache.druid.timeline.DataSegment;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  */
@@ -77,6 +85,8 @@ public class SegmentLoaderLocalCacheManager implements SegmentLoader
    */
   private final ConcurrentHashMap<DataSegment, ReferenceCountingLock> segmentLocks = new ConcurrentHashMap<>();
 
+  private ScheduledExecutorService loadSegmentsIntoPageCacheOnDownloadExec = null;
+
   // Note that we only create this via injection in historical and realtime nodes. Peons create these
   // objects via SegmentLoaderFactory objects, so that they can store segments in task-specific
   // directories rather than statically configured directories.
@@ -102,6 +112,14 @@ public class SegmentLoaderLocalCacheManager implements SegmentLoader
       );
     }
     locations.sort(COMPARATOR);
+
+    if (this.config.getNumLoadingThreadsToLoadSegmentsIntoPageCacheOnDownload() != 0) {
+      loadSegmentsIntoPageCacheOnDownloadExec = Executors.newScheduledThreadPool(
+          config.getNumLoadingThreadsToLoadSegmentsIntoPageCacheOnDownload(),
+          Execs.makeThreadFactory("LoadSegmentsIntoPageCacheOnDownload-%s"));
+      log.info("Size of thread pool to load segments into page cache on download [%d]",
+          config.getNumLoadingThreadsToLoadSegmentsIntoPageCacheOnDownload());
+    }
   }
 
   @Override
@@ -278,6 +296,58 @@ public class SegmentLoaderLocalCacheManager implements SegmentLoader
         unlock(segment, lock);
       }
     }
+  }
+
+  @Override
+  public void loadSegmentIntoPageCache(DataSegment segment, ExecutorService exec)
+  {
+    ExecutorService execToUse = exec != null ? exec : loadSegmentsIntoPageCacheOnDownloadExec;
+    if (execToUse == null) {
+      return;
+    }
+
+    execToUse.submit(
+        () -> {
+          final ReferenceCountingLock lock = createOrGetLock(segment);
+          synchronized (lock) {
+            try {
+              for (StorageLocation location : locations) {
+                File localStorageDir = new File(location.getPath(), DataSegmentPusher.getDefaultStorageDir(segment, false));
+                if (localStorageDir.exists()) {
+                  File baseFile = location.getPath();
+                  if (localStorageDir.equals(baseFile)) {
+                    continue;
+                  }
+
+                  log.info("Loading directory[%s] into page cache", localStorageDir);
+
+                  File[] children = localStorageDir.listFiles();
+                  if (children != null) {
+                    for (File child : children) {
+                      InputStream in = null;
+                      try {
+                        in = new FileInputStream(child);
+                        IOUtils.copy(in, new NullOutputStream());
+
+                        log.info("Loaded [%s] into page cache", child.getAbsolutePath());
+                      }
+                      catch (Exception e) {
+                        log.error("Failed to load [%s] into page cache, [%s]", child.getAbsolutePath(), e.getMessage());
+                      }
+                      finally {
+                        IOUtils.closeQuietly(in);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            finally {
+              unlock(segment, lock);
+            }
+          }
+        }
+    );
   }
 
   private void cleanupCacheFiles(File baseFile, File cacheFile)

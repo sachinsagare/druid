@@ -38,6 +38,7 @@ import org.apache.druid.utils.CollectionUtils;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 /**
  * This class is responsible for managing data sources and their states like timeline, total segment size, and number of
@@ -146,11 +147,16 @@ public class SegmentManager
    *
    * @param segment segment to load
    *
+   * @param loadSegmentIntoPageCacheExec This thread pool is optional. Usually you can give one with
+   *                                     more capacity on bootstrap. If null is specified, the
+   *                                     thread pool to load segments into page cache on download
+   *                                     will be used.
+   *
    * @return true if the segment was newly loaded, false if it was already loaded
    *
    * @throws SegmentLoadingException if the segment cannot be loaded
    */
-  public boolean loadSegment(final DataSegment segment) throws SegmentLoadingException
+  public boolean loadSegment(final DataSegment segment, ExecutorService loadSegmentIntoPageCacheExec) throws SegmentLoadingException
   {
     final Segment adapter = getAdapter(segment);
 
@@ -181,6 +187,7 @@ public class SegmentManager
                 )
             );
             dataSourceState.addSegment(segment);
+            segmentLoader.loadSegmentIntoPageCache(segment, loadSegmentIntoPageCacheExec);
             resultSupplier.set(true);
           }
           return dataSourceState;
@@ -188,6 +195,20 @@ public class SegmentManager
     );
 
     return resultSupplier.get();
+  }
+
+  /**
+   * Load a single segment.
+   *
+   * @param segment segment to load
+   *
+   * @return true if the segment was newly loaded, false if it was already loaded
+   *
+   * @throws SegmentLoadingException if the segment cannot be loaded
+   */
+  public boolean loadSegment(final DataSegment segment) throws SegmentLoadingException
+  {
+    return loadSegment(segment, null);
   }
 
   private Segment getAdapter(final DataSegment segment) throws SegmentLoadingException

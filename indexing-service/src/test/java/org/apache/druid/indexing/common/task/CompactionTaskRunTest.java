@@ -116,7 +116,7 @@ public class CompactionTaskRunTest extends IngestionTestBase
   public static Iterable<Object[]> constructorFeeder()
   {
     return ImmutableList.of(
-//        new Object[]{LockGranularity.TIME_CHUNK},
+        new Object[]{LockGranularity.TIME_CHUNK},
         new Object[]{LockGranularity.SEGMENT}
     );
   }

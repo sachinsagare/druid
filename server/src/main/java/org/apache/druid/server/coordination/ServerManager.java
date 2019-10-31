@@ -186,7 +186,8 @@ public class ServerManager implements QuerySegmentWalker
                                 new SegmentDescriptor(
                                     holder.getInterval(),
                                     holder.getVersion(),
-                                    input.getChunkNumber()
+                                    input.getChunkNumber(),
+                                    input.getChunkIdentifier()
                                 ),
                                 cpuTimeAccumulator
                             );

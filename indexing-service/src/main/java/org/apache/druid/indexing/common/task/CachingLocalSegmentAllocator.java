@@ -174,6 +174,6 @@ public class CachingLocalSegmentAllocator implements IndexTaskSegmentAllocator
    */
   private String getSequenceName(Interval interval, ShardSpec shardSpec)
   {
-    return StringUtils.format("%s_%s_%d", taskId, interval, shardSpec.getPartitionNum());
+    return StringUtils.format("%s_%s_%s", taskId, interval, shardSpec.getIdentifier());
   }
 }
