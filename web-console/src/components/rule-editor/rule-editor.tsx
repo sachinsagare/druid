@@ -45,6 +45,7 @@ export interface Rule {
     | 'broadcastByPeriod';
   interval?: string;
   period?: string;
+  identifierPrefix?: string;
   tieredReplicants?: Record<string, number>;
   colocatedDataSources?: string[];
 }
@@ -106,6 +107,10 @@ export class RuleEditor extends React.PureComponent<RuleEditorProps, RuleEditorS
 
   static changeInterval(rule: Rule, interval: string): Rule {
     return Object.assign({}, rule, { interval });
+  }
+
+  static changeIdentifierPrefix(rule: Rule, identifierPrefix: string): Rule {
+    return Object.assign({}, rule, { identifierPrefix });
   }
 
   static changeTier(rule: Rule, oldTier: string, newTier: string): Rule {
@@ -305,6 +310,15 @@ export class RuleEditor extends React.PureComponent<RuleEditorProps, RuleEditorS
                       onChange(RuleEditor.changeInterval(rule, e.target.value as any))
                     }
                     placeholder="2010-01-01/2020-01-01"
+                  />
+                )}
+                {(ruleTimeType === 'ByPeriod' || ruleTimeType === 'ByInterval') && (
+                  <InputGroup
+                    value={rule.identifierPrefix || ''}
+                    onChange={(e: any) =>
+                      onChange(RuleEditor.changeIdentifierPrefix(rule, e.target.value as any))
+                    }
+                    placeholder="Namespace prefix. Leave empty to include all"
                   />
                 )}
               </ControlGroup>

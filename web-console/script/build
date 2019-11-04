@@ -18,10 +18,10 @@
 
 set -e
 
-echo "Copying legacy consoles in..."
-cp -r ./node_modules/druid-console/coordinator-console .
-cp -r ./node_modules/druid-console/pages .
-cp ./node_modules/druid-console/index.html .
+echo "Copying coordinator console in..."
+cp -r ./druid-console/coordinator-console .
+cp -r ./druid-console/pages .
+cp ./druid-console/index.html .
 
 echo "Adding SQL docs..."
 PATH="./target/node:$PATH" ./script/create-sql-docs.js

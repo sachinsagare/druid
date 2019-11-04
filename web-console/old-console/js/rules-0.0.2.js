@@ -105,6 +105,7 @@ function makeRuleBody(rule) {
 function makeLoadByInterval(rule) {
   var retVal = "";
   retVal += "<span class='rule_label'>interval</span><input type='text' class='long_text' name='interval' " + "value='" + rule.interval + "'/>";
+  retVal += "<span class='rule_label'>identifier prefix</span><input type='text' name='identifierPrefix' " + "value='" + rule.identifierPrefix + "'/>";
   retVal += "<button type='button' class='add_tier'>Add Another Tier</button>";
   if (rule.tieredReplicants === undefined) {
     retVal += makeTierLoad(null, 0);
@@ -118,6 +119,7 @@ function makeLoadByInterval(rule) {
 function makeLoadByPeriod(rule) {
   var retVal = "";
   retVal += "<span class='rule_label'>period</span><input type='text' name='period' " + "value='" + rule.period + "'/>";
+  retVal += "<span class='rule_label'>identifier prefix</span><input type='text' name='identifierPrefix' " + "value='" + rule.identifierPrefix + "'/>";
   retVal += "<span class='rule_label'>includeFuture</span><input type='text' name='includeFuture' " + "value='" + true + "'/>";
   retVal += "<button type='button' class='add_tier'>Add Another Tier</button>";
   if (rule.tieredReplicants === undefined) {
