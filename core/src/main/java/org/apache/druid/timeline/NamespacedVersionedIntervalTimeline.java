@@ -117,16 +117,13 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
    */
   public Collection<ObjectType> iterateAllObjects()
   {
+    List<ObjectType> allObjects = new ArrayList<>();
+    for (VersionedIntervalTimeline<VersionType, ObjectType> versionedIntervalTimeline : timelines.values()) {
+      allObjects.addAll(versionedIntervalTimeline.iterateAllObjects());
+    }
     return CollectionUtils.createLazyCollectionFromStream(
-        () -> getAllTimelineEntries()
-            .values()
-            .stream()
-            .flatMap((TreeMap<VersionType, VersionedIntervalTimeline<VersionType, ObjectType>.TimelineEntry> entryMap) -> entryMap.values().stream())
-            .flatMap((VersionedIntervalTimeline<VersionType, ObjectType>.TimelineEntry entry) -> StreamSupport.stream(entry.getPartitionHolder().spliterator(), false))
-            .map(PartitionChunk::getObject),
-        timelines.entrySet().stream()
-            .map(entry -> entry.getValue().getNumObjects().get())
-            .reduce(0, (subtotal, element) -> subtotal + element)
+        () -> allObjects.stream(),
+        allObjects.size()
     );
   }
 
