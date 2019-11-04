@@ -268,7 +268,8 @@ public class DruidCoordinatorLogger implements DruidCoordinatorHelper
         .getUsedSegmentsTimelinesPerDataSource()
         .values()
         .stream()
-        .flatMap(timeline -> timeline.getAllTimelineEntries().values().stream())
+        .flatMap(timeline -> timeline.getTimelines().values().stream())
+        .flatMap(versionedTimeline -> versionedTimeline.getAllTimelineEntries().values().stream())
         .flatMap(entryMap -> entryMap.values().stream())
         .flatMap(entry -> StreamSupport.stream(entry.getPartitionHolder().spliterator(), false))
         .map(PartitionChunk::getObject);
