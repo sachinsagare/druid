@@ -237,17 +237,21 @@ public class CachingClusteredClient implements QuerySegmentWalker
               final NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline2 =
                   new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
               for (SegmentDescriptor spec : specs) {
-                final PartitionHolder<ServerSelector> entry = ((NamespacedVersionedIntervalTimeline) timeline).findEntry(
-                    NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
-                    spec.getInterval(), spec.getVersion()
-                );
+                final PartitionHolder<ServerSelector> entry;
+                String namespace = NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier());
+                if (namespace != null) {
+                  entry = ((NamespacedVersionedIntervalTimeline) timeline).findEntry(
+                      namespace, spec.getInterval(), spec.getVersion()
+                  );
+                } else {
+                  entry = timeline.findEntry(spec.getInterval(), spec.getVersion());
+                }
                 if (entry != null) {
                   final PartitionChunk<ServerSelector> chunk = entry.getChunk(spec.getPartitionNumber());
                   if (chunk != null) {
-                    timeline2.add(
-                        NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
-                        spec.getInterval(), spec.getVersion(), chunk
-                    );
+                    timeline2.add(NamespacedVersionedIntervalTimeline.getNamespace(
+                        spec.getPartitionIdentifier()),
+                        spec.getInterval(), spec.getVersion(), chunk);
                   }
                 }
               }
