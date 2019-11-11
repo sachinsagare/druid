@@ -174,7 +174,7 @@ public class SegmentManager
               segment.getVersion()
           );
 
-          if ((entry != null) && (entry.getChunk(segment.getShardSpec().getIdentifier()) != null)) {
+          if ((entry != null) && (entry.getChunk(segment.getShardSpec().getPartitionNum()) != null)) {
             log.warn("Told to load an adapter for segment[%s] that already exists", segment.getId());
             resultSupplier.set(false);
           } else {
