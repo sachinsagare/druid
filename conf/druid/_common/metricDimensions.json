@@ -113,6 +113,8 @@
   "sys/storage/used" : { "dimensions" : ["fsDirName"], "type" : "gauge"},
   "sys/cpu" : { "dimensions" : ["cpuName", "cpuTime"], "type" : "gauge"},
 
+  "coordinator-segment/lastIntervalTimestamp" : { "dimensions" : ["dataSource", "namespace"], "type" : "gauge" },
+
   "coordinator-segment/count" : { "dimensions" : ["dataSource"], "type" : "gauge" },
   "historical-segment/count" : { "dimensions" : ["dataSource", "tier", "priority"], "type" : "gauge" },
 

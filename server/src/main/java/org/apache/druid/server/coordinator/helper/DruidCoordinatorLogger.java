@@ -35,7 +35,9 @@ import org.apache.druid.server.coordinator.ServerHolder;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.partition.PartitionChunk;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -277,7 +279,22 @@ public class DruidCoordinatorLogger implements DruidCoordinatorHelper
     allSegments
         .collect(Collectors.groupingBy(DataSegment::getDataSource))
         .forEach((final String name, final List<DataSegment> segments) -> {
-          final long size = segments.stream().mapToLong(DataSegment::getSize).sum();
+          long size = 0;
+          Map<String, Long> lastSegmentTimeMap = new HashMap<>();
+          for (DataSegment segment : segments) {
+            size += segment.getSize();
+            long end = segment.getInterval().getEndMillis() / 1000;
+            lastSegmentTimeMap.compute(
+                getNamespace(segment.getShardSpec().getIdentifier()),
+                (k, v) -> v == null ? end : Math.max(v, end)
+            );
+          }
+          lastSegmentTimeMap.entrySet().forEach(e ->
+              emitter.emit(
+                  new ServiceMetricEvent.Builder()
+                      .setDimension(DruidMetrics.DATASOURCE, name)
+                      .setDimension(DruidMetrics.NAMESPACE, e.getKey())
+                      .build("segment/lastIntervalTimestamp", e.getValue())));
           emitter.emit(
               new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE, name).build("segment/size", size)
           );
@@ -289,5 +306,18 @@ public class DruidCoordinatorLogger implements DruidCoordinatorHelper
         });
 
     return params;
+  }
+
+  public static String getNamespace(Object identifier)
+  {
+    if (identifier == null) {
+      return "";
+    }
+    String identifierStr = identifier.toString();
+    int index = identifierStr.indexOf('_');
+    if (index <= 0) {
+      return "";
+    }
+    return identifierStr.substring(0, index);
   }
 }

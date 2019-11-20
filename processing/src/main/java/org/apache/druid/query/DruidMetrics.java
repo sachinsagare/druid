@@ -41,6 +41,8 @@ public class DruidMetrics
   public static final String SERVER = "server";
   public static final String TIER = "tier";
 
+  public static final String NAMESPACE = "namespace";
+
   public static int findNumComplexAggs(List<AggregatorFactory> aggs)
   {
     int retVal = 0;
