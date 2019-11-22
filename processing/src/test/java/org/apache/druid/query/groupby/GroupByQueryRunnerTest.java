@@ -10394,6 +10394,29 @@ public class GroupByQueryRunnerTest
   }
 
   @Test
+  public void testIgnoreForceLimitPushDownValidation()
+  {
+    // No exception should be thrown if we skip forceLimitPushDown validation
+    GroupByQuery
+        .builder()
+        .setDataSource(QueryRunnerTestHelper.dataSource)
+        .setGranularity(QueryRunnerTestHelper.allGran)
+        .setDimensions(new DefaultDimensionSpec(QueryRunnerTestHelper.marketDimension, "marketalias"))
+        .setInterval(QueryRunnerTestHelper.fullOnIntervalSpec)
+        .setLimitSpec(
+            new DefaultLimitSpec(
+                Collections.singletonList(new OrderByColumnSpec("marketalias", OrderByColumnSpec.Direction.DESCENDING)),
+                2
+            )
+        )
+        .setAggregatorSpecs(QueryRunnerTestHelper.rowsCount)
+        .setContext(ImmutableMap.of(GroupByQueryConfig.CTX_KEY_FORCE_LIMIT_PUSH_DOWN, true))
+        .setContext(ImmutableMap.of(GroupByQueryConfig.CTX_KEY_IGNORE_FORCE_LIMIT_PUSH_DOWN_VALIDATION, true))
+        .setHavingSpec(new GreaterThanHavingSpec("rows", 10))
+        .build();
+  }
+
+  @Test
   public void testTypeConversionWithMergingChainedExecutionRunner()
   {
     // Cannot vectorize due to extraction dimension spec.

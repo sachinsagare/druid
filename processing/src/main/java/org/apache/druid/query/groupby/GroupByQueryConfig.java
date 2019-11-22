@@ -28,6 +28,12 @@ public class GroupByQueryConfig
 {
   public static final String CTX_KEY_STRATEGY = "groupByStrategy";
   public static final String CTX_KEY_FORCE_LIMIT_PUSH_DOWN = "forceLimitPushDown";
+  // Use this flag with caution and only when you know the query pattern.
+  // The flag is to bypass the bug that certain group by queries can work with "forceLimitPushDown"
+  // flag when directly specified in JSON query but fails when going through SQL planning even if
+  // the generated JSON query is the same.
+  // Remove this flag after fixing the SQL planning bug.
+  public static final String CTX_KEY_IGNORE_FORCE_LIMIT_PUSH_DOWN_VALIDATION = "ignoreForceLimitPushDownValidation";
   public static final String CTX_KEY_APPLY_LIMIT_PUSH_DOWN = "applyLimitPushDown";
   public static final String CTX_KEY_FORCE_PUSH_DOWN_NESTED_QUERY = "forcePushDownNestedQuery";
   public static final String CTX_KEY_EXECUTING_NESTED_QUERY = "executingNestedQuery";
@@ -77,6 +83,9 @@ public class GroupByQueryConfig
 
   @JsonProperty
   private boolean forcePushDownLimit = false;
+
+  @JsonProperty
+  private boolean ignoreForcePushDownLimitValidation = false;
 
   @JsonProperty
   private boolean forcePushDownNestedQuery = false;
@@ -158,6 +167,11 @@ public class GroupByQueryConfig
     return forcePushDownLimit;
   }
 
+  public boolean isIgnoreForcePushDownLimitValidation()
+  {
+    return ignoreForcePushDownLimitValidation;
+  }
+
   public boolean isForceHashAggregation()
   {
     return forceHashAggregation;
@@ -220,6 +234,7 @@ public class GroupByQueryConfig
         getMaxMergingDictionarySize()
     );
     newConfig.forcePushDownLimit = query.getContextBoolean(CTX_KEY_FORCE_LIMIT_PUSH_DOWN, isForcePushDownLimit());
+    newConfig.ignoreForcePushDownLimitValidation = query.getContextBoolean(CTX_KEY_IGNORE_FORCE_LIMIT_PUSH_DOWN_VALIDATION, isIgnoreForcePushDownLimitValidation());
     newConfig.forceHashAggregation = query.getContextBoolean(CTX_KEY_FORCE_HASH_AGGREGATION, isForceHashAggregation());
     newConfig.forcePushDownNestedQuery = query.getContextBoolean(CTX_KEY_FORCE_PUSH_DOWN_NESTED_QUERY, isForcePushDownNestedQuery());
     newConfig.intermediateCombineDegree = query.getContextValue(
@@ -248,6 +263,7 @@ public class GroupByQueryConfig
            ", maxMergingDictionarySize=" + maxMergingDictionarySize +
            ", maxOnDiskStorage=" + maxOnDiskStorage +
            ", forcePushDownLimit=" + forcePushDownLimit +
+           ", ignoreForcePushDownLimitValidation=" + ignoreForcePushDownLimitValidation +
            ", forceHashAggregation=" + forceHashAggregation +
            ", intermediateCombineDegree=" + intermediateCombineDegree +
            ", numParallelCombineThreads=" + numParallelCombineThreads +
