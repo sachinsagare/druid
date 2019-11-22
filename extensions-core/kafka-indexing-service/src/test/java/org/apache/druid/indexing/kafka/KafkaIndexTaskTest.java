@@ -230,6 +230,7 @@ public class KafkaIndexTaskTest
   private Integer maxRowsPerSegment = null;
   private Long maxTotalRows = null;
   private Period intermediateHandoffPeriod = null;
+  private boolean ignoreOutOfOrderSequenceNumber = false;
 
   private AppenderatorsManager appenderatorsManager;
   private TaskToolboxFactory toolboxFactory;
@@ -2506,7 +2507,8 @@ public class KafkaIndexTaskTest
         intermediateHandoffPeriod,
         logParseExceptions,
         maxParseExceptions,
-        maxSavedParseExceptions
+        maxSavedParseExceptions,
+        ignoreOutOfOrderSequenceNumber
     );
     if (!context.containsKey(SeekableStreamSupervisor.CHECKPOINTS_CTX_KEY)) {
       final TreeMap<Integer, Map<Integer, Long>> checkpoints = new TreeMap<>();

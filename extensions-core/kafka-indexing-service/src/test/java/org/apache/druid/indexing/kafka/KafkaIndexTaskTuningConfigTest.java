@@ -139,6 +139,7 @@ public class KafkaIndexTaskTuningConfigTest
         null,
         null,
         null,
+        null,
         null
     );
     KafkaIndexTaskTuningConfig copy = (KafkaIndexTaskTuningConfig) original.convertToTaskTuningConfig();
@@ -271,7 +272,8 @@ public class KafkaIndexTaskTuningConfigTest
         config.getIntermediateHandoffPeriod(),
         config.isLogParseExceptions(),
         config.getMaxParseExceptions(),
-        config.getMaxSavedParseExceptions()
+        config.getMaxSavedParseExceptions(),
+        config.isIgnoreOutOfOrderSequenceNumber()
     );
   }
 }

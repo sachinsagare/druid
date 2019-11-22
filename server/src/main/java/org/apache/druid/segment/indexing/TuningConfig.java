@@ -39,4 +39,5 @@ public interface TuningConfig
   // tracks active index and not the index being flushed to disk, to account for that
   // we halved default to 1/6(max jvm memory)
   long DEFAULT_MAX_BYTES_IN_MEMORY = JvmUtils.getRuntimeInfo().getMaxHeapSizeBytes() / 6;
+  boolean DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER = false;
 }
