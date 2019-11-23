@@ -112,6 +112,7 @@ public class SelectQueryQueryToolChest extends QueryToolChest<Result<SelectResul
   public Comparator<Result<SelectResultValue>> createResultComparator(Query<Result<SelectResultValue>> query)
   {
     return ResultGranularTimestampComparator.create(query.getGranularity(), query.isDescending());
+
   }
 
   @Override

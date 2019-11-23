@@ -72,6 +72,7 @@ import org.apache.druid.java.util.common.guava.nary.TrinaryFn;
 import org.apache.druid.java.util.common.io.Closer;
 import org.apache.druid.query.BySegmentResultValueClass;
 import org.apache.druid.query.DataSource;
+import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.Druids;
 import org.apache.druid.query.FinalizeResultsQueryRunner;
 import org.apache.druid.query.Query;
@@ -163,6 +164,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  *
@@ -1572,16 +1574,13 @@ public class CachingClusteredClientTest
               .bound(TimeBoundaryQuery.MAX_TIME)
               .build(),
         Intervals.of("2011-01-01/2011-01-02"),
-        makeTimeBoundaryResult(DateTimes.of("2011-01-01"), null, DateTimes.of("2011-01-02")),
+        makeTimeBoundaryResult(DateTimes.of("2011-01-02"), null, DateTimes.of("2011-01-02")),
 
         Intervals.of("2011-01-01/2011-01-03"),
-        makeTimeBoundaryResult(DateTimes.of("2011-01-02"), null, DateTimes.of("2011-01-03")),
+        makeTimeBoundaryResult(DateTimes.of("2011-01-03"), null, DateTimes.of("2011-01-03")),
 
         Intervals.of("2011-01-01/2011-01-10"),
-        makeTimeBoundaryResult(DateTimes.of("2011-01-05"), null, DateTimes.of("2011-01-10")),
-
-        Intervals.of("2011-01-01/2011-01-10"),
-        makeTimeBoundaryResult(DateTimes.of("2011-01-05T01"), null, DateTimes.of("2011-01-10"))
+        makeTimeBoundaryResult(DateTimes.of("2011-01-10"), null, DateTimes.of("2011-01-10"))
     );
 
     testQueryCaching(
@@ -1785,19 +1784,19 @@ public class CachingClusteredClientTest
     if (minTime != null && maxTime != null) {
       value = ImmutableMap.of(
           TimeBoundaryQuery.MIN_TIME,
-          minTime.toString(),
+          minTime,
           TimeBoundaryQuery.MAX_TIME,
-          maxTime.toString()
+          maxTime
       );
     } else if (maxTime != null) {
       value = ImmutableMap.of(
           TimeBoundaryQuery.MAX_TIME,
-          maxTime.toString()
+          maxTime
       );
     } else {
       value = ImmutableMap.of(
           TimeBoundaryQuery.MIN_TIME,
-          minTime.toString()
+          minTime
       );
     }
 
@@ -2762,7 +2761,16 @@ public class CachingClusteredClientTest
           {
             return 0L;
           }
-        }
+        },
+        new DruidProcessingConfig()
+        {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        },
+        ForkJoinPool.commonPool()
     );
   }
 
@@ -3045,16 +3053,13 @@ public class CachingClusteredClientTest
               .bound(TimeBoundaryQuery.MAX_TIME)
               .build(),
         Intervals.of("1970-01-01/2011-01-02"),
-        makeTimeBoundaryResult(DateTimes.of("1970-01-01"), null, DateTimes.of("1970-01-02")),
+        makeTimeBoundaryResult(DateTimes.of("1970-01-02"), null, DateTimes.of("1970-01-02")),
 
         Intervals.of("1970-01-01/2011-01-03"),
-        makeTimeBoundaryResult(DateTimes.of("1970-01-02"), null, DateTimes.of("1970-01-03")),
+        makeTimeBoundaryResult(DateTimes.of("1970-01-03"), null, DateTimes.of("1970-01-03")),
 
         Intervals.of("1970-01-01/2011-01-10"),
-        makeTimeBoundaryResult(DateTimes.of("1970-01-05"), null, DateTimes.of("1970-01-10")),
-
-        Intervals.of("1970-01-01/2011-01-10"),
-        makeTimeBoundaryResult(DateTimes.of("1970-01-05T01"), null, DateTimes.of("1970-01-10"))
+        makeTimeBoundaryResult(DateTimes.of("1970-01-10"), null, DateTimes.of("1970-01-10"))
     );
 
     testQueryCaching(

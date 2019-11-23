@@ -24,6 +24,8 @@ import org.apache.druid.guice.annotations.PublicApi;
 import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.query.context.ResponseContext;
 
+import com.google.common.base.Preconditions;
+
 import java.util.Comparator;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -43,6 +45,8 @@ public class ResultMergeQueryRunner<T> extends BySegmentSkippingQueryRunner<T>
   )
   {
     super(baseRunner);
+    Preconditions.checkNotNull(comparatorGenerator);
+    Preconditions.checkNotNull(mergeFnGenerator);
     this.comparatorGenerator = comparatorGenerator;
     this.mergeFnGenerator = mergeFnGenerator;
   }
