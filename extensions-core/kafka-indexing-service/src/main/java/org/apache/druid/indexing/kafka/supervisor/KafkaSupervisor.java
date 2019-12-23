@@ -138,7 +138,7 @@ public class KafkaSupervisor extends SeekableStreamSupervisor<Integer, Long>
     KafkaSupervisorIOConfig ioConfig = spec.getIoConfig();
     KafkaSupervisorTuningConfig tuningConfig = spec.getTuningConfig();
     reportingExec.scheduleAtFixedRate(
-        updateCurrentAndLatestOffsets(),
+        updateCurrentAndLatestOffsetsAndTimestampGaps(),
         ioConfig.getStartDelay().getMillis() + INITIAL_GET_OFFSET_DELAY_MILLIS, // wait for tasks to start up
         Math.max(
             tuningConfig.getOffsetFetchPeriod().getMillis(), MINIMUM_GET_OFFSET_PERIOD_MILLIS
@@ -335,6 +335,26 @@ public class KafkaSupervisor extends SeekableStreamSupervisor<Integer, Long>
         );
         emitter.emit(
             ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/avgLag", avgLag)
+        );
+
+        Map<Integer, Long> partionTimeLags = getTimeLagPerPartition();
+        long maxTimeLag = 0, totalTimeLag = 0, avgTimeLag;
+        for (long lag : partionTimeLags.values()) {
+          if (lag > maxTimeLag) {
+            maxTimeLag = lag;
+          }
+          totalTimeLag += lag;
+        }
+        avgTimeLag = partitionLags.size() == 0 ? 0 : totalTimeLag / partionTimeLags.size();
+
+        emitter.emit(
+            ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/timeLag", totalTimeLag)
+        );
+        emitter.emit(
+            ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/maxTimeLag", maxTimeLag)
+        );
+        emitter.emit(
+            ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/avgTimeLag", avgTimeLag)
         );
       }
       catch (Exception e) {

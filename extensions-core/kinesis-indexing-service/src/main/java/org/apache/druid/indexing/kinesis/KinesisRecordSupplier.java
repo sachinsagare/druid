@@ -175,6 +175,7 @@ public class KinesisRecordSupplier implements RecordSupplier<String, String>
                 streamPartition.getStream(),
                 streamPartition.getPartitionId(),
                 KinesisSequenceNumber.END_OF_SHARD_MARKER,
+                0,
                 null
             );
 
@@ -218,15 +219,17 @@ public class KinesisRecordSupplier implements RecordSupplier<String, String>
                 streamPartition.getStream(),
                 streamPartition.getPartitionId(),
                 kinesisRecord.getSequenceNumber(),
+                kinesisRecord.getApproximateArrivalTimestamp().getTime(),
                 data
             );
 
 
             log.trace(
-                "Stream[%s] / partition[%s] / sequenceNum[%s] / bufferRemainingCapacity[%d]: %s",
+                "Stream[%s] / partition[%s] / sequenceNum[%s] / sequenceTimestamp[%d] / bufferRemainingCapacity[%d]: %s",
                 currRecord.getStream(),
                 currRecord.getPartitionId(),
                 currRecord.getSequenceNumber(),
+                currRecord.getSequenceTimestamp(),
                 records.remainingCapacity(),
                 currRecord.getData().stream().map(StringUtils::fromUtf8).collect(Collectors.toList())
             );

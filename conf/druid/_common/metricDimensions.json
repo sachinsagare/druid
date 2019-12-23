@@ -120,5 +120,8 @@
 
   "ingest/kafka/lag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
   "ingest/kafka/maxLag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
-  "ingest/kafka/avgLag" : { "dimensions" : ["dataSource"], "type" : "gauge" }
+  "ingest/kafka/avgLag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/kafka/timeLag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/kafka/maxTimeLag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/kafka/avgTimeLag" : { "dimensions" : ["dataSource"], "type" : "gauge" }
 }

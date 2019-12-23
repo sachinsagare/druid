@@ -225,6 +225,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
     volatile TaskStatus status;
     volatile DateTime startTime;
     volatile Map<PartitionIdType, SequenceOffsetType> currentSequences = new HashMap<>();
+    volatile Map<PartitionIdType, Long> timestampGaps = new HashMap<>();
 
     @Override
     public String toString()
@@ -233,6 +234,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
              "status=" + status +
              ", startTime=" + startTime +
              ", checkpointSequences=" + currentSequences +
+             ", timestampGaps=" + timestampGaps +
              '}';
     }
   }
@@ -2664,12 +2666,13 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
   }
 
   @VisibleForTesting
-  public Runnable updateCurrentAndLatestOffsets()
+  public Runnable updateCurrentAndLatestOffsetsAndTimestampGaps()
   {
     return () -> {
       try {
         updateCurrentOffsets();
         updateLatestOffsetsFromStream();
+        updateTimestampGaps();
         sequenceLastUpdated = DateTimes.nowUtc();
       }
       catch (Exception e) {
@@ -2693,6 +2696,31 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
 
               if (currentSequences != null && !currentSequences.isEmpty()) {
                 task.getValue().currentSequences = currentSequences;
+              }
+
+              return null;
+            }
+        )
+    ).collect(Collectors.toList());
+
+    Futures.successfulAsList(futures).get(futureTimeoutInSeconds, TimeUnit.SECONDS);
+  }
+
+  private void updateTimestampGaps() throws InterruptedException, ExecutionException, TimeoutException
+  {
+    final List<ListenableFuture<Void>> futures = Stream.concat(
+        activelyReadingTaskGroups.values().stream().flatMap(taskGroup -> taskGroup.tasks.entrySet().stream()),
+        pendingCompletionTaskGroups.values()
+            .stream()
+            .flatMap(List::stream)
+            .flatMap(taskGroup -> taskGroup.tasks.entrySet().stream())
+    ).map(
+        task -> Futures.transform(
+            taskClient.getAndClearTimestampGapsAsync(task.getKey(), false),
+            (Function<Map<PartitionIdType, Long>, Void>) (timestampGaps) -> {
+
+              if (timestampGaps != null && !timestampGaps.isEmpty()) {
+                task.getValue().timestampGaps = timestampGaps;
               }
 
               return null;
@@ -2743,6 +2771,20 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
             Entry::getKey,
             Entry::getValue,
             (v1, v2) -> makeSequenceNumber(v1).compareTo(makeSequenceNumber(v2)) > 0 ? v1 : v2
+        ));
+  }
+
+  protected Map<PartitionIdType, Long> getTimeLagPerPartition()
+  {
+    return activelyReadingTaskGroups
+        .values()
+        .stream()
+        .flatMap(taskGroup -> taskGroup.tasks.entrySet().stream())
+        .flatMap(taskData -> taskData.getValue().timestampGaps.entrySet().stream())
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            Entry::getValue,
+            (v1, v2) -> v1.compareTo(v2) > 0 ? v1 : v2
         ));
   }
 

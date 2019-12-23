@@ -122,6 +122,7 @@ public class KafkaRecordSupplierTest
           topic,
           r.partition(),
           offset,
+          0,
           r.value() == null ? null : Collections.singletonList(r.value())
       );
     }).collect(Collectors.toList());

@@ -1256,6 +1256,8 @@ public class KafkaSupervisorTest extends EasyMockSupport
             .andReturn(Futures.immediateFuture(ImmutableMap.of(0, 10L, 1, 20L, 2, 30L)));
     EasyMock.expect(taskClient.getEndOffsets("id1")).andReturn(ImmutableMap.of(0, 10L, 1, 20L, 2, 30L));
     EasyMock.expect(taskQueue.add(EasyMock.capture(captured))).andReturn(true);
+    EasyMock.expect(taskClient.getAndClearTimestampGapsAsync("id1", false))
+        .andReturn(Futures.immediateFuture((Map<Integer, Long>) ImmutableMap.of(0, 1L, 1, 3L, 2, 2L)));
 
     TreeMap<Integer, Map<Integer, Long>> checkpoints = new TreeMap<>();
     checkpoints.put(0, ImmutableMap.of(0, 0L, 1, 0L, 2, 0L));
@@ -1268,7 +1270,7 @@ public class KafkaSupervisorTest extends EasyMockSupport
 
     supervisor.start();
     supervisor.runInternal();
-    supervisor.updateCurrentAndLatestOffsets().run();
+    supervisor.updateCurrentAndLatestOffsetsAndTimestampGaps().run();
     SupervisorReport<KafkaSupervisorReportPayload> report = supervisor.getStatus();
     verifyAll();
 
@@ -1372,13 +1374,15 @@ public class KafkaSupervisorTest extends EasyMockSupport
             .andReturn(Futures.immediateFuture(ImmutableMap.of(0, 10L, 2, 30L)));
     EasyMock.expect(taskClient.getEndOffsets("id1")).andReturn(ImmutableMap.of(0, 10L, 2, 30L));
     EasyMock.expect(taskQueue.add(EasyMock.capture(captured))).andReturn(true);
+    EasyMock.expect(taskClient.getAndClearTimestampGapsAsync("id1", false))
+        .andReturn(Futures.immediateFuture((Map<Integer, Long>) ImmutableMap.of(0, 1L, 1, 3L, 2, 2L)));
 
     taskRunner.registerListener(EasyMock.anyObject(TaskRunnerListener.class), EasyMock.anyObject(Executor.class));
     replayAll();
 
     supervisor.start();
     supervisor.runInternal();
-    supervisor.updateCurrentAndLatestOffsets().run();
+    supervisor.updateCurrentAndLatestOffsetsAndTimestampGaps().run();
     SupervisorReport<KafkaSupervisorReportPayload> report = supervisor.getStatus();
     verifyAll();
 
@@ -1506,6 +1510,10 @@ public class KafkaSupervisorTest extends EasyMockSupport
     EasyMock.expect(taskClient.getEndOffsets("id1")).andReturn(ImmutableMap.of(0, 1L, 1, 2L, 2, 3L));
     EasyMock.expect(taskClient.getCurrentOffsetsAsync("id2", false))
             .andReturn(Futures.immediateFuture(ImmutableMap.of(0, 4L, 1, 5L, 2, 6L)));
+    EasyMock.expect(taskClient.getAndClearTimestampGapsAsync("id1", false))
+        .andReturn(Futures.immediateFuture((Map<Integer, Long>) ImmutableMap.of(0, 1L, 1, 3L, 2, 2L)));
+    EasyMock.expect(taskClient.getAndClearTimestampGapsAsync("id2", false))
+        .andReturn(Futures.immediateFuture((Map<Integer, Long>) ImmutableMap.of(0, 1L, 1, 3L, 2, 2L)));
 
     taskRunner.registerListener(EasyMock.anyObject(TaskRunnerListener.class), EasyMock.anyObject(Executor.class));
 
@@ -1520,7 +1528,7 @@ public class KafkaSupervisorTest extends EasyMockSupport
 
     supervisor.start();
     supervisor.runInternal();
-    supervisor.updateCurrentAndLatestOffsets().run();
+    supervisor.updateCurrentAndLatestOffsetsAndTimestampGaps().run();
     SupervisorReport<KafkaSupervisorReportPayload> report = supervisor.getStatus();
     verifyAll();
 
@@ -3080,6 +3088,7 @@ public class KafkaSupervisorTest extends EasyMockSupport
             TEST_CHAT_RETRIES,
             TEST_HTTP_TIMEOUT,
             TEST_SHUTDOWN_TIMEOUT,
+            null,
             null,
             null,
             null,
