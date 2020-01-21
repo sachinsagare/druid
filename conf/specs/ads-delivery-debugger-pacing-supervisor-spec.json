@@ -1,48 +1,5 @@
 {
   "type": "kafka",
-  "dataSchema": {
-    "dataSource": "ad_delivery_history_pacing",
-    "granularitySpec": {
-      "type": "uniform",
-      "segmentGranularity": "HOUR",
-      "queryGranularity": "MINUTE",
-      "rollup": true
-    },
-    "parser": {
-      "type": "string",
-      "parseSpec": {
-        "format": "json",
-        "timestampSpec": {
-          "column": "timestampMs",
-          "format": "millis"
-        },
-        "dimensionsSpec": {
-          "dimensions": [
-            "segment",
-            "source",
-            "entityID"
-          ]
-        }
-      }
-    },
-    "metricsSpec": [
-      {
-        "name": "currentSpend",
-        "type": "doubleLast",
-        "fieldName": "currentSpend"
-      },
-      {
-        "name": "targetSpend",
-        "type": "doubleLast",
-        "fieldName": "targetSpend"
-      },
-      {
-        "name": "pacingScore",
-        "type": "doubleLast",
-        "fieldName": "pacingScore"
-      }
-    ]
-  },
   "ioConfig": {
     "type": "kafka",
     "consumerProperties": {
@@ -56,5 +13,43 @@
     "type": "kafka",
     "maxRowsPerSegment": 15000000,
     "resetOffsetAutomatically": true
+  },
+  "dataSchema": {
+    "dataSource": "ad_delivery_history_pacing",
+    "granularitySpec": {
+      "type": "uniform",
+      "segmentGranularity": "HOUR",
+      "queryGranularity": "MINUTE",
+      "rollup": false
+    },
+    "parser": {
+      "type": "string",
+      "parseSpec": {
+        "format": "json",
+        "timestampSpec": {
+          "column": "timestampMs",
+          "format": "millis"
+        },
+        "dimensionsSpec": {
+          "dimensions": [
+            "segment",
+            "source",
+            "entityID",
+            {
+              "name": "currentSpend",
+              "type": "float"
+            },
+            {
+              "name": "targetSpend",
+              "type": "float"
+            },
+            {
+              "name": "pacingScore",
+              "type": "float"
+            }
+          ]
+        }
+      }
+    }
   }
 }
