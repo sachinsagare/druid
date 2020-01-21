@@ -1,0 +1,63 @@
+{
+  "type": "kafka",
+  "dataSchema": {
+    "dataSource": "ad_delivery_history_pacing",
+    "granularitySpec": {
+      "type": "uniform",
+      "segmentGranularity": "HOUR",
+      "queryGranularity": "MINUTE",
+      "rollup": true
+    },
+    "parser": {
+      "type": "string",
+      "parseSpec": {
+        "format": "json",
+        "timestampSpec": {
+          "column": "timestampMs",
+          "format": "millis"
+        },
+        "dimensionsSpec": {
+          "dimensions": [
+            "segment",
+            "source",
+            {
+              "name": "entityID",
+              "type": "long"
+            }
+          ]
+        }
+      }
+    },
+    "metricsSpec": [
+      {
+        "name": "currentSpend",
+        "type": "doubleLast",
+        "fieldName": "currentSpend"
+      },
+      {
+        "name": "targetSpend",
+        "type": "doubleLast",
+        "fieldName": "targetSpend"
+      },
+      {
+        "name": "pacingScore",
+        "type": "doubleLast",
+        "fieldName": "pacingScore"
+      }
+    ]
+  },
+  "ioConfig": {
+    "type": "kafka",
+    "consumerProperties": {
+      "bootstrap.servers": "m10nkafka02160:9092,m10nkafka02159:9092,m10nkafka02158:9092,m10nkafka02157:9092,m10nkafka02156:9092,m10nkafka02155:9092,m10nkafka02154:9092,m10nkafka02153:9092,m10nkafka02152:9092,m10nkafka02151:9092"
+    },
+    "topic": "delivery_debugger_pacing",
+    "useEarliestOffset": true,
+    "taskCount": 5
+  },
+  "tuningConfig": {
+    "type": "kafka",
+    "maxRowsPerSegment": 15000000,
+    "resetOffsetAutomatically": true
+  }
+}
