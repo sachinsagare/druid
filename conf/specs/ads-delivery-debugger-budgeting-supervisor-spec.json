@@ -42,7 +42,7 @@
               "type": "long",
               "name": "entityID"
             },
-            "source",
+            "service",
             {
               "name": "effectiveDailyBudget",
               "type": "float"
