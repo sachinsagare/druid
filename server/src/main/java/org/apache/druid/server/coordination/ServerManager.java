@@ -251,6 +251,7 @@ public class ServerManager implements QuerySegmentWalker
               {
 
                 final PartitionHolder<ReferenceCountingSegment> entry = timeline.findEntry(
+                    NamespacedVersionedIntervalTimeline.getNamespace(input.getPartitionIdentifier()),
                     input.getInterval(), input.getVersion()
                 );
 
