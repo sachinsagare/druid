@@ -2,14 +2,17 @@
 # Adapted from optimus/package/scripts/release.sh
 set -e
 
-$(aws ecr get-login --no-include-email --region us-east-1)
+# At some point this won't work locally and we'll have to install ecr-credential-helper, which already exists on devapp.
+if [[ $(hostname) != "dev-"* ]]; then
+    $(aws ecr get-login --no-include-email --region us-east-1)
+fi
 
 additional_mvn_args=""
 if [ "$1" = "--distribution-only" ]; then
     additional_mvn_args="$additional_mvn_args -pl distribution"
 fi
 
-mvn clean install -Dreduced-build -Pbundle-contrib-pinterest,dist -Ddocker.build -Dcheckstyle.skip -DskipTests ${additional_mvn_args}
+mvn clean install -Dreduced-build -Pbundle-contrib-pinterest,dist -Ddocker.build -Dforbiddenapis.skip -Dcheckstyle.skip -Dmaven.test.skip ${additional_mvn_args}
 
 IMAGE_ID=$(docker images 998131032990.dkr.ecr.us-east-1.amazonaws.com/druid:latest --format="{{.ID}}")
 
@@ -35,8 +38,13 @@ fi
 
 # Add registry explicitly to all teletraan files
 cp -r ./teletraan /tmp/
-find /tmp/teletraan/ -name "serviceset*" -type f -exec sed -i '' 's/image: druid/image: druid\
+if [[ $OSTYPE == "darwin"* ]]; then
+    find /tmp/teletraan/ -name "serviceset*" -type f -exec sed -i '' 's/image: druid/image: druid\
         registry: pinregistry.pinadmin.com/g' {} +
+else
+    find /tmp/teletraan/ -name "serviceset*" -type f -exec sed -i 's/image: druid/image: druid\
+        registry: pinregistry.pinadmin.com/g' {} +
+fi
 
 tar czvf "druid-${IMAGE_SHORT}.tar.gz" -C /tmp teletraan/
 
