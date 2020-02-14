@@ -1,0 +1,61 @@
+{
+  "type": "kafka",
+  "ioConfig": {
+    "type": "kafka",
+    "consumerProperties": {
+      "bootstrap.servers": "m10nkafka02160:9092,m10nkafka02159:9092,m10nkafka02158:9092,m10nkafka02157:9092,m10nkafka02156:9092,m10nkafka02155:9092,m10nkafka02154:9092,m10nkafka02153:9092,m10nkafka02152:9092,m10nkafka02151:9092"
+    },
+    "topic": "delivery_debugger_lcb",
+    "useEarliestOffset": true,
+    "taskCount": 5
+  },
+  "tuningConfig": {
+    "type": "kafka",
+    "resetOffsetAutomatically": true
+  },
+  "dataSchema": {
+    "dataSource": "ad_delivery_history_lcb",
+    "granularitySpec": {
+      "type": "uniform",
+      "segmentGranularity": "HOUR",
+      "queryGranularity": "MINUTE",
+      "rollup": false
+    },
+    "parser": {
+      "type": "string",
+      "parseSpec": {
+        "format": "json",
+        "timestampSpec": {
+          "column": "timestampMs",
+          "format": "millis"
+        },
+        "dimensionsSpec": {
+          "dimensions": [
+            {
+              "type": "long",
+              "name": "currentSpend"
+            },
+            {
+              "type": "float",
+              "name": "discountScore"
+            },
+            {
+              "type": "long",
+              "name": "entityID"
+            },
+            {
+              "type": "float",
+              "name": "previousDiscountScore"
+            },
+            "segment",
+            "source",
+            {
+              "type": "long",
+              "name": "targetSpend"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
