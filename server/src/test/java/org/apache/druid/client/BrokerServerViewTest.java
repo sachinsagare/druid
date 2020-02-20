@@ -45,6 +45,7 @@ import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.server.initialization.ZkPathsConfig;
 import org.apache.druid.server.metrics.NoopServiceEmitter;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineLookup;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.partition.NoneShardSpec;
@@ -114,7 +115,7 @@ public class BrokerServerViewTest extends CuratorTestBase
     Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
     Assert.assertTrue(timing.forWaiting().awaitLatch(segmentAddedLatch));
 
-    TimelineLookup timeline = brokerServerView.getTimeline(new TableDataSource("test_broker_server_view"));
+    NamespacedVersionedIntervalTimeline timeline = brokerServerView.getTimeline(new TableDataSource("test_broker_server_view"));
     List<TimelineObjectHolder> serverLookupRes = (List<TimelineObjectHolder>) timeline.lookup(
         Intervals.of(
             "2014-10-20T00:00:00Z/P1D"
@@ -142,7 +143,7 @@ public class BrokerServerViewTest extends CuratorTestBase
         0,
         ((List<TimelineObjectHolder>) timeline.lookup(Intervals.of("2014-10-20T00:00:00Z/P1D"))).size()
     );
-    Assert.assertNull(timeline.findEntry(Intervals.of("2014-10-20T00:00:00Z/P1D"), "v1"));
+    Assert.assertNull(timeline.findEntry(null, Intervals.of("2014-10-20T00:00:00Z/P1D"), "v1"));
   }
 
   @Test

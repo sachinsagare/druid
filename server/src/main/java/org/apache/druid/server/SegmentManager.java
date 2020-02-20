@@ -170,6 +170,7 @@ public class SegmentManager
           final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
               dataSourceState.getTimeline();
           final PartitionHolder<ReferenceCountingSegment> entry = loadedIntervals.findEntry(
+              NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
               segment.getInterval(),
               segment.getVersion()
           );

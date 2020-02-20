@@ -37,6 +37,8 @@ import org.apache.druid.java.util.common.granularity.Granularity;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
 import org.joda.time.DateTime;
@@ -283,6 +285,14 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
       boolean logOnFail
   )
   {
+    final String nameSpace = task.getContextValue("nameSpace");
+    final ShardSpecFactory effectiveShardSpecFactory;
+    if (shardSpecFactory.getShardSpecClass() == NumberedShardSpec.class && nameSpace != null) {
+      effectiveShardSpecFactory = new NamedNumberedShardSpecFactory(nameSpace);
+    } else {
+      effectiveShardSpecFactory = shardSpecFactory;
+    }
+
     // This action is always used by appending tasks, which cannot change the segment granularity of existing
     // dataSources. So, all lock requests should be segmentLock.
     final LockResult lockResult = toolbox.getTaskLockbox().tryLock(
@@ -293,11 +303,12 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
             task.getGroupId(),
             dataSource,
             tryInterval,
-            shardSpecFactory,
+            effectiveShardSpecFactory,
             task.getPriority(),
             sequenceName,
             previousSegmentId,
-            skipSegmentLineageCheck
+            skipSegmentLineageCheck,
+            nameSpace
         )
     );
 

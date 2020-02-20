@@ -182,6 +182,8 @@ public class SinkQuerySegmentWalker implements QuerySegmentWalker
         specs,
         descriptor -> {
           final PartitionHolder<Sink> holder = sinkTimeline.findEntry(
+              NamespacedVersionedIntervalTimeline.getNamespace(
+                  descriptor.getPartitionIdentifier()),
               descriptor.getInterval(),
               descriptor.getVersion()
           );

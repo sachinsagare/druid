@@ -33,6 +33,7 @@ import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
 import org.joda.time.Interval;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -131,8 +132,8 @@ public class TestIndexerMetadataStorageCoordinator implements IndexerMetadataSto
       Interval interval,
       ShardSpecFactory shardSpecFactory,
       String maxVersion,
-      boolean skipSegmentLineageCheck
-  )
+      boolean skipSegmentLineageCheck,
+      @Nullable String nameSpace)
   {
     return new SegmentIdWithShardSpec(
         dataSource,

@@ -27,6 +27,7 @@ import org.apache.druid.timeline.partition.PartitionHolder;
 import org.apache.druid.utils.CollectionUtils;
 import org.joda.time.Interval;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -180,10 +181,10 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
   @Override
   public PartitionHolder<ObjectType> findEntry(Interval interval, VersionType version)
   {
-    return findEntry(null, interval, version);
+    throw new UnsupportedOperationException("Non-namespaced findEntry not supported in a namespaced timeline");
   }
 
-  public PartitionHolder<ObjectType> findEntry(String namespace, Interval interval, VersionType version)
+  public PartitionHolder<ObjectType> findEntry(@Nullable String namespace, Interval interval, VersionType version)
   {
     try {
       lock.readLock().lock();

@@ -991,7 +991,8 @@ public class TaskLockboxTest
           shardSpecFactory,
           StringUtils.format("%s_%d", baseSequenceName, i),
           null,
-          true
+          true,
+          null
       );
       assertAllocatedSegments(request, lockbox.tryLock(task, request));
     }

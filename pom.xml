@@ -178,7 +178,6 @@
         <module>extensions-contrib/moving-average-query</module>
         <module>extensions-contrib/tdigestsketch</module>
         <module>extensions-contrib/influxdb-emitter</module>
-        <module>extensions-contrib/name-numbered-shard-spec</module>
         <module>extensions-contrib/knox-password-provider</module>
         <module>extensions-contrib/hash-name-numbered-shard-spec</module>
         <!--<module>extensions-contrib/collectset</module>-->
