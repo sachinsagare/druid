@@ -87,7 +87,8 @@ public class CoordinatorResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response getLoadStatus(
       @QueryParam("simple") String simple,
-      @QueryParam("full") String full
+      @QueryParam("full") String full,
+      @QueryParam("unloaded") String unloaded
   )
   {
     if (simple != null) {
@@ -97,6 +98,11 @@ public class CoordinatorResource
     if (full != null) {
       return Response.ok(coordinator.computeUnderReplicationCountsPerDataSourcePerTier()).build();
     }
+
+    if (unloaded != null) {
+      return Response.ok(coordinator.getUnloadedStatus()).build();
+    }
+
     return Response.ok(coordinator.getLoadStatus()).build();
   }
 
