@@ -3,6 +3,8 @@
 # Deployd logs don't have timestamps, so make each execution a little easier to track
 echo "$(date '+%Y-%m-%d %H:%M:%S')"
 
+# Copy the config that contains the druid host health check tcollector module
+cp /mnt/${ENV_NAME}/teletraan/${ENV_NAME}/conf/tcollector.conf /etc/tcollector.conf
 # Needed here as well since /var/log/druid is shared between container and host
 sudo mkdir -p /var/log/druid/gc
 sudo chmod 777 -R /var/log/druid/
@@ -15,6 +17,9 @@ DEPLOY_TYPE="${TELETRAAN_DEPLOY_TYPE}"
 case "${DEPLOY_TYPE}" in
     dev1)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.dev1.conf
+        ;;
+    dev2)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.dev2.conf
         ;;
     insights)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.insights.conf

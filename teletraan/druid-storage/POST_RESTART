@@ -34,6 +34,9 @@ i=0
 while [ "$i" -lt 25 ]
 do
   if curl -s http://localhost:$port/$health_check | grep "true"; then
+         # Restart tcollector process to pick up tcollector.conf to begin health check
+         docker restart tcollector
+
          echo "Druid process is running!!!"
          exit 0
   fi

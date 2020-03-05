@@ -11,6 +11,9 @@ else
         dev1)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.dev1.conf
             ;;
+        dev2)
+            configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.dev2.conf
+            ;;
         insights)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.insights.conf
             ;;
