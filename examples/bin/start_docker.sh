@@ -106,7 +106,12 @@ case ${STAGE_NAME} in
     sed -i "s/<DRUID_INDEXER_RUNNER_END_PORT>/${TELETRAAN_DRUID_INDEXER_RUNNER_END_PORT:-65535}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<THREADS>/${TELETRAAN_DRUID_THREADS:-7}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<PROCESSING_BUFFER_SIZEBYTES>/${TELETRAAN_PROCESSING_BUFFER_SIZEBYTES:-1073741824}/" $DRUID_CONF_DIR/middleManager/runtime.properties
-
+    sed -i "s/<HTTP_SERVER_THREADS>/${TELETRAAN_HTTP_SERVER_THREADS:-25}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<DRUID_WORKER_CAPACITY>/${TELETRAAN_DRUID_WORKER_CAPACITY:-7}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<TASK_CUSTOM_JVM_FLAGS>/${TELETRAAN_TASK_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<TASK_MEM_MIN>/${TELETRAAN_TASK_MEM_MIN:-3}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<TASK_MEM_MAX>/${TELETRAAN_TASK_MEM_MAX:-3}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<TASK_MAX_DIRECT_MEM>/${TELETRAAN_TASK_MAX_DIRECT_MEM:-10}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<NEW_SIZE>/${TELETRAAN_DRUID_NEW_SIZE:-4}/" $DRUID_CONF_DIR/middleManager/jvm.config
