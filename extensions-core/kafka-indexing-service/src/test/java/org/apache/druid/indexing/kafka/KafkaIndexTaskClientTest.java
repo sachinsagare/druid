@@ -355,11 +355,11 @@ public class KafkaIndexTaskClientTest extends EasyMockSupport
   public void testGetAndClearTimestampGaps() throws Exception
   {
     Capture<Request> captured = Capture.newInstance();
-    expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK);
-    expect(responseHolder.getContent()).andReturn("{\"0\":1, \"1\":10}");
-    expect(httpClient.go(
+    EasyMock.expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK);
+    EasyMock.expect(responseHolder.getContent()).andReturn("{\"0\":1, \"1\":10}");
+    EasyMock.expect(httpClient.go(
         EasyMock.capture(captured),
-        EasyMock.anyObject(FullResponseHandler.class),
+        EasyMock.anyObject(StringFullResponseHandler.class),
         EasyMock.eq(TEST_HTTP_TIMEOUT)
     )).andReturn(
         Futures.immediateFuture(responseHolder)

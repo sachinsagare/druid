@@ -251,7 +251,7 @@ public abstract class SeekableStreamIndexTaskClient<PartitionIdType, SequenceOff
     log.debug("GetAndClearTimestampGaps task[%s] retry[%s]", id, retry);
 
     try {
-      final FullResponseHolder response = submitRequestWithEmptyContent(
+      final StringFullResponseHolder response = submitRequestWithEmptyContent(
           id,
           HttpMethod.POST,
           "timestamp/gaps",
