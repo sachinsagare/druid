@@ -19,13 +19,12 @@
 
 package org.apache.druid.query;
 
-import java.util.List;
+import com.google.common.base.Joiner;
 
 public class DataSourceUtil
 {
   public static String getMetricName(DataSource dataSource)
   {
-    final List<String> names = dataSource.getNames();
-    return names.size() == 1 ? names.get(0) : names.toString();
+    return Joiner.on("-").join(dataSource.getNames());
   }
 }
