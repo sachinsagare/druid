@@ -22,15 +22,15 @@ package org.apache.druid.client;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
+import java.util.List;
 import java.util.Map;
 
-// TODO (lucilla) this should be deleted after we have migrated to using BrokerDataSourceMultiComplementConfig
-public class BrokerDataSourceComplementConfig
+public class BrokerDataSourceMultiComplementConfig
 {
   @JsonProperty
-  private Map<String, String> mapping = ImmutableMap.of();
+  private Map<String, List<String>> mapping = ImmutableMap.of();
 
-  public Map<String, String> getMapping()
+  public Map<String, List<String>> getMapping()
   {
     return mapping;
   }

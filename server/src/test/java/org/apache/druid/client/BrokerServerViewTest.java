@@ -343,7 +343,8 @@ public class BrokerServerViewTest extends CuratorTestBase
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
         new BrokerSegmentWatcherConfig(),
-        new BrokerDataSourceComplementConfig()
+        new BrokerDataSourceComplementConfig(),
+        new BrokerDataSourceMultiComplementConfig()
     );
 
     baseView.start();
