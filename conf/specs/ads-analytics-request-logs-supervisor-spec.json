@@ -174,7 +174,10 @@
   "ioConfig": {
     "topic": "ads_analytics_request_log",
     "consumerProperties": {
-      "bootstrap.servers": "m10nkafka1102:9092,m10nkafka1103:9092,m10nkafka1104:9092,m10nkafka1105:9092,m10nkafka1106:9092,m10nkafka1107:9092"
+      "bootstrap.servers": {
+        "type": "serverset",
+        "file": "/var/serverset/discovery.m10nkafka.prod"
+      }
     },
     "taskCount": 5,
     "replicas": 1,

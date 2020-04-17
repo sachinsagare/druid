@@ -133,7 +133,10 @@
   "ioConfig": {
     "topic": "ads_reporting_pepsi_request_log",
     "consumerProperties": {
-      "bootstrap.servers": "m10nkafka1207:9092,m10nkafka1208:9092,m10nkafka1209:9092,m10nkafka1210:9092,m10nkafka1211:9092,m10nkafka1212:9092"
+      "bootstrap.servers": {
+        "type": "serverset",
+        "file": "/var/serverset/discovery.m10nkafka.prod"
+      }
     },
     "taskCount": 5,
     "replicas": 1,
