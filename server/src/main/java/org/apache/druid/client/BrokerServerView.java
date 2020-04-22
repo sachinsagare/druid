@@ -150,40 +150,39 @@ public class BrokerServerView implements TimelineServerView
     };
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
     baseView.registerSegmentCallback(
-            exec,
-            new ServerView.SegmentCallback()
+          exec,
+          new ServerView.SegmentCallback() {
+            @Override
+            public ServerView.CallbackAction segmentAdded(DruidServerMetadata server, DataSegment segment)
             {
-              @Override
-              public ServerView.CallbackAction segmentAdded(DruidServerMetadata server, DataSegment segment)
-              {
-                serverAddedSegment(server, segment);
-                return ServerView.CallbackAction.CONTINUE;
-              }
+              serverAddedSegment(server, segment);
+              return ServerView.CallbackAction.CONTINUE;
+            }
 
-              @Override
-              public ServerView.CallbackAction segmentRemoved(final DruidServerMetadata server, DataSegment segment)
-              {
-                serverRemovedSegment(server, segment);
-                return ServerView.CallbackAction.CONTINUE;
-              }
+            @Override
+            public ServerView.CallbackAction segmentRemoved(final DruidServerMetadata server, DataSegment segment)
+            {
+              serverRemovedSegment(server, segment);
+              return ServerView.CallbackAction.CONTINUE;
+            }
 
-              @Override
-              public CallbackAction segmentViewInitialized()
-              {
-                initialized.countDown();
-                runTimelineCallbacks(TimelineCallback::timelineInitialized);
-                return ServerView.CallbackAction.CONTINUE;
-              }
-            },
+            @Override
+            public CallbackAction segmentViewInitialized()
+            {
+              initialized.countDown();
+              runTimelineCallbacks(TimelineCallback::timelineInitialized);
+              return ServerView.CallbackAction.CONTINUE;
+            }
+          },
             segmentFilter
     );
 
     baseView.registerServerRemovedCallback(
-            exec,
-            server -> {
-              removeServer(server);
-              return CallbackAction.CONTINUE;
-            }
+        exec,
+        server -> {
+          removeServer(server);
+          return CallbackAction.CONTINUE;
+        }
     );
   }
 
@@ -400,11 +399,11 @@ public class BrokerServerView implements TimelineServerView
   {
     for (Map.Entry<TimelineCallback, Executor> entry : timelineCallbacks.entrySet()) {
       entry.getValue().execute(
-              () -> {
-                if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
-                  timelineCallbacks.remove(entry.getKey());
-                }
-              }
+          () -> {
+            if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
+              timelineCallbacks.remove(entry.getKey());
+            }
+          }
       );
     }
   }
