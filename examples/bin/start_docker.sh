@@ -32,13 +32,34 @@ case ${STAGE_NAME} in
        fi
     fi
 
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/coordinator/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3001,suspend=y
+-Xdebug
+EOF
+    fi
+
   ;;
   *"overlord"*)
     node=overlord
     sed -i "s/<OVERLORD_PORT>/${TELETRAAN_OVERLORD_PORT:-9090}/" $DRUID_CONF_DIR/overlord/runtime.properties
+
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/overlord/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3002,suspend=y
+-Xdebug
+EOF
+    fi
   ;;
   *"router"*)
     node=router
+
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/router/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3003,suspend=y
+-Xdebug
+EOF
+    fi
   ;;
   *"query"*)
     sed -i "s/<HTTP_CLIENT_CONNECTIONS>/${TELETRAAN_HTTP_CLIENT_CONNECTIONS:-300}/" $DRUID_CONF_DIR/broker/runtime.properties
@@ -85,6 +106,13 @@ case ${STAGE_NAME} in
     sed -i "s/<NEW_SIZE>/${TELETRAAN_DRUID_NEW_SIZE:-4}/" $DRUID_CONF_DIR/broker/jvm.config
     sed -i "s/<MAX_DIRECT_MEM>/${TELETRAAN_DRUID_MAX_DIRECT_MEM:-12}/" $DRUID_CONF_DIR/broker/jvm.config
 
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/broker/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3004,suspend=y
+-Xdebug
+EOF
+    fi
+
     node=broker
   ;;
   *"data"*)
@@ -114,6 +142,13 @@ case ${STAGE_NAME} in
     sed -i "s/<MAX_DIRECT_MEM>/${TELETRAAN_DRUID_MAX_DIRECT_MEM:-12}/" $DRUID_CONF_DIR/historical/jvm.config
     sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/historical/jvm.config
 
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/historical/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3005,suspend=y
+-Xdebug
+EOF
+    fi
+
     node=historical
   ;;
   *"middleManager"*)COORDINATOR_PORT
@@ -133,6 +168,13 @@ case ${STAGE_NAME} in
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<NEW_SIZE>/${TELETRAAN_DRUID_NEW_SIZE:-4}/" $DRUID_CONF_DIR/middleManager/jvm.config
+
+    if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
+      cat << EOF >> $DRUID_CONF_DIR/middleManager/jvm.config
+-Xrunjdwp:transport=dt_socket,server=y,address=3006,suspend=y
+-Xdebug
+EOF
+    fi
   ;;
   *)
     echo "Unknown stage ${STAGE_NAME}! Unable to automatically start any Druid nodes!"
