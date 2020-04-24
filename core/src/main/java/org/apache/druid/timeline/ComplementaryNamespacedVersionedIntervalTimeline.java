@@ -100,6 +100,7 @@ public class ComplementaryNamespacedVersionedIntervalTimeline<VersionType, Objec
 
       Map<String, List<Interval>> namespaceToRemainingInterval = baseTimeline.getNamespaces().stream()
               .map(ComplementaryNamespacedVersionedIntervalTimeline::getRootNamespace)
+              .distinct()
               .collect(Collectors.toMap(namespace -> namespace, namespace -> intervals));
 
       for (String dataSource : supportTimelinesByDataSource.keySet()) {
