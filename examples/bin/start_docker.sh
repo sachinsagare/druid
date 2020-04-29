@@ -3,6 +3,8 @@
 sed -i "s/<DRUID_CLUSTER_NAME>/${TELETRAAN_DRUID_CLUSTER_NAME}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 sed -i "s/<DRUID_ZK_SERVICE_HOST>/${TELETRAAN_DRUID_ZK_SERVICE_HOST}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 
+sed -i "s/<STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>/${TELETRAAN_STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD:-1000000}/g" /opt/druid/conf/druid/_common/metricDimensions.json
+
 export KNOX_MACHINE_AUTH=$(hostname)
 mysql_creds=$(knox get mysql:rbac:longqueryrw:credentials)
 mysql_user=$(cut -d'@' -f1 <<< ${mysql_creds})
