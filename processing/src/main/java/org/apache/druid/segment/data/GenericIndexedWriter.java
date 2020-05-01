@@ -69,7 +69,7 @@ public class GenericIndexedWriter<T> implements Serializer
       .writeByteArray(x -> x.fileNameByteArray);
 
 
-  static GenericIndexedWriter<ByteBuffer> ofCompressedByteBuffers(
+  public static GenericIndexedWriter<ByteBuffer> ofCompressedByteBuffers(
       final SegmentWriteOutMedium segmentWriteOutMedium,
       final String filenameBase,
       final CompressionStrategy compressionStrategy,

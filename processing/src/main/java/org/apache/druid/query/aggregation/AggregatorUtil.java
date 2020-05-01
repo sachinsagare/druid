@@ -122,6 +122,10 @@ public class AggregatorUtil
   // TDigest sketch aggregators
   public static final byte TDIGEST_BUILD_SKETCH_CACHE_TYPE_ID = 0x38;
 
+  // LongsSketch module in datasketches extension
+  public static final byte LONGS_SKETCH_BUILD_CACHE_TYPE_ID = 0x39;
+  public static final byte LONGS_SKETCH_MERGE_CACHE_TYPE_ID = 0x3A;
+
   /**
    * returns the list of dependent postAggregators that should be calculated in order to calculate given postAgg
    *

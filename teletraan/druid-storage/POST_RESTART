@@ -3,7 +3,6 @@
 set -e
 
 GENERAL_HEALTH_CHECK="status/health"
-HISTORICAL_AND_BROKER_HEALTH_CHECK="selfDiscovered"
 
 case ${STAGE_NAME} in
   *"master"* | *"coordinator"*)
@@ -20,14 +19,8 @@ case ${STAGE_NAME} in
   ;;
 esac
 
-case ${STAGE_NAME} inTELETRAAN_COORDINATOR_PORT
-  *"query"* | *"data"*)
-    health_check=$HISTORICAL_AND_BROKER_HEALTH_CHECK
-  ;;
-  *)
-    health_check=$GENERAL_HEALTH_CHECK
-  ;;
-esac
+health_check=$GENERAL_HEALTH_CHECK
+
 
 echo "Wait for druid process to start"
 i=0
