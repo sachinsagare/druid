@@ -18,8 +18,12 @@ RUN addgroup --gid 1001 druid \
  && chown -R druid:druid /var/druid
 
 USER root
+RUN apt-get update
 RUN apt-get install --yes inotify-tools
 RUN apt-get install --yes jq
+RUN apt-get install --yes netcat
+RUN apt-get install --yes vim
+RUN apt-get install --yes less
 USER druid
 
 CMD ["bin/start_docker.sh"]
