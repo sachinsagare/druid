@@ -55,7 +55,7 @@
 	    },
 		"taskCount": 15,
 		"replicas": 1,
-		"taskDuration": "PT1H",
+		"taskDuration": "PT30M",
 		"useEarliestOffset": "true"
 	}
 }
