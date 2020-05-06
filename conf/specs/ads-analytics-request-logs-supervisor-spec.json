@@ -181,7 +181,7 @@
     },
     "taskCount": 5,
     "replicas": 1,
-    "taskDuration": "PT1H",
+    "taskDuration": "PT45M",
     "useEarliestOffset": "true"
   }
 }
