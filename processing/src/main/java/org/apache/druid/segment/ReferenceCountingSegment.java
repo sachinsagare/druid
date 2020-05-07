@@ -119,6 +119,11 @@ public class ReferenceCountingSegment extends ReferenceCountingCloseableObject<S
     return !isClosed() ? baseObject.asStorageAdapter() : null;
   }
 
+  public Iterable<String> getAvailableMetrics()
+  {
+    return baseObject.asStorageAdapter().getAvailableMetrics();
+  }
+
   @Override
   public boolean overshadows(ReferenceCountingSegment other)
   {

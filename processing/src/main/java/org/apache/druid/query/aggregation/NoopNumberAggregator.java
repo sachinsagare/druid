@@ -19,56 +19,22 @@
 
 package org.apache.druid.query.aggregation;
 
-import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
-
-public class NoopVectorAggregator implements VectorAggregator
+public final class NoopNumberAggregator extends NoopAggregator
 {
-  private static final NoopVectorAggregator INSTANCE = new NoopVectorAggregator();
+  private static final NoopNumberAggregator INSTANCE = new NoopNumberAggregator();
 
-  public static NoopVectorAggregator instance()
+  public static NoopNumberAggregator instance()
   {
     return INSTANCE;
   }
 
-  protected NoopVectorAggregator()
+  private NoopNumberAggregator()
   {
-    // Singleton.
   }
 
   @Override
-  public void init(ByteBuffer buf, int position)
+  public Object get()
   {
-    // Do nothing.
-  }
-
-  @Override
-  public void aggregate(final ByteBuffer buf, final int position, final int startRow, final int endRow)
-  {
-    // Do nothing.
-  }
-
-  @Override
-  public void aggregate(
-      final ByteBuffer buf,
-      final int numRows,
-      final int[] positions,
-      @Nullable final int[] rows,
-      final int positionOffset
-  )
-  {
-    // Do nothing.
-  }
-
-  @Override
-  public Object get(ByteBuffer buf, int position)
-  {
-    return null;
-  }
-
-  @Override
-  public void close()
-  {
-    // Do nothing.
+    return 0;
   }
 }

@@ -25,6 +25,7 @@ import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.BufferAggregator;
+import org.apache.druid.query.aggregation.NoopAggregatorFactory;
 import org.apache.druid.segment.Cursor;
 import org.apache.druid.segment.DimensionSelector;
 import org.apache.druid.segment.IdLookup;
@@ -52,15 +53,21 @@ public abstract class BaseTopNAlgorithm<DimValSelector, DimValAggregateStore, Pa
     return aggregators;
   }
 
-  protected static BufferAggregator[] makeBufferAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
+  protected static Pair<BufferAggregator[], Integer> makeBufferAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
   {
     BufferAggregator[] aggregators = new BufferAggregator[aggregatorSpecs.size()];
     int aggregatorIndex = 0;
+    int noopAggregatorIndex = aggregators.length - 1;
     for (AggregatorFactory spec : aggregatorSpecs) {
-      aggregators[aggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
-      ++aggregatorIndex;
+      if (spec instanceof NoopAggregatorFactory) {
+        aggregators[noopAggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
+        --noopAggregatorIndex;
+      } else {
+        aggregators[aggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
+        ++aggregatorIndex;
+      }
     }
-    return aggregators;
+    return Pair.of(aggregators, aggregatorIndex);
   }
 
   protected final StorageAdapter storageAdapter;
