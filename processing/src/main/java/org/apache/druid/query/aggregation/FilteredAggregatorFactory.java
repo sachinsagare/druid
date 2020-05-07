@@ -194,6 +194,10 @@ public class FilteredAggregatorFactory extends AggregatorFactory
   @Override
   public AggregatorFactory optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
   {
+    if (isNoopAggregator(optimizationContext)) {
+      return new NoopAggregatorFactory(getName(), getTypeName());
+    }
+
     if (dimFilter instanceof IntervalDimFilter) {
       IntervalDimFilter intervalDimFilter = ((IntervalDimFilter) dimFilter);
       if (intervalDimFilter.getExtractionFn() != null) {

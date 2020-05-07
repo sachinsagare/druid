@@ -72,6 +72,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ *
  */
 public class ServerManager implements QuerySegmentWalker
 {
@@ -163,8 +164,7 @@ public class ServerManager implements QuerySegmentWalker
             {
               @Override
               public Iterable<QueryRunner<T>> apply(
-                  @Nullable
-                  final TimelineObjectHolder<String, ReferenceCountingSegment> holder
+                  @Nullable final TimelineObjectHolder<String, ReferenceCountingSegment> holder
               )
               {
                 if (holder == null) {
@@ -337,7 +337,7 @@ public class ServerManager implements QuerySegmentWalker
 
     PerSegmentOptimizingQueryRunner<T> perSegmentOptimizingQueryRunner = new PerSegmentOptimizingQueryRunner<>(
         specificSegmentQueryRunner,
-        new PerSegmentQueryOptimizationContext(segmentDescriptor)
+        new PerSegmentQueryOptimizationContext(segmentDescriptor, adapter.getAvailableMetrics())
     );
 
     return new SetAndVerifyContextQueryRunner<>(

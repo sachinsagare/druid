@@ -19,7 +19,7 @@
 
 package org.apache.druid.query.aggregation;
 
-public final class NoopAggregator implements Aggregator
+public class NoopAggregator implements Aggregator
 {
   private static final NoopAggregator INSTANCE = new NoopAggregator();
 
@@ -28,7 +28,7 @@ public final class NoopAggregator implements Aggregator
     return INSTANCE;
   }
 
-  private NoopAggregator()
+  protected NoopAggregator()
   {
   }
 

@@ -225,11 +225,19 @@ public abstract class AggregatorFactory implements Cacheable
     return getMaxIntermediateSize();
   }
 
+  boolean isNoopAggregator(PerSegmentQueryOptimizationContext optimizationContext)
+  {
+    return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableMetrics().contains(c));
+  }
+
   /**
    * Return a potentially optimized form of this AggregatorFactory for per-segment queries.
    */
   public AggregatorFactory optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
   {
+    if (isNoopAggregator(optimizationContext)) {
+      return new NoopAggregatorFactory(getName(), getTypeName());
+    }
     return this;
   }
 

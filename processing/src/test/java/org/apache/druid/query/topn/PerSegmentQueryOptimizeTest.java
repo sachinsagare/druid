@@ -19,12 +19,14 @@
 
 package org.apache.druid.query.topn;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.SegmentDescriptor;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.FilteredAggregatorFactory;
 import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.druid.query.aggregation.NoopAggregatorFactory;
 import org.apache.druid.query.aggregation.SuppressedAggregatorFactory;
 import org.apache.druid.query.filter.IntervalDimFilter;
 import org.apache.druid.segment.column.ColumnHolder;
@@ -105,7 +107,28 @@ public class PerSegmentQueryOptimizeTest
   private PerSegmentQueryOptimizationContext getOptimizationContext(Interval segmentInterval)
   {
     return new PerSegmentQueryOptimizationContext(
-        new SegmentDescriptor(segmentInterval, "0", 0)
+        new SegmentDescriptor(segmentInterval, "0", 0), ImmutableList.of("test")
     );
   }
+
+  @Test
+  public void testFilteredAggregatorOptimizeNoMetricsAvailable()
+  {
+    LongSumAggregatorFactory longSumAggregatorFactory = new LongSumAggregatorFactory("test", "test");
+    FilteredAggregatorFactory aggregatorFactory = new FilteredAggregatorFactory(
+        longSumAggregatorFactory,
+        new IntervalDimFilter(
+            "not_time",
+            Collections.singletonList(Intervals.utc(1000, 2000)),
+            null
+        )
+    );
+    Interval include = Intervals.utc(1500, 1600);
+    PerSegmentQueryOptimizationContext context = new PerSegmentQueryOptimizationContext(
+        new SegmentDescriptor(include, "0", 0), ImmutableList.of("dontexist")
+    );
+    AggregatorFactory noopAgg = aggregatorFactory.optimizeForSegment(context);
+    Assert.assertTrue(noopAgg instanceof NoopAggregatorFactory);
+  }
+
 }

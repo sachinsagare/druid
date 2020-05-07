@@ -157,6 +157,11 @@ public class ReferenceCountingSegment extends AbstractSegment implements Oversha
     return !isClosed() ? baseSegment.asStorageAdapter() : null;
   }
 
+  public Iterable<String> getAvailableMetrics()
+  {
+    return baseSegment.asStorageAdapter().getAvailableMetrics();
+  }
+
   @Override
   public void close()
   {

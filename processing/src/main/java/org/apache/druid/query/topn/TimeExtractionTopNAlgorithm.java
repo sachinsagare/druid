@@ -100,7 +100,7 @@ public class TimeExtractionTopNAlgorithm extends BaseTopNAlgorithm<int[], Map<Co
 
       Aggregator[] theAggregators = aggregatesStore.get(key);
       if (theAggregators == null) {
-        theAggregators = makeAggregators(cursor, query.getAggregatorSpecs());
+        theAggregators = makeAggregators(cursor, query.getAggregatorSpecs()).lhs;
         aggregatesStore.put(key, theAggregators);
       }
 

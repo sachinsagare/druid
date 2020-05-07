@@ -19,6 +19,7 @@
 
 package org.apache.druid.query.topn.types;
 
+import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.topn.BaseTopNAlgorithm;
 import org.apache.druid.query.topn.TopNParams;
@@ -124,6 +125,7 @@ public class StringTopNColumnSelectorStrategy
   )
   {
     long processedRows = 0;
+    int noopAggregatorIndex = 0;
     while (!cursor.isDone()) {
       final IndexedInts dimValues = selector.getRow();
       for (int i = 0, size = dimValues.size(); i < size; ++i) {
@@ -133,14 +135,16 @@ public class StringTopNColumnSelectorStrategy
           final Comparable<?> key = dimensionValueConverter.apply(selector.lookupName(dimIndex));
           theAggregators = aggregatesStore.get(key);
           if (theAggregators == null) {
-            theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
+            Pair<Aggregator[], Integer> aggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
+            theAggregators = aggregators.lhs;
+            noopAggregatorIndex = aggregators.rhs;
             aggregatesStore.put(key, theAggregators);
           }
           rowSelector[dimIndex] = theAggregators;
         }
 
-        for (Aggregator aggregator : theAggregators) {
-          aggregator.aggregate();
+        for (int j = 0; j < noopAggregatorIndex; j++) {
+          theAggregators[j].aggregate();
         }
       }
       cursor.advance();
@@ -157,6 +161,7 @@ public class StringTopNColumnSelectorStrategy
   )
   {
     long processedRows = 0;
+    int noopAggregatorIndex = 0;
     while (!cursor.isDone()) {
       final IndexedInts dimValues = selector.getRow();
       for (int i = 0, size = dimValues.size(); i < size; ++i) {
@@ -165,11 +170,16 @@ public class StringTopNColumnSelectorStrategy
 
         Aggregator[] theAggregators = aggregatesStore.get(key);
         if (theAggregators == null) {
-          theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
+          Pair<Aggregator[], Integer> aggregators = BaseTopNAlgorithm.makeAggregators(
+              cursor,
+              query.getAggregatorSpecs()
+          );
+          theAggregators = aggregators.lhs;
+          noopAggregatorIndex = aggregators.rhs;
           aggregatesStore.put(key, theAggregators);
         }
-        for (Aggregator aggregator : theAggregators) {
-          aggregator.aggregate();
+        for (int j = 0; j < noopAggregatorIndex; j++) {
+          theAggregators[j].aggregate();
         }
       }
       cursor.advance();

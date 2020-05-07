@@ -19,6 +19,10 @@
 
 package org.apache.druid.query;
 
+import com.google.common.collect.ImmutableSet;
+
+import java.util.Set;
+
 /**
  * Holds information about a single segment that Query objects can use to optimize themselves
  * when they are run on that single segment.
@@ -28,16 +32,25 @@ package org.apache.druid.query;
 public class PerSegmentQueryOptimizationContext
 {
   private final SegmentDescriptor segmentDescriptor;
+  private final Set<String> availableMetrics;
 
   public PerSegmentQueryOptimizationContext(
-      SegmentDescriptor segmentDescriptor
+      SegmentDescriptor segmentDescriptor,
+      Iterable<String> availableMetrics
   )
   {
     this.segmentDescriptor = segmentDescriptor;
+    this.availableMetrics = ImmutableSet.copyOf(availableMetrics);
   }
 
   public SegmentDescriptor getSegmentDescriptor()
   {
     return segmentDescriptor;
   }
+
+  public Set<String> getAvailableMetrics()
+  {
+    return availableMetrics;
+  }
+
 }

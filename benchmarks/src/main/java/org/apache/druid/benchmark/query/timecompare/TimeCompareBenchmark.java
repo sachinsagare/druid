@@ -70,6 +70,7 @@ import org.apache.druid.segment.IndexMergerV9;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.QueryableIndex;
 import org.apache.druid.segment.QueryableIndexSegment;
+import org.apache.druid.segment.QueryableIndexStorageAdapter;
 import org.apache.druid.segment.column.ColumnConfig;
 import org.apache.druid.segment.column.ColumnHolder;
 import org.apache.druid.segment.incremental.IncrementalIndex;
@@ -358,8 +359,10 @@ public class TimeCompareBenchmark
           new PerSegmentOptimizingQueryRunner<>(
               toolChest.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
-                  new SegmentDescriptor(segmentIntervals[i], "1", 0)
+                  new SegmentDescriptor(segmentIntervals[i], "1", 0),
+                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
               )
+
           )
       );
     }
@@ -384,7 +387,8 @@ public class TimeCompareBenchmark
           new PerSegmentOptimizingQueryRunner<>(
               toolChestT.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
-                  new SegmentDescriptor(segmentIntervals[i], "1", 0)
+                  new SegmentDescriptor(segmentIntervals[i], "1", 0),
+                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
               )
           )
       );
