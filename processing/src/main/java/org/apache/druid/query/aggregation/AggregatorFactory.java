@@ -225,9 +225,12 @@ public abstract class AggregatorFactory implements Cacheable
     return getMaxIntermediateSize();
   }
 
-  boolean isNoopAggregator(PerSegmentQueryOptimizationContext optimizationContext)
+  boolean isNoopNumberAggregator(PerSegmentQueryOptimizationContext optimizationContext)
   {
-    return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableMetrics().contains(c));
+    return NoopNumberAggregatorFactory.isApplicable(getTypeName()) && requiredFields().stream()
+                                                                                      .noneMatch(c -> optimizationContext
+                                                                                          .getAvailableMetrics()
+                                                                                          .contains(c));
   }
 
   /**
@@ -235,8 +238,8 @@ public abstract class AggregatorFactory implements Cacheable
    */
   public AggregatorFactory optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
   {
-    if (isNoopAggregator(optimizationContext)) {
-      return new NoopAggregatorFactory(getName(), getTypeName());
+    if (isNoopNumberAggregator(optimizationContext)) {
+      return new NoopNumberAggregatorFactory(getName(), getTypeName());
     }
     return this;
   }

@@ -26,7 +26,7 @@ import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.BufferAggregator;
-import org.apache.druid.query.aggregation.NoopAggregatorFactory;
+import org.apache.druid.query.aggregation.NoopNumberAggregatorFactory;
 import org.apache.druid.query.topn.types.TopNColumnSelectorStrategy;
 import org.apache.druid.segment.Capabilities;
 import org.apache.druid.segment.Cursor;
@@ -49,7 +49,7 @@ public abstract class BaseTopNAlgorithm<DimValSelector, DimValAggregateStore, Pa
   {
     List<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < aggregatorSpecs.size(); i++) {
-      if (!(aggregatorSpecs.get(i) instanceof NoopAggregatorFactory)) {
+      if (!(aggregatorSpecs.get(i) instanceof NoopNumberAggregatorFactory)) {
         indexes.add(i);
       }
     }

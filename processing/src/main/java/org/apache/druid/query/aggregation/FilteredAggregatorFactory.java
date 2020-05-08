@@ -194,8 +194,8 @@ public class FilteredAggregatorFactory extends AggregatorFactory
   @Override
   public AggregatorFactory optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
   {
-    if (isNoopAggregator(optimizationContext)) {
-      return new NoopAggregatorFactory(getName(), getTypeName());
+    if (isNoopNumberAggregator(optimizationContext)) {
+      return new NoopNumberAggregatorFactory(getName(), getTypeName());
     }
 
     if (dimFilter instanceof IntervalDimFilter) {
