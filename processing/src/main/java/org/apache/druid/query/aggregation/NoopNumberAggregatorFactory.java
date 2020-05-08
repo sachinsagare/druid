@@ -33,7 +33,7 @@ import java.util.List;
 /**
  *
  */
-public class NoopAggregatorFactory extends AggregatorFactory
+public class NoopNumberAggregatorFactory extends AggregatorFactory
 {
   static final Comparator COMPARATOR = new Comparator()
   {
@@ -89,9 +89,8 @@ public class NoopAggregatorFactory extends AggregatorFactory
 
   private final String name;
   private final String typeName;
-  private final boolean isNumber;
 
-  public NoopAggregatorFactory(
+  public NoopNumberAggregatorFactory(
       String name,
       String typeName
   )
@@ -99,35 +98,29 @@ public class NoopAggregatorFactory extends AggregatorFactory
     Preconditions.checkNotNull(name, "Must have a valid, non-null aggregator name");
     this.name = name;
     this.typeName = typeName;
-    // This needs to change when we have support column types/aggregator types better
-    this.isNumber = "float".equals(typeName) || "long".equals(typeName) || "double".equals(typeName);
+  }
+
+  public static boolean isApplicable(String typeName)
+  {
+    return "float".equals(typeName) || "long".equals(typeName) || "double".equals(typeName);
   }
 
   @Override
   public Aggregator factorize(ColumnSelectorFactory metricFactory)
   {
-    if (isNumber) {
-      return NoopNumberAggregator.instance();
-    }
-    return NoopAggregator.instance();
+    return NoopNumberAggregator.instance();
   }
 
   @Override
   public BufferAggregator factorizeBuffered(ColumnSelectorFactory metricFactory)
   {
-    if (isNumber) {
-      return NoopNumberBufferAggregator.instance();
-    }
-    return NoopBufferAggregator.instance();
+    return NoopNumberBufferAggregator.instance();
   }
 
   @Override
   public VectorAggregator factorizeVector(final VectorColumnSelectorFactory selectorFactory)
   {
-    if (isNumber) {
-      return NoopNumberVectorAggregator.instance();
-    }
-    return NoopVectorAggregator.instance();
+    return NoopNumberVectorAggregator.instance();
   }
 
   @Override
@@ -156,13 +149,13 @@ public class NoopAggregatorFactory extends AggregatorFactory
   @Override
   public AggregatorFactory getCombiningFactory()
   {
-    return new NoopAggregatorFactory(name, typeName);
+    return new NoopNumberAggregatorFactory(name, typeName);
   }
 
   @Override
   public List<AggregatorFactory> getRequiredColumns()
   {
-    return Collections.singletonList(new NoopAggregatorFactory(name, typeName));
+    return Collections.singletonList(new NoopNumberAggregatorFactory(name, typeName));
   }
 
   @Override
@@ -210,7 +203,7 @@ public class NoopAggregatorFactory extends AggregatorFactory
   @Override
   public String toString()
   {
-    return "NoopAggregatorFactory{" +
+    return "NoopNumberAggregatorFactory{" +
            "name='" + name + '\'' +
            '}';
   }
@@ -225,7 +218,7 @@ public class NoopAggregatorFactory extends AggregatorFactory
       return false;
     }
 
-    NoopAggregatorFactory that = (NoopAggregatorFactory) o;
+    NoopNumberAggregatorFactory that = (NoopNumberAggregatorFactory) o;
 
     if (name != null ? !name.equals(that.name) : that.name != null) {
       return false;
