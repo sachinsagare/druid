@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.apache.druid.java.util.common.IAE;
-import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.topn.BaseTopNAlgorithm;
 import org.apache.druid.query.topn.TopNParams;
@@ -85,18 +84,16 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int noopAggregatorIndex = 0;
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       int key = Float.floatToIntBits(selector.getFloat());
       Aggregator[] theAggregators = aggregatesStore.get(key);
       if (theAggregators == null) {
-        Pair<Aggregator[], Integer> aggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        theAggregators = aggregators.lhs;
-        noopAggregatorIndex = aggregators.rhs;
+        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < noopAggregatorIndex; j++) {
-        theAggregators[j].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;
@@ -112,18 +109,16 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int noopAggregatorIndex = 0;
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       long key = Double.doubleToLongBits(selector.getDouble());
       Aggregator[] theAggregators = aggregatesStore.get(key);
       if (theAggregators == null) {
-        Pair<Aggregator[], Integer> aggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        theAggregators = aggregators.lhs;
-        noopAggregatorIndex = aggregators.rhs;
+        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < noopAggregatorIndex; j++) {
-        theAggregators[j].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;
@@ -139,18 +134,16 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int noopAggregatorIndex = 0;
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       long key = selector.getLong();
       Aggregator[] theAggregators = aggregatesStore.get(key);
       if (theAggregators == null) {
-        Pair<Aggregator[], Integer> aggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        theAggregators = aggregators.lhs;
-        noopAggregatorIndex = aggregators.rhs;
+        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < noopAggregatorIndex; j++) {
-        theAggregators[j].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;

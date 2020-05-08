@@ -20,6 +20,7 @@
 package org.apache.druid.query.topn;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.primitives.Ints;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
@@ -34,6 +35,7 @@ import org.apache.druid.segment.IdLookup;
 import org.apache.druid.segment.StorageAdapter;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -43,38 +45,37 @@ import java.util.List;
 public abstract class BaseTopNAlgorithm<DimValSelector, DimValAggregateStore, Parameters extends TopNParams>
     implements TopNAlgorithm<DimValSelector, Parameters>
 {
-  public static Pair<Aggregator[], Integer> makeAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
+  public static int[] getNonNoopAggregators(List<AggregatorFactory> aggregatorSpecs)
+  {
+    List<Integer> indexes = new ArrayList<>();
+    for (int i = 0; i < aggregatorSpecs.size(); i++) {
+      if (!(aggregatorSpecs.get(i) instanceof NoopAggregatorFactory)) {
+        indexes.add(i);
+      }
+    }
+    return Ints.toArray(indexes);
+  }
+
+  public static Aggregator[] makeAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
   {
     Aggregator[] aggregators = new Aggregator[aggregatorSpecs.size()];
     int aggregatorIndex = 0;
-    int noopAggregatorIndex = aggregators.length - 1;
     for (AggregatorFactory spec : aggregatorSpecs) {
-      if (spec instanceof NoopAggregatorFactory) {
-        aggregators[noopAggregatorIndex] = spec.factorize(cursor.getColumnSelectorFactory());
-        --noopAggregatorIndex;
-      } else {
-        aggregators[aggregatorIndex] = spec.factorize(cursor.getColumnSelectorFactory());
-        ++aggregatorIndex;
-      }
+      aggregators[aggregatorIndex] = spec.factorize(cursor.getColumnSelectorFactory());
+      ++aggregatorIndex;
     }
-    return Pair.of(aggregators, aggregatorIndex);
+    return aggregators;
   }
 
-  protected static Pair<BufferAggregator[], Integer> makeBufferAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
+  protected static BufferAggregator[] makeBufferAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
   {
     BufferAggregator[] aggregators = new BufferAggregator[aggregatorSpecs.size()];
     int aggregatorIndex = 0;
-    int noopAggregatorIndex = aggregators.length - 1;
     for (AggregatorFactory spec : aggregatorSpecs) {
-      if (spec instanceof NoopAggregatorFactory) {
-        aggregators[noopAggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
-        --noopAggregatorIndex;
-      } else {
-        aggregators[aggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
-        ++aggregatorIndex;
-      }
+      aggregators[aggregatorIndex] = spec.factorizeBuffered(cursor.getColumnSelectorFactory());
+      ++aggregatorIndex;
     }
-    return Pair.of(aggregators, aggregatorIndex);
+    return aggregators;
   }
 
   protected final StorageAdapter storageAdapter;
