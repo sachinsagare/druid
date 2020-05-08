@@ -302,7 +302,7 @@ public abstract class AggregatorFactory implements Cacheable
     return getMaxIntermediateSize();
   }
 
-  boolean isNoopAggregator(PerSegmentQueryOptimizationContext optimizationContext)
+  boolean isNoopNumberAggregator(PerSegmentQueryOptimizationContext optimizationContext)
   {
     return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableMetrics().contains(c));
   }
