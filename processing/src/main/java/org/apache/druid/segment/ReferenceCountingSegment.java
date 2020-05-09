@@ -20,6 +20,7 @@
 package org.apache.druid.segment;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import org.apache.druid.timeline.Overshadowable;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.partition.ShardSpec;
@@ -28,6 +29,7 @@ import org.joda.time.Interval;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * {@link Segment} that is also a {@link ReferenceCountingSegment}, allowing query engines that operate directly on
@@ -119,9 +121,12 @@ public class ReferenceCountingSegment extends ReferenceCountingCloseableObject<S
     return !isClosed() ? baseObject.asStorageAdapter() : null;
   }
 
-  public Iterable<String> getAvailableMetrics()
+  public Set<String> getAvailableFields()
   {
-    return baseObject.asStorageAdapter().getAvailableMetrics();
+    ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+    fields.addAll(baseObject.asStorageAdapter().getAvailableDimensions());
+    fields.addAll(baseObject.asStorageAdapter().getAvailableMetrics());
+    return fields.build();
   }
 
   @Override

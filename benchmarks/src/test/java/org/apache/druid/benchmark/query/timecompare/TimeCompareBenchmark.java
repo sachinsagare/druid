@@ -416,7 +416,10 @@ public class TimeCompareBenchmark
   @OutputTimeUnit(TimeUnit.MICROSECONDS)
   public void queryMultiQueryableIndexTopN(Blackhole blackhole)
   {
-    Sequence<Result<TopNResultValue>> queryResult = topNRunner.run(QueryPlus.wrap(topNQuery), ResponseContext.createEmpty());
+    Sequence<Result<TopNResultValue>> queryResult = topNRunner.run(
+        QueryPlus.wrap(topNQuery),
+        ResponseContext.createEmpty()
+    );
     List<Result<TopNResultValue>> results = queryResult.toList();
     blackhole.consume(results);
   }
