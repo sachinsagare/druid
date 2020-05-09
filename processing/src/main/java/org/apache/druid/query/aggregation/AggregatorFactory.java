@@ -304,7 +304,7 @@ public abstract class AggregatorFactory implements Cacheable
 
   boolean isNoopNumberAggregator(PerSegmentQueryOptimizationContext optimizationContext)
   {
-    return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableMetrics().contains(c));
+    return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableFields().contains(c));
   }
 
   /**

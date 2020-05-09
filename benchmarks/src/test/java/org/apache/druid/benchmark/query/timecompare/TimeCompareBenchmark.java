@@ -21,6 +21,7 @@ package org.apache.druid.benchmark.query.timecompare;
 
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import org.apache.druid.benchmark.query.QueryBenchmarkUtil;
 import org.apache.druid.collections.StupidPool;
 import org.apache.druid.common.config.NullHandling;
@@ -354,12 +355,16 @@ public class TimeCompareBenchmark
           segmentId,
           new QueryableIndexSegment(qIndexes.get(i), segmentId)
       );
+      QueryableIndexStorageAdapter adapter = new QueryableIndexStorageAdapter(qIndexes.get(i));
+      ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+      fields.addAll(adapter.getAvailableDimensions());
+      fields.addAll(adapter.getAvailableMetrics());
       singleSegmentRunners.add(
           new PerSegmentOptimizingQueryRunner<>(
               toolChest.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
                   new SegmentDescriptor(segmentIntervals[i], "1", 0),
-                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
+                  fields.build()
               )
 
           )
@@ -382,12 +387,16 @@ public class TimeCompareBenchmark
           segmentId,
           new QueryableIndexSegment(qIndexes.get(i), segmentId)
       );
+      QueryableIndexStorageAdapter adapter = new QueryableIndexStorageAdapter(qIndexes.get(i));
+      ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+      fields.addAll(adapter.getAvailableDimensions());
+      fields.addAll(adapter.getAvailableMetrics());
       singleSegmentRunnersT.add(
           new PerSegmentOptimizingQueryRunner<>(
               toolChestT.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
                   new SegmentDescriptor(segmentIntervals[i], "1", 0),
-                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
+                  fields.build()
               )
           )
       );
