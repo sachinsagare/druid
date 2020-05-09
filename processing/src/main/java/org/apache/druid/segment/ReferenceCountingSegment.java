@@ -20,6 +20,7 @@
 package org.apache.druid.segment;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.timeline.Overshadowable;
 import org.apache.druid.timeline.SegmentId;
@@ -29,6 +30,7 @@ import org.joda.time.Interval;
 import javax.annotation.Nullable;
 
 import java.io.Closeable;
+import java.util.Set;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -157,9 +159,12 @@ public class ReferenceCountingSegment extends AbstractSegment implements Oversha
     return !isClosed() ? baseSegment.asStorageAdapter() : null;
   }
 
-  public Iterable<String> getAvailableMetrics()
+  public Set<String> getAvailableFields()
   {
-    return baseSegment.asStorageAdapter().getAvailableMetrics();
+    ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+    fields.addAll(baseSegment.asStorageAdapter().getAvailableDimensions());
+    fields.addAll(baseSegment.asStorageAdapter().getAvailableMetrics());
+    return fields.build();
   }
 
   @Override

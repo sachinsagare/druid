@@ -337,7 +337,7 @@ public class ServerManager implements QuerySegmentWalker
 
     PerSegmentOptimizingQueryRunner<T> perSegmentOptimizingQueryRunner = new PerSegmentOptimizingQueryRunner<>(
         specificSegmentQueryRunner,
-        new PerSegmentQueryOptimizationContext(segmentDescriptor, adapter.getAvailableMetrics())
+        new PerSegmentQueryOptimizationContext(segmentDescriptor, adapter.getAvailableFields())
     );
 
     return new SetAndVerifyContextQueryRunner<>(

@@ -21,6 +21,7 @@ package org.apache.druid.benchmark.query.timecompare;
 
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.druid.benchmark.datagen.BenchmarkDataGenerator;
@@ -355,12 +356,16 @@ public class TimeCompareBenchmark
           segmentId,
           new QueryableIndexSegment(qIndexes.get(i), segmentId)
       );
+      QueryableIndexStorageAdapter adapter = new QueryableIndexStorageAdapter(qIndexes.get(i));
+      ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+      fields.addAll(adapter.getAvailableDimensions());
+      fields.addAll(adapter.getAvailableMetrics());
       singleSegmentRunners.add(
           new PerSegmentOptimizingQueryRunner<>(
               toolChest.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
                   new SegmentDescriptor(segmentIntervals[i], "1", 0),
-                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
+                  fields.build()
               )
 
           )
@@ -383,12 +388,16 @@ public class TimeCompareBenchmark
           segmentId,
           new QueryableIndexSegment(qIndexes.get(i), segmentId)
       );
+      QueryableIndexStorageAdapter adapter = new QueryableIndexStorageAdapter(qIndexes.get(i));
+      ImmutableSet.Builder<String> fields = ImmutableSet.builder();
+      fields.addAll(adapter.getAvailableDimensions());
+      fields.addAll(adapter.getAvailableMetrics());
       singleSegmentRunnersT.add(
           new PerSegmentOptimizingQueryRunner<>(
               toolChestT.preMergeQueryDecoration(runner),
               new PerSegmentQueryOptimizationContext(
                   new SegmentDescriptor(segmentIntervals[i], "1", 0),
-                  new QueryableIndexStorageAdapter(qIndexes.get(i)).getAvailableMetrics()
+                  fields.build()
               )
           )
       );
@@ -422,7 +431,10 @@ public class TimeCompareBenchmark
   @OutputTimeUnit(TimeUnit.MICROSECONDS)
   public void queryMultiQueryableIndexTopN(Blackhole blackhole)
   {
-    Sequence<Result<TopNResultValue>> queryResult = topNRunner.run(QueryPlus.wrap(topNQuery), ResponseContext.createEmpty());
+    Sequence<Result<TopNResultValue>> queryResult = topNRunner.run(
+        QueryPlus.wrap(topNQuery),
+        ResponseContext.createEmpty()
+    );
     List<Result<TopNResultValue>> results = queryResult.toList();
     blackhole.consume(results);
   }

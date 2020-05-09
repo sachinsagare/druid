@@ -19,7 +19,7 @@
 
 package org.apache.druid.query.topn;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.SegmentDescriptor;
@@ -107,7 +107,7 @@ public class PerSegmentQueryOptimizeTest
   private PerSegmentQueryOptimizationContext getOptimizationContext(Interval segmentInterval)
   {
     return new PerSegmentQueryOptimizationContext(
-        new SegmentDescriptor(segmentInterval, "0", 0), ImmutableList.of("test")
+        new SegmentDescriptor(segmentInterval, "0", 0), ImmutableSet.of("test")
     );
   }
 
@@ -125,7 +125,7 @@ public class PerSegmentQueryOptimizeTest
     );
     Interval include = Intervals.utc(1500, 1600);
     PerSegmentQueryOptimizationContext context = new PerSegmentQueryOptimizationContext(
-        new SegmentDescriptor(include, "0", 0), ImmutableList.of("dontexist")
+        new SegmentDescriptor(include, "0", 0), ImmutableSet.of("dontexist")
     );
     AggregatorFactory noopAgg = aggregatorFactory.optimizeForSegment(context);
     Assert.assertTrue(noopAgg instanceof NoopNumberAggregatorFactory);

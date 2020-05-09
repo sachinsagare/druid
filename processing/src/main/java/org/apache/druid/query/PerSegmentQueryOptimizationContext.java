@@ -19,8 +19,6 @@
 
 package org.apache.druid.query;
 
-import com.google.common.collect.ImmutableSet;
-
 import java.util.Set;
 
 /**
@@ -32,15 +30,15 @@ import java.util.Set;
 public class PerSegmentQueryOptimizationContext
 {
   private final SegmentDescriptor segmentDescriptor;
-  private final Set<String> availableMetrics;
+  private final Set<String> availableFields;
 
   public PerSegmentQueryOptimizationContext(
       SegmentDescriptor segmentDescriptor,
-      Iterable<String> availableMetrics
+      Set<String> availableMetrics
   )
   {
     this.segmentDescriptor = segmentDescriptor;
-    this.availableMetrics = ImmutableSet.copyOf(availableMetrics);
+    this.availableFields = availableMetrics;
   }
 
   public SegmentDescriptor getSegmentDescriptor()
@@ -48,9 +46,9 @@ public class PerSegmentQueryOptimizationContext
     return segmentDescriptor;
   }
 
-  public Set<String> getAvailableMetrics()
+  public Set<String> getAvailableFields()
   {
-    return availableMetrics;
+    return availableFields;
   }
 
 }

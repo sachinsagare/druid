@@ -63,6 +63,7 @@ import org.apache.druid.segment.QueryableIndex;
 import org.apache.druid.segment.ReferenceCountingSegment;
 import org.apache.druid.segment.Segment;
 import org.apache.druid.segment.StorageAdapter;
+import org.apache.druid.segment.data.ListIndexed;
 import org.apache.druid.segment.loading.SegmentLoader;
 import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.SegmentManager;
@@ -110,6 +111,7 @@ public class ServerManagerTest
 
     storageAdapter = EasyMock.createMock(StorageAdapter.class);
     EasyMock.expect(storageAdapter.getAvailableMetrics()).andReturn(ImmutableList.of("metric")).anyTimes();
+    EasyMock.expect(storageAdapter.getAvailableDimensions()).andReturn(new ListIndexed("metric")).anyTimes();
     EasyMock.replay(storageAdapter);
     queryWaitLatch = new CountDownLatch(1);
     queryWaitYieldLatch = new CountDownLatch(1);
