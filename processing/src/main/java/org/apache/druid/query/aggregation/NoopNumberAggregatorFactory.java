@@ -187,7 +187,7 @@ public class NoopNumberAggregatorFactory extends AggregatorFactory
   @Override
   public byte[] getCacheKey()
   {
-    return new byte[0];
+    return new byte[]{AggregatorUtil.NOOP_CACHE_TYPE_ID};
   }
 
   @Override
