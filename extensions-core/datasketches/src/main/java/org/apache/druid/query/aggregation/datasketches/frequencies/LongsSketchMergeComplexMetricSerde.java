@@ -23,6 +23,9 @@ import com.yahoo.memory.Memory;
 import org.apache.druid.data.input.InputRow;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.StringUtils;
+import org.apache.druid.query.aggregation.datasketches.frequencies.indexio.LargeColumnSupportedLongsSketchColumnBlockCompressedSerializer;
+import org.apache.druid.query.aggregation.datasketches.frequencies.indexio.LongsSketchColumnIndexed;
+import org.apache.druid.query.aggregation.datasketches.frequencies.indexio.LongsSketchColumnPartSupplier;
 import org.apache.druid.query.aggregation.datasketches.frequencies.longssketch.LongsSketchWrap;
 import org.apache.druid.segment.GenericColumnSerializer;
 import org.apache.druid.segment.IndexIO;
@@ -78,12 +81,31 @@ public class LongsSketchMergeComplexMetricSerde extends ComplexMetricSerde
   @Override
   public void deserializeColumn(final ByteBuffer buffer, final ColumnBuilder builder)
   {
-    builder.setComplexColumnSupplier(
-        new ComplexColumnPartSupplier(
-            getTypeName(),
-            GenericIndexed.read(buffer, new DecompressingLongsSketchObjectStrategy(IndexIO.BYTE_ORDER, CompressionStrategy.LZ4), builder.getFileMapper())
-        )
-    );
+    byte version = buffer.get();
+    buffer.position(buffer.position() - Byte.BYTES);
+    if (version == LargeColumnSupportedLongsSketchColumnBlockCompressedSerializer.VERSION_BLOCK_COMPRESSED) {
+      builder.setComplexColumnSupplier(
+          new LongsSketchColumnPartSupplier(
+              getTypeName(),
+              new LongsSketchColumnIndexed(buffer, LongsSketchObjectStrategy.STRATEGY)
+          )
+      );
+    } else {
+      // For backward compatibility, read per sketch object compressed
+      builder.setComplexColumnSupplier(
+          new ComplexColumnPartSupplier(
+              getTypeName(),
+              GenericIndexed.read(
+                  buffer,
+                  new DecompressingLongsSketchObjectStrategy(
+                      IndexIO.BYTE_ORDER,
+                      CompressionStrategy.LZ4
+                  ),
+                  builder.getFileMapper()
+              )
+          )
+      );
+    }
   }
 
   static LongsSketchWrap deserializeSketch(final Object object)
@@ -95,12 +117,17 @@ public class LongsSketchMergeComplexMetricSerde extends ComplexMetricSerde
     } else if (object instanceof LongsSketchWrap) {
       return (LongsSketchWrap) object;
     }
-    throw new IAE("Object is not of a type that can be deserialized to an LongsSketchWrap:" + object.getClass().getName());
+    throw new IAE("Object is not of a type that can be deserialized to an LongsSketchWrap:" + object.getClass()
+                                                                                                    .getName());
   }
 
   @Override
   public GenericColumnSerializer getSerializer(final SegmentWriteOutMedium segmentWriteOutMedium, final String column)
   {
-    return LargeColumnSupportedLongsSketchColumnCompressedSerializer.create(segmentWriteOutMedium, column, this.getObjectStrategy(), CompressionStrategy.LZ4);
+    return LargeColumnSupportedLongsSketchColumnBlockCompressedSerializer.create(
+        segmentWriteOutMedium,
+        column,
+        this.getObjectStrategy()
+    );
   }
 }

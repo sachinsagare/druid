@@ -75,8 +75,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.druid.sql.calcite.util.CalciteTests.createRow;
-
 public class CollectSetSqlAggregatorTest extends CalciteTestBase
 {
   private static final String DATA_SOURCE = "foo";
@@ -122,7 +120,7 @@ public class CollectSetSqlAggregatorTest extends CalciteTestBase
     List<InputRow> inputRows = new ArrayList<>();
     for (String[] row : CollectSetTestHelper.ROWS) {
       inputRows.add(
-          createRow(
+          CalciteTests.createRow(
               ImmutableMap.<String, Object>builder()
                   .put(CollectSetTestHelper.DATETIME, row[0])
                   .put(CollectSetTestHelper.DIMENSIONS[0], row[1])
