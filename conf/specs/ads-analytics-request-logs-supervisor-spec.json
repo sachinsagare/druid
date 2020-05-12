@@ -35,6 +35,7 @@
             "filterOperators",
             "objectIdEntityType",
             "ldap",
+            "druidRequestId",
             "requestB64Encoded",
             {
               "type": "long",
@@ -43,6 +44,10 @@
             {
               "type": "long",
               "name": "userId"
+            },
+            {
+              "type": "long",
+              "name": "clientId"
             },
             {
               "type": "long",
