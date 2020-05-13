@@ -16,7 +16,7 @@
   "query/segment/time" : { "dimensions" : [], "type" : "timer"},
   "query/wait/time" : { "dimensions" : [], "type" : "timer"},
   "segment/scan/pending" : { "dimensions" : [], "type" : "gauge"},
-  "query/segmentAndCache/time" : { "dimensions" : ["segment"], "dimensionThresholdMap": {"segment": <STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>}, "type" : "timer" },
+  "query/segmentAndCache/time" : { "dimensions" : ["id","segment"], "dimensionThresholdMap": {"id": <STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD> ,"segment": <STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>}, "type" : "timer" },
   "query/cpu/time" : { "dimensions" : ["dataSource", "type", "priority"], "type" : "timer" },
 
   "jetty/numOpenConnections": {"dimensions" : [], "type": "gauge"},
