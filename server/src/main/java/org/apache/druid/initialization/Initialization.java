@@ -66,6 +66,7 @@ import org.apache.druid.server.initialization.AuthorizerMapperModule;
 import org.apache.druid.server.initialization.jetty.JettyServerModule;
 import org.apache.druid.server.metrics.MetricsModule;
 import org.apache.druid.server.security.TLSCertificateCheckerModule;
+import org.apache.druid.timeline.TimelineModule;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
 import java.io.File;
@@ -399,7 +400,8 @@ public class Initialization
         new EscalatorModule(),
         new AuthorizerModule(),
         new AuthorizerMapperModule(),
-        new StartupLoggingModule()
+        new StartupLoggingModule(),
+        new TimelineModule()
     );
 
     ModuleList actualModules = new ModuleList(baseInjector);

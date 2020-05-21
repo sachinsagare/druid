@@ -22,6 +22,7 @@ package org.apache.druid.timeline;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.PartitionHolder;
 import org.apache.druid.utils.CollectionUtils;
@@ -40,8 +41,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends Overshadowable<ObjectType>> implements TimelineLookup<VersionType, ObjectType>
+public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends Overshadowable<ObjectType>>
+    implements TimelineLookup<VersionType, ObjectType>
 {
+  private static final Logger LOG = new Logger(NamespacedVersionedIntervalTimeline.class);
+
   final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
   final Map<String, VersionedIntervalTimeline<VersionType, ObjectType>> timelines = new HashMap<>();
@@ -74,14 +78,16 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
 
   public static NamespacedVersionedIntervalTimeline<String, DataSegment> forSegments(Iterator<DataSegment> segments)
   {
-    NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
+    NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = new NamespacedVersionedIntervalTimeline<>(
+        Ordering.natural());
     addSegments(timeline, segments);
     return timeline;
   }
 
   public static void addSegments(
       NamespacedVersionedIntervalTimeline<String, DataSegment> timeline,
-      Iterator<DataSegment> segments)
+      Iterator<DataSegment> segments
+  )
   {
     // TODO - may want to create addAll method to limit number of times we need to aquire write lock
     while (segments.hasNext()) {
@@ -90,7 +96,8 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
           getNamespace(segment.getShardSpec().getIdentifier()),
           segment.getInterval(),
           segment.getVersion(),
-          segment.getShardSpec().createChunk(segment));
+          segment.getShardSpec().createChunk(segment)
+      );
     }
   }
 
@@ -110,7 +117,7 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
    * Returns a lazy collection with all objects (including overshadowed, see {@link #findFullyOvershadowed}) in this
    * NamespacedVersionedIntervalTimeline to be used for iteration or {@link Collection#stream()} transformation.
    * The order of objects in this collection is unspecified.
-   *
+   * <p>
    * Note: iteration over the returned collection may not be as trivially cheap as, for example, iteration over an
    * ArrayList. Try (to some reasonable extent) to organize the code so that it iterates the returned collection only
    * once rather than several times.
@@ -149,8 +156,10 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
     try {
       lock.writeLock().lock();
 
-      VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.computeIfAbsent(namespace,
-          func -> new VersionedIntervalTimeline<>(versionComparator));
+      VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.computeIfAbsent(
+          namespace,
+          func -> new VersionedIntervalTimeline<>(versionComparator)
+      );
 
       timeline.add(interval, version, object);
     }
@@ -159,7 +168,12 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
     }
   }
 
-  public PartitionChunk<ObjectType> remove(String namespace, Interval interval, VersionType version, PartitionChunk<ObjectType> chunk)
+  public PartitionChunk<ObjectType> remove(
+      String namespace,
+      Interval interval,
+      VersionType version,
+      PartitionChunk<ObjectType> chunk
+  )
   {
     try {
       lock.writeLock().lock();
@@ -284,16 +298,40 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
   {
     try {
       lock.readLock().lock();
-
-      VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.get(namespace);
-      if (timeline == null) {
+      if (namespace == null) {
         return false;
       }
-
-      return timeline.isOvershadowed(interval, version, objectType);
+      if (timelines.containsKey(namespace) && timelines.get(namespace).isOvershadowed(interval, version, objectType)) {
+        return true;
+      }
+      return isOvershadowedByParent(namespace, interval, version, objectType);
     }
     finally {
       lock.readLock().unlock();
     }
+  }
+
+  private boolean isOvershadowedByParent(
+      String namespace,
+      Interval interval,
+      VersionType version,
+      ObjectType objectType
+  )
+  {
+    OverShadowConfig overShadowConfig = OverShadowConfigProvider.get();
+    if (overShadowConfig == null) {
+      return false;
+    }
+    Map<String, String> namespaceChildParentMap = overShadowConfig.getNamespaceChildParentMap();
+    for (String key : namespaceChildParentMap.keySet()) {
+      if (namespace.matches(key)) {
+        String parentNamespace = namespaceChildParentMap.get(key);
+        if (!parentNamespace.equals(namespace) && timelines.containsKey(parentNamespace) && timelines.get(
+            parentNamespace).isOvershadowed(interval, version, objectType)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
