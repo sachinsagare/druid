@@ -83,6 +83,14 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
     add(supportTimeline, NAMESPACE3, "2019-07-01/2019-07-03", new OvershadowableInteger("0", 0, 1));
     add(supportTimeline, NAMESPACE3, "2020-04-01/2020-05-01", new OvershadowableInteger("0", 0, 1));
 
+    add(supportTimeline, NAMESPACE1, "2021-05-01/2021-05-10", new OvershadowableInteger("0", 0, 1));
+    add(supportTimeline, NAMESPACE1, "2021-05-10/2021-05-20", new OvershadowableInteger("0", 0, 1));
+    add(supportTimeline, NAMESPACE1, "2021-05-20/2021-06-01", new OvershadowableInteger("0", 0, 1));
+    add(supportTimeline, NAMESPACE1, "2021-06-01/2021-06-10", new OvershadowableInteger("0", 0, 1));
+    add(supportTimeline, NAMESPACE1, "2021-06-10/2021-06-20", new OvershadowableInteger("0", 0, 1));
+    add(supportTimeline, NAMESPACE1, "2021-06-20/2021-07-01", new OvershadowableInteger("0", 0, 1));
+
+
     add(secondSupportTimeline, NAMESPACE1, "2019-09-01/2019-09-03", new OvershadowableInteger("0", 0, 1));
     add(secondSupportTimeline, NAMESPACE1, "2019-09-03/2019-09-06", new OvershadowableInteger("0", 0, 1));
     add(secondSupportTimeline, NAMESPACE1, "2019-09-06/2019-09-09", new OvershadowableInteger("0", 0, 1));
@@ -113,6 +121,8 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
     add(secondSupportTimeline, SUB_NAMESPACE3, "2019-07-01/2019-07-03", new OvershadowableInteger("0", 0, 1));
     add(secondSupportTimeline, SUB_NAMESPACE3, "2019-07-03/2019-07-06", new OvershadowableInteger("0", 0, 1));
 
+    add(secondSupportTimeline, NAMESPACE1, "2021-05-01/2021-07-06", new OvershadowableInteger("0", 0, 1));
+
     supportTimelinesByDataSource.put(SUPPORT_DATASOURCE, supportTimeline);
     supportTimelinesByDataSource.put(SECOND_SUPPORT_DATASOURCE, secondSupportTimeline);
 
@@ -132,6 +142,10 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
     add(timeline, NAMESPACE3, "2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1));
     add(timeline, SUB_NAMESPACE3, "2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1));
     add(timeline, SUB_NAMESPACE3, "2020-07-01/2020-08-01", new OvershadowableInteger("0", 0, 1));
+
+    add(timeline, NAMESPACE1, "2021-05-01/2021-06-01", new OvershadowableInteger("0", 0, 1));
+    add(timeline, NAMESPACE1, "2021-06-01/2021-07-01", new OvershadowableInteger("0", 0, 1));
+
   }
 
   @Test
@@ -200,6 +214,23 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
                     )
             ),
             timeline.lookupWithComplementary(ImmutableList.of(Intervals.of("2019-07-01/2019-07-12")))
+    );
+  }
+
+  @Test
+  public void testSegmentsDoNotUndershootStartDate()
+  {
+    assertValues(
+            ImmutableMap.of(
+                    DATASOURCE, Arrays.asList(
+                            createExpected("2021-06-01/2021-07-01", new OvershadowableInteger("0", 0, 1))
+                    ),
+                    SUPPORT_DATASOURCE, Arrays.asList(
+                            createExpected("2021-05-10/2021-05-20", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2021-05-20/2021-06-01", new OvershadowableInteger("0", 0, 1))
+                    )
+            ),
+            timeline.lookupWithComplementary(ImmutableList.of(Intervals.of("2021-05-10/2021-07-01")))
     );
   }
 
