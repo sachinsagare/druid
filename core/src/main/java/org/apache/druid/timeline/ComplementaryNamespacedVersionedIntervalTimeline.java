@@ -115,7 +115,11 @@ public class ComplementaryNamespacedVersionedIntervalTimeline<VersionType, Objec
               // For all but the base dataSource we want to filter intervals with end times past the requested interval
               // end time to prevent returning segments convering time intervals not requested
               if (!dataSource.equals(supportTimelinesByDataSource.lastKey())) {
-                supportEntry = supportEntry.stream().filter(t -> !t.getTrueInterval().getEnd().isAfter(i.getEnd()))
+                supportEntry = supportEntry.stream()
+                        .filter(t ->
+                          !t.getTrueInterval().getEnd().isAfter(i.getEnd())
+                                  && !t.getTrueInterval().getStart().isBefore(i.getStart())
+                        )
                         .collect(Collectors.toList());
               }
               if (!supportEntry.isEmpty()) {
