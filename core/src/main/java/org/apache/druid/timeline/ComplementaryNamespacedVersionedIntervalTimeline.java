@@ -19,6 +19,7 @@
 
 package org.apache.druid.timeline;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.map.LinkedMap;
@@ -52,6 +53,12 @@ public class ComplementaryNamespacedVersionedIntervalTimeline<VersionType, Objec
             new LinkedMap<>(supportDataSourceQueryOrder.size() + 1);
     this.supportTimelinesByDataSource.put(dataSource, this);
     supportDataSourceQueryOrder.forEach(ds -> this.supportTimelinesByDataSource.put(ds, supportTimelinesByDataSource.get(ds)));
+  }
+
+  @VisibleForTesting
+  public LinkedMap<String, NamespacedVersionedIntervalTimeline<VersionType, ObjectType>> getSupportTimelinesByDataSource()
+  {
+    return supportTimelinesByDataSource;
   }
 
   @Override

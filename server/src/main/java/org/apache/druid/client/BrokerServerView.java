@@ -20,6 +20,7 @@
 package org.apache.druid.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
@@ -49,7 +50,6 @@ import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.utils.CollectionUtils;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +87,6 @@ public class BrokerServerView implements TimelineServerView
   private final Predicate<Pair<DruidServerMetadata, DataSegment>> segmentFilter;
 
   private final Map<String, List<String>> dataSourceComplementaryMapToQueryOrder;
-  private final Map<String, List<String>> dataSourceComplementaryReverseMapToQueryOrder;
 
   private final CountDownLatch initialized = new CountDownLatch(1);
 
@@ -120,20 +119,15 @@ public class BrokerServerView implements TimelineServerView
             dataSourceComplementaryMapToQueryOrder.putIfAbsent(key, dataSourceMultiComplementConfigMapping.get(key))
     );
 
-    this.dataSourceComplementaryReverseMapToQueryOrder = new HashMap<>();
-    dataSourceComplementaryMapToQueryOrder.forEach((dataSource, supportDataSources) -> {
-      supportDataSources.forEach(supportDataSource -> {
-        List<String> dependentDataSources = dataSourceComplementaryReverseMapToQueryOrder.getOrDefault(
-                supportDataSource,
-                new ArrayList<>());
-        dependentDataSources.add(dataSource);
-        dataSourceComplementaryReverseMapToQueryOrder.put(supportDataSource, dependentDataSources);
-      });
-    });
-
     this.clients = new ConcurrentHashMap<>();
     this.selectors = new HashMap<>();
     this.timelines = new HashMap<>();
+
+    // Initialize timelines with the dataSources that we know about from dataSourceComplementaryReverseMapToQueryOrder
+    // the remaining dataSources will be added in as segments are loaded onto historicals
+    for (String dataSource : dataSourceComplementaryMapToQueryOrder.keySet()) {
+      timelines.putIfAbsent(dataSource, getTimeline(dataSource));
+    }
 
     this.segmentFilter = (Pair<DruidServerMetadata, DataSegment> metadataAndSegment) -> {
       if (segmentWatcherConfig.getWatchedTiers() != null
@@ -239,7 +233,8 @@ public class BrokerServerView implements TimelineServerView
     return clients.remove(server.getName());
   }
 
-  private void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
+  @VisibleForTesting
+  protected void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
   {
     SegmentId segmentId = segment.getId();
     synchronized (lock) {
@@ -253,38 +248,7 @@ public class BrokerServerView implements TimelineServerView
         NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline = timelines
                 .get(dataSource);
         if (timeline == null) {
-          if (dataSourceComplementaryMapToQueryOrder.containsKey(dataSource)) {
-            Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
-            for (String supportDataSource : dataSourceComplementaryMapToQueryOrder.get(dataSource)) {
-              NamespacedVersionedIntervalTimeline<String, ServerSelector> supportTimeline = timelines.get(supportDataSource);
-              if (supportTimeline == null) {
-                supportTimeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
-                timelines.put(supportDataSource, supportTimeline);
-              }
-              supportTimelinesByDataSource.put(supportDataSource, supportTimeline);
-            }
-            timeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                    dataSource,
-                    supportTimelinesByDataSource,
-                    dataSourceComplementaryMapToQueryOrder.get(dataSource));
-
-          } else {
-            timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
-            if (dataSourceComplementaryReverseMapToQueryOrder.containsKey(dataSource)) {
-              for (String dependentDataSource : dataSourceComplementaryReverseMapToQueryOrder.get(dataSource)) {
-                NamespacedVersionedIntervalTimeline<String, ServerSelector> complementaryTimeline = timelines.get(dependentDataSource);
-                if (complementaryTimeline == null) {
-                  Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
-                  supportTimelinesByDataSource.put(dataSource, timeline);
-                  complementaryTimeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                          dependentDataSource,
-                          supportTimelinesByDataSource,
-                          dataSourceComplementaryMapToQueryOrder.get(dependentDataSource));
-                }
-                timelines.put(dependentDataSource, complementaryTimeline);
-              }
-            }
-          }
+          timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
           timelines.put(segment.getDataSource(), timeline);
         }
 
@@ -406,6 +370,30 @@ public class BrokerServerView implements TimelineServerView
           }
       );
     }
+  }
+
+  private NamespacedVersionedIntervalTimeline<String, ServerSelector> getTimeline(String dataSource)
+  {
+    if (timelines.containsKey(dataSource)) {
+      return timelines.get(dataSource);
+    }
+    NamespacedVersionedIntervalTimeline timeline;
+    if (dataSourceComplementaryMapToQueryOrder.containsKey(dataSource)) {
+      // We need to create a ComplementaryNamespacedVersionedIntervalTimeline
+      Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
+      for (String supportDataSource : dataSourceComplementaryMapToQueryOrder.get(dataSource)) {
+        supportTimelinesByDataSource.putIfAbsent(supportDataSource, getTimeline(supportDataSource));
+      }
+      timeline = new ComplementaryNamespacedVersionedIntervalTimeline(
+              dataSource,
+              supportTimelinesByDataSource,
+              dataSourceComplementaryMapToQueryOrder.get(dataSource));
+      timelines.put(dataSource, timeline);
+    } else {
+      timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
+      timelines.put(dataSource, timeline);
+    }
+    return timeline;
   }
 
   @Override
