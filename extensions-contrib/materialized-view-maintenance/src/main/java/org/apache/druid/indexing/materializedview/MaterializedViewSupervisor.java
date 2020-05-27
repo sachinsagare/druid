@@ -345,16 +345,16 @@ public class MaterializedViewSupervisor implements Supervisor
         getVersionAndBaseSegments(
             metadataStorageCoordinator.getUsedSegmentsForInterval(
                 dataSource,
-                ALL_INTERVAL
-            )
+                ALL_INTERVAL,
+                null)
         );
     // Pair<interval -> max(created_date), interval -> list<DataSegment>>
     Pair<Map<Interval, String>, Map<Interval, List<DataSegment>>> baseSegmentsSnapshot =
         getMaxCreateDateAndBaseSegments(
             metadataStorageCoordinator.getUsedSegmentAndCreatedDateForInterval(
                 spec.getBaseDataSource(),
-                ALL_INTERVAL
-            )
+                ALL_INTERVAL,
+                null)
         );
     // baseSegments are used to create HadoopIndexTask
     Map<Interval, List<DataSegment>> baseSegments = baseSegmentsSnapshot.rhs;

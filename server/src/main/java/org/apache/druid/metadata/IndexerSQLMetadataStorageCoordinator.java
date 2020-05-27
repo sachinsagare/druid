@@ -46,7 +46,6 @@ import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NoneShardSpec;
-import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
@@ -117,7 +116,9 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   }
 
   @Override
-  public List<DataSegment> getUsedSegmentsForIntervals(final String dataSource, final List<Interval> intervals)
+  public List<DataSegment> getUsedSegmentsForIntervals(final String dataSource,
+                                                       final List<Interval> intervals,
+                                                       @Nullable final String nameSpace)
   {
     return connector.retryWithHandle(
         handle -> {
@@ -125,7 +126,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
               timeline = getTimelineForIntervalsWithHandle(
               handle,
               dataSource,
-              intervals
+              intervals,
+              nameSpace
           );
 
           return intervals
@@ -143,21 +145,31 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   private List<SegmentIdWithShardSpec> getPendingSegmentsForIntervalWithHandle(
       final Handle handle,
       final String dataSource,
-      final Interval interval
+      final Interval interval,
+      @Nullable final String nameSpace
   ) throws IOException
   {
+
+    final StringBuilder querySb = new StringBuilder();
+    querySb.append("SELECT payload FROM %1$s WHERE dataSource = :dataSource AND start <= :end and %2$send%2$s >= :start");
+    if (nameSpace != null) {
+      querySb.append(" AND id like :nameSpace");
+    }
+
     final List<SegmentIdWithShardSpec> identifiers = new ArrayList<>();
 
     final ResultIterator<byte[]> dbSegments =
         handle.createQuery(
             StringUtils.format(
-                "SELECT payload FROM %1$s WHERE dataSource = :dataSource AND start <= :end and %2$send%2$s >= :start",
+                querySb.toString(),
                 dbTables.getPendingSegmentsTable(), connector.getQuoteString()
             )
         )
               .bind("dataSource", dataSource)
               .bind("start", interval.getStart().toString())
               .bind("end", interval.getEnd().toString())
+               // extra binding doesn't cause issue when nameSpace is not used in sql.
+              .bind("nameSpace", "%_" + nameSpace + "_%")
               .map(ByteArrayMapper.FIRST)
               .iterator();
 
@@ -178,7 +190,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   private NamespacedVersionedIntervalTimeline<String, DataSegment> getTimelineForIntervalsWithHandle(
       final Handle handle,
       final String dataSource,
-      final List<Interval> intervals
+      final List<Interval> intervals,
+      @Nullable final String nameSpace
   )
   {
     if (intervals == null || intervals.isEmpty()) {
@@ -198,6 +211,10 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       }
     }
 
+    if (nameSpace != null) {
+      sb.append(" AND id like ?");
+    }
+
     Query<Map<String, Object>> sql = handle.createQuery(
         StringUtils.format(
             sb.toString(),
@@ -210,6 +227,11 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       sql = sql
           .bind(2 * i + 1, interval.getEnd().toString())
           .bind(2 * i + 2, interval.getStart().toString());
+    }
+
+    if (nameSpace != null) {
+      // Use positional binding because it seems mix of position and name bindings is not supported.
+      sql = sql.bind(2 * (intervals.size() - 1) + 3, "%_" + nameSpace + "_%");
     }
 
     try (final ResultIterator<byte[]> dbSegments = sql.map(ByteArrayMapper.FIRST).iterator()) {
@@ -401,13 +423,20 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   ) throws IOException
   {
     final String previousSegmentIdNotNull = previousSegmentId == null ? "" : previousSegmentId;
+
+    final StringBuilder querySb = new StringBuilder();
+    querySb.append("SELECT payload FROM %s WHERE ")
+        .append("dataSource = :dataSource AND ")
+        .append("sequence_name = :sequence_name AND ")
+        .append("sequence_prev_id = :sequence_prev_id");
+
+    if (shardSpecFactory.getClass() == NamedNumberedShardSpecFactory.class) {
+      querySb.append(" AND id like :nameSpace");
+    }
+
     final CheckExistingSegmentIdResult result = checkAndGetExistingSegmentId(
         handle.createQuery(
-            StringUtils.format(
-                "SELECT payload FROM %s WHERE "
-                + "dataSource = :dataSource AND "
-                + "sequence_name = :sequence_name AND "
-                + "sequence_prev_id = :sequence_prev_id",
+            StringUtils.format(querySb.toString(),
                 dbTables.getPendingSegmentsTable()
             )
         ),
@@ -416,7 +445,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         previousSegmentIdNotNull,
         Pair.of("dataSource", dataSource),
         Pair.of("sequence_name", sequenceName),
-        Pair.of("sequence_prev_id", previousSegmentIdNotNull)
+        Pair.of("sequence_prev_id", previousSegmentIdNotNull),
+        Pair.of("nameSpace", "%_" + nameSpace + "_%")
     );
 
     if (result.found) {
@@ -476,17 +506,21 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       @Nullable final String nameSpace
   ) throws IOException
   {
+    final StringBuilder querySb = new StringBuilder();
+    querySb.append("SELECT payload FROM %s WHERE ")
+        .append("dataSource = :dataSource AND ")
+        .append("sequence_name = :sequence_name AND ")
+        .append("start = :start AND ")
+        .append("%2$send%2$s = :end");
+
+    if (shardSpecFactory.getClass() == NamedNumberedShardSpecFactory.class) {
+      querySb.append(" AND id like :nameSpace");
+    }
+
     final CheckExistingSegmentIdResult result = checkAndGetExistingSegmentId(
-        handle.createQuery(
-            StringUtils.format(
-                "SELECT payload FROM %s WHERE "
-                + "dataSource = :dataSource AND "
-                + "sequence_name = :sequence_name AND "
-                + "start = :start AND "
-                + "%2$send%2$s = :end",
-                dbTables.getPendingSegmentsTable(),
-                connector.getQuoteString()
-            )
+        handle.createQuery(StringUtils.format(querySb.toString(),
+            dbTables.getPendingSegmentsTable(),
+            connector.getQuoteString())
         ),
         interval,
         sequenceName,
@@ -494,7 +528,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         Pair.of("dataSource", dataSource),
         Pair.of("sequence_name", sequenceName),
         Pair.of("start", interval.getStart().toString()),
-        Pair.of("end", interval.getEnd().toString())
+        Pair.of("end", interval.getEnd().toString()),
+        Pair.of("nameSpace", "%_" + nameSpace + "_%")
     );
 
     if (result.found) {
@@ -653,17 +688,11 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       @Nullable final String nameSpace
   ) throws IOException
   {
-    final ShardSpecFactory effectiveShardSpecFactory;
-    if (shardSpecFactory.getShardSpecClass() == NumberedShardSpec.class && nameSpace != null) {
-      effectiveShardSpecFactory = new NamedNumberedShardSpecFactory(nameSpace);
-    } else {
-      effectiveShardSpecFactory = shardSpecFactory;
-    }
-
     final List<TimelineObjectHolder<String, DataSegment>> existingChunks = getTimelineForIntervalsWithHandle(
         handle,
         dataSource,
-        ImmutableList.of(interval)
+        ImmutableList.of(interval),
+        nameSpace
     ).lookup(interval);
 
     if (existingChunks.size() > 1) {
@@ -680,7 +709,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       if (existingChunks
           .stream()
           .flatMap(holder -> StreamSupport.stream(holder.getObject().spliterator(), false))
-          .anyMatch(chunk -> !chunk.getObject().getShardSpec().isCompatible(effectiveShardSpecFactory.getShardSpecClass()))) {
+          .anyMatch(chunk -> !chunk.getObject().getShardSpec().isCompatible(shardSpecFactory.getShardSpecClass()))) {
         // All existing segments should have a compatible shardSpec with shardSpecFactory.
         return null;
       }
@@ -695,7 +724,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
                              // Here we check only the segments of the same shardSpec to find out the max partitionId.
                              // Note that OverwriteShardSpec has the higher range for partitionId than others.
                              // See PartitionIds.
-                             .filter(chunk -> chunk.getObject().getShardSpec().getClass() == effectiveShardSpecFactory.getShardSpecClass())
+                             .filter(chunk -> chunk.getObject().getShardSpec().getClass() == shardSpecFactory.getShardSpecClass())
                              .max(Comparator.comparing(chunk -> chunk.getObject().getShardSpec().getPartitionNum()))
                              .map(chunk -> SegmentIdWithShardSpec.fromDataSegment(chunk.getObject()))
                              .orElse(null);
@@ -704,7 +733,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       final List<SegmentIdWithShardSpec> pendings = getPendingSegmentsForIntervalWithHandle(
           handle,
           dataSource,
-          interval
+          interval,
+          nameSpace
       );
 
       if (maxId != null) {
@@ -712,7 +742,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       }
 
       maxId = pendings.stream()
-                      .filter(id -> id.getShardSpec().getClass() == effectiveShardSpecFactory.getShardSpecClass())
+                      .filter(id -> id.getShardSpec().getClass() == shardSpecFactory.getShardSpecClass())
                       .max((id1, id2) -> {
                         final int versionCompare = id1.getVersion().compareTo(id2.getVersion());
                         if (versionCompare != 0) {
@@ -734,7 +764,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       }
 
       if (maxId == null) {
-        final ShardSpec shardSpec = effectiveShardSpecFactory.create(jsonMapper, null);
+        final ShardSpec shardSpec = shardSpecFactory.create(jsonMapper, null);
         return new SegmentIdWithShardSpec(dataSource, interval, versionOfExistingChunks == null ? maxVersion : versionOfExistingChunks, shardSpec);
       } else if (!maxId.getInterval().equals(interval) || maxId.getVersion().compareTo(maxVersion) > 0) {
         log.warn(
@@ -746,7 +776,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         );
         return null;
       } else {
-        final ShardSpec newShardSpec = effectiveShardSpecFactory.create(jsonMapper, maxId.getShardSpec());
+        final ShardSpec newShardSpec = shardSpecFactory.create(jsonMapper, maxId.getShardSpec());
         return new SegmentIdWithShardSpec(
             dataSource,
             maxId.getInterval(),
@@ -883,6 +913,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     );
   }
 
+  //todo: druid_dataSource table and methods using this table may need to be updated to be aware of nameSpace in future
+  // to support multiple realtime ingestions to the same datasource.
   /**
    * Compare-and-swap dataSource metadata in a transaction. This will only modify dataSource metadata if it equals
    * oldCommitMetadata when this function is called (based on T.equals). This method is idempotent in that if
@@ -1123,7 +1155,9 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   }
 
   @Override
-  public List<DataSegment> getUnusedSegmentsForInterval(final String dataSource, final Interval interval)
+  public List<DataSegment> getUnusedSegmentsForInterval(final String dataSource,
+                                                        final Interval interval,
+                                                        @Nullable final String nameSpace)
   {
     List<DataSegment> matchingSegments = connector.inReadOnlyTransaction(
         new TransactionCallback<List<DataSegment>>()
@@ -1131,14 +1165,20 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
           @Override
           public List<DataSegment> inTransaction(final Handle handle, final TransactionStatus status)
           {
+            final StringBuilder querySb = new StringBuilder();
+            querySb.append("SELECT payload FROM %1$s WHERE dataSource = :dataSource and start >= :start ");
+            querySb.append("and start <= :end and %2$send%2$s <= :end and used = false");
+
+            if (nameSpace != null) {
+              querySb.append(" AND id like :nameSpace");
+            }
             // 2 range conditions are used on different columns, but not all SQL databases properly optimize it.
             // Some databases can only use an index on one of the columns. An additional condition provides
             // explicit knowledge that 'start' cannot be greater than 'end'.
             return handle
                 .createQuery(
                     StringUtils.format(
-                        "SELECT payload FROM %1$s WHERE dataSource = :dataSource and start >= :start "
-                        + "and start <= :end and %2$send%2$s <= :end and used = false",
+                        querySb.toString(),
                         dbTables.getSegmentsTable(), connector.getQuoteString()
                     )
                 )
@@ -1146,6 +1186,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
                 .bind("dataSource", dataSource)
                 .bind("start", interval.getStart().toString())
                 .bind("end", interval.getEnd().toString())
+                .bind("nameSpace", "%_" + nameSpace + "_%")
                 .map(ByteArrayMapper.FIRST)
                 .fold(
                     new ArrayList<>(),
@@ -1178,19 +1219,29 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
   }
 
   @Override
-  public List<Pair<DataSegment, String>> getUsedSegmentAndCreatedDateForInterval(String dataSource, Interval interval)
+  public List<Pair<DataSegment, String>> getUsedSegmentAndCreatedDateForInterval(String dataSource,
+                                                                                 Interval interval,
+                                                                                 @Nullable String nameSpace)
   {
+    final StringBuilder querySb = new StringBuilder();
+    querySb.append("SELECT created_date, payload FROM %1$s WHERE dataSource = :dataSource ");
+    querySb.append("AND start >= :start AND %2$send%2$s <= :end AND used = true");
+
+    if (nameSpace != null) {
+      querySb.append(" AND id like :nameSpace");
+    }
+
     return connector.retryWithHandle(
         handle -> handle.createQuery(
             StringUtils.format(
-                "SELECT created_date, payload FROM %1$s WHERE dataSource = :dataSource " +
-                "AND start >= :start AND %2$send%2$s <= :end AND used = true",
+                querySb.toString(),
                 dbTables.getSegmentsTable(), connector.getQuoteString()
             )
         )
                         .bind("dataSource", dataSource)
                         .bind("start", interval.getStart().toString())
                         .bind("end", interval.getEnd().toString())
+                        .bind("nameSpace", "%_" + nameSpace + "_%")
                         .map(new ResultSetMapper<Pair<DataSegment, String>>()
                         {
                           @Override

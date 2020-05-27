@@ -85,7 +85,8 @@ public class SegmentListUsedAction implements TaskAction<List<DataSegment>>
   @Override
   public List<DataSegment> perform(Task task, TaskActionToolbox toolbox)
   {
-    return toolbox.getIndexerMetadataStorageCoordinator().getUsedSegmentsForIntervals(dataSource, intervals);
+    return toolbox.getIndexerMetadataStorageCoordinator().getUsedSegmentsForIntervals(dataSource, intervals,
+        task.getContextValue("nameSpace"));
   }
 
   @Override

@@ -45,6 +45,7 @@ public class MetadataStoreBasedUsedSegmentLister implements UsedSegmentLister
   @Override
   public List<DataSegment> getUsedSegmentsForIntervals(String dataSource, List<Interval> intervals)
   {
-    return indexerMetadataStorageCoordinator.getUsedSegmentsForIntervals(dataSource, intervals);
+    return indexerMetadataStorageCoordinator.getUsedSegmentsForIntervals(dataSource, intervals,
+        null);
   }
 }

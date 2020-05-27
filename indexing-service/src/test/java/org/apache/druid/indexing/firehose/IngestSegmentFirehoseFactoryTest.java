@@ -141,19 +141,23 @@ public class IngestSegmentFirehoseFactoryTest
       private final Set<DataSegment> published = new HashSet<>();
 
       @Override
-      public List<DataSegment> getUsedSegmentsForInterval(String dataSource, Interval interval)
+      public List<DataSegment> getUsedSegmentsForInterval(String dataSource, Interval interval,
+                                                          String nameSpace)
       {
         return ImmutableList.copyOf(SEGMENT_SET);
       }
 
       @Override
-      public List<DataSegment> getUsedSegmentsForIntervals(String dataSource, List<Interval> interval)
+      public List<DataSegment> getUsedSegmentsForIntervals(String dataSource,
+                                                           List<Interval> interval,
+                                                           String nameSpace)
       {
         return ImmutableList.copyOf(SEGMENT_SET);
       }
 
       @Override
-      public List<DataSegment> getUnusedSegmentsForInterval(String dataSource, Interval interval)
+      public List<DataSegment> getUnusedSegmentsForInterval(String dataSource, Interval interval,
+                                                            String nameSpace)
       {
         return ImmutableList.of();
       }

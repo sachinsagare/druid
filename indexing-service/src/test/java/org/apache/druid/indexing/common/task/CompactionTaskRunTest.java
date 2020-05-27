@@ -138,7 +138,7 @@ public class CompactionTaskRunTest extends IngestionTestBase
       @Override
       public List<DataSegment> getDatabaseSegmentDataSourceSegments(String dataSource, List<Interval> intervals)
       {
-        return getStorageCoordinator().getUsedSegmentsForIntervals(dataSource, intervals);
+        return getStorageCoordinator().getUsedSegmentsForIntervals(dataSource, intervals, null);
       }
     };
     segmentLoaderFactory = new SegmentLoaderFactory(getIndexIO(), getObjectMapper());
@@ -461,8 +461,8 @@ public class CompactionTaskRunTest extends IngestionTestBase
     final Set<DataSegment> usedSegments = new HashSet<>(
         getStorageCoordinator().getUsedSegmentsForIntervals(
             DATA_SOURCE,
-            Collections.singletonList(Intervals.of("2014-01-01/2014-01-02"))
-        )
+            Collections.singletonList(Intervals.of("2014-01-01/2014-01-02")),
+            null)
     );
 
     Assert.assertEquals(expectedSegments, usedSegments);

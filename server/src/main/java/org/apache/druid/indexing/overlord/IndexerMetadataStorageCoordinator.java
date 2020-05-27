@@ -40,14 +40,16 @@ public interface IndexerMetadataStorageCoordinator
    *
    * @param dataSource The datasource to query
    * @param interval   The interval for which all applicable and used datasources are requested. Start is inclusive, end is exclusive
-   *
+   * @param nameSpace
    * @return The DataSegments which include data in the requested interval. These segments may contain data outside the requested interval.
    *
    * @throws IOException
    */
-  default List<DataSegment> getUsedSegmentsForInterval(String dataSource, Interval interval)
+  default List<DataSegment> getUsedSegmentsForInterval(String dataSource,
+                                                       Interval interval,
+                                                       @Nullable String nameSpace)
   {
-    return getUsedSegmentsForIntervals(dataSource, Collections.singletonList(interval));
+    return getUsedSegmentsForIntervals(dataSource, Collections.singletonList(interval), nameSpace);
   }
 
   /**
@@ -55,22 +57,26 @@ public interface IndexerMetadataStorageCoordinator
    *
    * @param dataSource The datasource to query
    * @param interval   The interval for which all applicable and used datasources are requested. Start is inclusive, end is exclusive
-   *
+   * @param nameSpace
    * @return The DataSegments and the related created_date of segments which include data in the requested interval
    */
-  List<Pair<DataSegment, String>> getUsedSegmentAndCreatedDateForInterval(String dataSource, Interval interval);
+  List<Pair<DataSegment, String>> getUsedSegmentAndCreatedDateForInterval(String dataSource,
+                                                                          Interval interval,
+                                                                          @Nullable String nameSpace);
 
   /**
    * Get all segments which may include any data in the interval and are flagged as used.
    *
    * @param dataSource The datasource to query
    * @param intervals  The intervals for which all applicable and used datasources are requested.
-   *
+   * @param nameSpace
    * @return The DataSegments which include data in the requested intervals. These segments may contain data outside the requested interval.
    *
    * @throws IOException
    */
-  List<DataSegment> getUsedSegmentsForIntervals(String dataSource, List<Interval> intervals);
+  List<DataSegment> getUsedSegmentsForIntervals(String dataSource,
+                                                List<Interval> intervals,
+                                                @Nullable String nameSpace);
 
   /**
    * Attempts to insert a set of segments to the metadata storage. Returns the set of segments actually added (segments
@@ -198,7 +204,10 @@ public interface IndexerMetadataStorageCoordinator
    * @param dataSource The datasource the segments belong to
    * @param interval   Filter the data segments to ones that include data in this interval exclusively. Start is inclusive, end is exclusive
    *
+   * @param nameSpace
    * @return DataSegments which include ONLY data within the requested interval and are not flagged as used. Data segments NOT returned here may include data in the interval
    */
-  List<DataSegment> getUnusedSegmentsForInterval(String dataSource, Interval interval);
+  List<DataSegment> getUnusedSegmentsForInterval(String dataSource,
+                                                 Interval interval,
+                                                 @Nullable String nameSpace);
 }

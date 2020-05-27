@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
     @JsonSubTypes.Type(name = "numbered", value = NumberedShardSpecFactory.class),
     @JsonSubTypes.Type(name = "hashed", value = HashBasedNumberedShardSpecFactory.class),
     @JsonSubTypes.Type(name = "numbered_overwrite", value = NumberedOverwritingShardSpecFactory.class),
+    @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpecFactory.class),
 })
 public interface ShardSpecFactory
 {

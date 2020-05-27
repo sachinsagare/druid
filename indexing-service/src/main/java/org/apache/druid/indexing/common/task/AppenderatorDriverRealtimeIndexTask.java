@@ -88,7 +88,9 @@ import org.apache.druid.segment.realtime.firehose.TimedShutoffFirehoseFactory;
 import org.apache.druid.segment.realtime.plumber.Committers;
 import org.apache.druid.server.security.Action;
 import org.apache.druid.server.security.AuthorizerMapper;
+import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.ShardSpecFactory;
 import org.apache.druid.utils.CircularBuffer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -774,13 +776,21 @@ public class AppenderatorDriverRealtimeIndexTask extends AbstractTask implements
     );
   }
 
-  private static StreamAppenderatorDriver newDriver(
+  private StreamAppenderatorDriver newDriver(
       final DataSchema dataSchema,
       final Appenderator appenderator,
       final TaskToolbox toolbox,
       final FireDepartmentMetrics metrics
   )
   {
+    final String nameSpace = this.getContextValue("nameSpace");
+    final ShardSpecFactory effectiveShardSpecFactory;
+    if (nameSpace != null) {
+      effectiveShardSpecFactory = NamedNumberedShardSpecFactory.instance(nameSpace);
+    } else {
+      effectiveShardSpecFactory = NumberedShardSpecFactory.instance();
+    }
+
     return new StreamAppenderatorDriver(
         appenderator,
         new ActionBasedSegmentAllocator(
@@ -794,7 +804,7 @@ public class AppenderatorDriverRealtimeIndexTask extends AbstractTask implements
                 sequenceName,
                 previousSegmentId,
                 skipSegmentLineageCheck,
-                NumberedShardSpecFactory.instance(),
+                effectiveShardSpecFactory,
                 LockGranularity.TIME_CHUNK
             )
         ),

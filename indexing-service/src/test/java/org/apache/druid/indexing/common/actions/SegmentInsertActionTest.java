@@ -121,7 +121,7 @@ public class SegmentInsertActionTest
         ImmutableSet.of(SEGMENT1, SEGMENT2),
         ImmutableSet.copyOf(
             actionTestKit.getMetadataStorageCoordinator()
-                         .getUsedSegmentsForInterval(DATA_SOURCE, INTERVAL)
+                         .getUsedSegmentsForInterval(DATA_SOURCE, INTERVAL, null)
         )
     );
   }

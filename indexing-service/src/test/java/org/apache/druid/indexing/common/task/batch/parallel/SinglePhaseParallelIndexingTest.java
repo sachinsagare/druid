@@ -187,13 +187,15 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
     runTestTask(inputInterval, Granularities.DAY);
 
     final Interval interval = inputInterval == null ? Intervals.ETERNITY : inputInterval;
-    final List<DataSegment> allSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval);
+    final List<DataSegment> allSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval,
+        null);
 
     // Reingest the same data. Each segment should get replaced by a segment with a newer version.
     runTestTask(inputInterval, secondSegmentGranularity);
 
     // Verify that the segment has been replaced.
-    final List<DataSegment> newSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval);
+    final List<DataSegment> newSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval,
+        null);
     allSegments.addAll(newSegments);
     final VersionedIntervalTimeline<String, DataSegment> timeline = VersionedIntervalTimeline.forSegments(allSegments);
     final List<DataSegment> visibles = timeline.lookup(interval)
@@ -328,10 +330,13 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
   {
     final Interval interval = Intervals.of("2017/2018");
     runTestTask(interval, Granularities.DAY, true);
-    final List<DataSegment> oldSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval);
+    final List<DataSegment> oldSegments = getStorageCoordinator().getUsedSegmentsForInterval(
+        "dataSource", interval,
+        null);
 
     runTestTask(interval, Granularities.DAY, true);
-    final List<DataSegment> newSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval);
+    final List<DataSegment> newSegments = getStorageCoordinator().getUsedSegmentsForInterval("dataSource", interval,
+        null);
     Assert.assertTrue(newSegments.containsAll(oldSegments));
     final VersionedIntervalTimeline<String, DataSegment> timeline = VersionedIntervalTimeline.forSegments(newSegments);
     final List<DataSegment> visibles = timeline.lookup(interval)

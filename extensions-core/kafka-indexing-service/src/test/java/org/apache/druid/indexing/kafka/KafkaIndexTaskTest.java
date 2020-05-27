@@ -2739,8 +2739,8 @@ public class KafkaIndexTaskTest
   {
     return metadataStorageCoordinator.getUsedSegmentsForInterval(
         DATA_SCHEMA.getDataSource(),
-        Intervals.of("0000/3000")
-    ).stream().map(DataSegment::toDescriptor).collect(Collectors.toList());
+        Intervals.of("0000/3000"),
+        null).stream().map(DataSegment::toDescriptor).collect(Collectors.toList());
   }
 
   private void unlockAppenderatorBasePersistDirForTask(KafkaIndexTask task)
