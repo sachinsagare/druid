@@ -220,6 +220,10 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
 
   public List<TimelineObjectHolder<VersionType, ObjectType>> lookup(String namespace, Interval interval)
   {
+    if (namespace == null) {
+      return lookup(interval);
+    }
+
     try {
       lock.readLock().lock();
       VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.get(namespace);

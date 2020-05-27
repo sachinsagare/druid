@@ -552,7 +552,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         previousSegmentIdNotNull,
         Pair.of("dataSource", dataSource),
         Pair.of("sequence_name", sequenceName),
-        Pair.of("sequence_prev_id", previousSegmentIdNotNull)
+        Pair.of("sequence_prev_id", previousSegmentIdNotNull),
+        Pair.of("nameSpace", "%_" + nameSpace + "_%")
     );
 
     if (result.found) {
@@ -630,7 +631,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         Pair.of("dataSource", dataSource),
         Pair.of("sequence_name", sequenceName),
         Pair.of("start", interval.getStart().toString()),
-        Pair.of("end", interval.getEnd().toString())
+        Pair.of("end", interval.getEnd().toString()),
+        Pair.of("nameSpace", "%_" + nameSpace + "_%")
     );
 
     if (result.found) {
@@ -1111,6 +1113,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     );
   }
 
+  //todo: druid_dataSource table and methods using this table may need to be updated to be aware of nameSpace in future
+  // to support multiple realtime ingestions to the same datasource.
   /**
    * Compare-and-swap dataSource metadata in a transaction. This will only modify dataSource metadata if it equals
    * oldCommitMetadata when this function is called (based on T.equals). This method is idempotent in that if

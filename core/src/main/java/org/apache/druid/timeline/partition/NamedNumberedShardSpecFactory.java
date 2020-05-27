@@ -22,21 +22,42 @@ package org.apache.druid.timeline.partition;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
+import org.apache.druid.java.util.common.ISE;
 
 import javax.annotation.Nullable;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class NamedNumberedShardSpecFactory implements ShardSpecFactory
 {
-
-  @Nullable
+  @JsonProperty
   private final String partitionName;
+
+  private static final Map<String, NamedNumberedShardSpecFactory> INSTANCES = new ConcurrentHashMap<>();
 
   @JsonCreator
   public NamedNumberedShardSpecFactory(
-      @JsonProperty("partitionName") @Nullable String partitionName
+      @JsonProperty("partitionName") String partitionName
   )
   {
+    if (partitionName == null) {
+      throw new ISE("partition Name is null");
+    }
     this.partitionName = partitionName;
+  }
+
+  @JsonProperty
+  public String getPartitionName()
+  {
+    return partitionName;
+  }
+
+  public static NamedNumberedShardSpecFactory instance(String partitionName)
+  {
+    Preconditions.checkNotNull(partitionName, "partitionName is required");
+    return INSTANCES.computeIfAbsent(partitionName, NamedNumberedShardSpecFactory::new);
   }
 
   @Override

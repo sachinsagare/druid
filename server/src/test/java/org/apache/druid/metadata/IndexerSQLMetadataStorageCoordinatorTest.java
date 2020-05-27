@@ -37,18 +37,7 @@ import org.apache.druid.segment.TestHelper;
 import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
-import org.apache.druid.timeline.partition.DimensionRangeShardSpec;
-import org.apache.druid.timeline.partition.HashBasedNumberedPartialShardSpec;
-import org.apache.druid.timeline.partition.HashBasedNumberedShardSpec;
-import org.apache.druid.timeline.partition.LinearShardSpec;
-import org.apache.druid.timeline.partition.NoneShardSpec;
-import org.apache.druid.timeline.partition.NumberedOverwritePartialShardSpec;
-import org.apache.druid.timeline.partition.NumberedOverwriteShardSpec;
-import org.apache.druid.timeline.partition.NumberedPartialShardSpec;
-import org.apache.druid.timeline.partition.NumberedShardSpec;
-import org.apache.druid.timeline.partition.PartialShardSpec;
-import org.apache.druid.timeline.partition.PartitionIds;
-import org.apache.druid.timeline.partition.SingleDimensionShardSpec;
+import org.apache.druid.timeline.partition.*;
 import org.assertj.core.api.Assertions;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -61,6 +50,7 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.PreparedBatch;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.util.StringMapper;
+
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -255,7 +245,19 @@ public class IndexerSQLMetadataStorageCoordinatorTest
       100
   );
 
+  private final DataSegment namedNumbered = new DataSegment(
+          "fooDataSource",
+          Intervals.of("2015-01-01T00Z/2015-01-02T00Z"),
+          "version",
+          ImmutableMap.of(),
+          ImmutableList.of("dim1"),
+          ImmutableList.of("m1"),
+          new NamedNumberedShardSpec(1, 0, "onsite"),
+          9,
+          100);
+
   private final Set<DataSegment> SEGMENTS = ImmutableSet.of(defaultSegment, defaultSegment2);
+  private final Set<DataSegment> NAMED_SEGMENTS = ImmutableSet.of(namedNumbered);
   private final AtomicLong metadataUpdateCounter = new AtomicLong();
   private final AtomicLong segmentTableDropUpdateCounter = new AtomicLong();
 
@@ -517,6 +519,31 @@ public class IndexerSQLMetadataStorageCoordinatorTest
     segmentIds.sort(Comparator.naturalOrder());
     Assert.assertEquals(
         segmentIds,
+        retrieveUsedSegmentIds()
+    );
+
+    // Should not update dataSource metadata.
+    Assert.assertEquals(0, metadataUpdateCounter.get());
+  }
+
+  @Test
+  public void testNamedSimpleAnnounce() throws IOException
+  {
+    coordinator.announceHistoricalSegments(NAMED_SEGMENTS);
+    for (DataSegment segment : NAMED_SEGMENTS) {
+      Assert.assertArrayEquals(
+          mapper.writeValueAsString(segment).getBytes(StandardCharsets.UTF_8),
+          derbyConnector.lookup(
+              derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable(),
+              "id",
+              "payload",
+              segment.getId().toString()
+          )
+      );
+    }
+
+    Assert.assertEquals(
+        ImmutableList.of(namedNumbered.getId().toString()),
         retrieveUsedSegmentIds()
     );
 
@@ -1727,6 +1754,25 @@ public class IndexerSQLMetadataStorageCoordinatorTest
   }
 
 
+
+  @Test
+  public void testNamedAllocatePendingSegment()
+  {
+    final PartialShardSpec partialShardSpec = NumberedPartialShardSpec.instance();
+    final String dataSource = "ds";
+    final Interval interval = Intervals.of("2017-01-01/2017-02-01");
+    final SegmentIdWithShardSpec identifier = coordinator.allocatePendingSegment(
+        dataSource,
+        "seq",
+        null,
+        interval,
+        partialShardSpec,
+        "version",
+        false,
+        "onsite");
+
+    Assert.assertEquals("ds_2017-01-01T00:00:00.000Z_2017-02-01T00:00:00.000Z_version_onsite_0", identifier.toString());
+  }
 
   @Test
   public void testDeletePendingSegment() throws InterruptedException
