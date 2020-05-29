@@ -33,7 +33,8 @@ public class OverShadowConfigProvider
 
   private OverShadowConfig overShadowConfig = null;
 
-  public static OverShadowConfigProvider getInstance() {
+  public static OverShadowConfigProvider getInstance()
+  {
     return INSTANCE;
   }
 
@@ -44,7 +45,8 @@ public class OverShadowConfigProvider
   }
 
   @Nullable
-  public static OverShadowConfig get() {
+  public static OverShadowConfig get()
+  {
     return INSTANCE.overShadowConfig;
   }
 }

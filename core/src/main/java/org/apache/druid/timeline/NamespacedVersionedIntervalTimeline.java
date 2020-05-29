@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
 
 public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends Overshadowable<ObjectType>>
     implements TimelineLookup<VersionType, ObjectType>
@@ -302,13 +303,14 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
   {
     try {
       lock.readLock().lock();
-      if (namespace == null) {
+      VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.get(namespace);
+      if (timeline == null) {
         return false;
       }
-      if (timelines.containsKey(namespace) && timelines.get(namespace).isOvershadowed(interval, version, objectType)) {
+      if (timeline.isOvershadowed(interval, version, objectType)) {
         return true;
       }
-      return isOvershadowedByParent(namespace, interval, version, objectType);
+      return namespace != null && isOvershadowedByParent(namespace, interval, version, objectType);
     }
     finally {
       lock.readLock().unlock();
@@ -326,10 +328,10 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
     if (overShadowConfig == null) {
       return false;
     }
-    Map<String, String> namespaceChildParentMap = overShadowConfig.getNamespaceChildParentMap();
-    for (String key : namespaceChildParentMap.keySet()) {
-      if (namespace.matches(key)) {
-        String parentNamespace = namespaceChildParentMap.get(key);
+    Map<Pattern, String> namespaceChildParentMap = overShadowConfig.getNamespaceChildParentMap();
+    for (Map.Entry<Pattern, String> e : namespaceChildParentMap.entrySet()) {
+      if (e.getKey().matcher(namespace).matches()) {
+        String parentNamespace = e.getValue();
         if (!parentNamespace.equals(namespace) && timelines.containsKey(parentNamespace) && timelines.get(
             parentNamespace).isOvershadowed(interval, version, objectType)) {
           return true;

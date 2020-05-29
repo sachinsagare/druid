@@ -23,13 +23,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class OverShadowConfig
 {
   @JsonProperty
   private Map<String, String> namespaceChildParentMap = ImmutableMap.of();
 
-  public Map<String, String> getNamespaceChildParentMap() {
-    return namespaceChildParentMap;
+  public Map<Pattern, String> getNamespaceChildParentMap()
+  {
+    return namespaceChildParentMap.entrySet()
+                                  .stream()
+                                  .collect(Collectors.toMap(e -> Pattern.compile(e.getKey()), Map.Entry::getValue));
   }
 }

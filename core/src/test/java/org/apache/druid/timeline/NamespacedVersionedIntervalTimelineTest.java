@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class NamespacedVersionedIntervalTimelineTest
 {
@@ -45,9 +46,9 @@ public class NamespacedVersionedIntervalTimelineTest
     OverShadowConfigProvider.getInstance().inject(new OverShadowConfig()
     {
       @Override
-      public Map<String, String> getNamespaceChildParentMap()
+      public Map<Pattern, String> getNamespaceChildParentMap()
       {
-        return ImmutableMap.of("ns1.*", PARENT_NAMESPACE1);
+        return ImmutableMap.of(Pattern.compile("ns1.*"), PARENT_NAMESPACE1);
       }
     });
     add(timeline, NAMESPACE1, "2019-09-01/2019-09-03", new OvershadowableInteger("0", 0, 1));
