@@ -305,13 +305,14 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
   {
     try {
       lock.readLock().lock();
-      if (namespace == null) {
+      VersionedIntervalTimeline<VersionType, ObjectType> timeline = timelines.get(namespace);
+      if (timeline == null) {
         return false;
       }
-      if (timelines.containsKey(namespace) && timelines.get(namespace).isOvershadowed(interval, version, objectType)) {
+      if (timeline.isOvershadowed(interval, version, objectType)) {
         return true;
       }
-      return isOvershadowedByParent(namespace, interval, version, objectType);
+      return namespace != null && isOvershadowedByParent(namespace, interval, version, objectType);
     }
     finally {
       lock.readLock().unlock();
