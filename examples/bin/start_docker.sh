@@ -3,7 +3,13 @@
 sed -i "s/<DRUID_CLUSTER_NAME>/${TELETRAAN_DRUID_CLUSTER_NAME}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 sed -i "s/<DRUID_ZK_SERVICE_HOST>/${TELETRAAN_DRUID_ZK_SERVICE_HOST}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 
-sed -i "s/<DRUID_OVERSHADOW_CHILDPARENT_MAP>/${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP:-}/g" /opt/druid/conf/druid/_common/common.runtime.properties
+if [ ! -z "${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP}" ]; then
+  if grep -q "druid.timeline.overshadow.namespaceChildParentMap" /opt/druid/conf/druid/_common/common.runtime.properties; then
+    sed -i "s/^druid.timeline.overshadow.namespaceChildParentMap=.*$/druid.timeline.overshadow.namespaceChildParentMap=${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP}/" /opt/druid/conf/druid/_common/common.runtime.properties
+  else
+    sed -i "\$adruid.timeline.overshadow.namespaceChildParentMap=${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP}" /opt/druid/conf/druid/_common/common.runtime.properties
+  fi
+fi
 
 sed -i "s/<STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>/${TELETRAAN_STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD:-1000000}/g" /opt/druid/conf/druid/_common/metricDimensions.json
 
