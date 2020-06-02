@@ -351,7 +351,7 @@ public class AppenderatorImpl implements Appenderator
     if (persist) {
       if (allowIncrementalPersists) {
         // persistAll clears rowsCurrentlyInMemory, no need to update it.
-        log.info("Persisting rows in memory due to: [%s]", String.join(",", persistReasons));
+        log.info("allowIncrementalPersists is true - Persisting rows in memory due to: [%s]", String.join(",", persistReasons));
         Futures.addCallback(
             persistAll(committerSupplier == null ? null : committerSupplier.get()),
             new FutureCallback<Object>()
@@ -370,6 +370,7 @@ public class AppenderatorImpl implements Appenderator
             }
         );
       } else {
+        log.info("allowIncrementalPersists is false - Persisting rows in memory due to: [%s]", String.join(",", persistReasons));
         isPersistRequired = true;
       }
     }
