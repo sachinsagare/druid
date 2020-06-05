@@ -33,6 +33,8 @@ case ${STAGE_NAME} in
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-30}/" $DRUID_CONF_DIR/coordinator/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-30}/" $DRUID_CONF_DIR/coordinator/jvm.config
     sed -i "s/<COORDINATOR_PORT>/${TELETRAAN_COORDINATOR_PORT:-9090}/" $DRUID_CONF_DIR/coordinator/runtime.properties
+    # This property defaults to false before 0.18, so using that default here as well
+    sed -i "s/<DRUID_CLEAN_UP_PENDING_SEGMENTS>/${TELETRAAN_CLEAN_UP_PENDING_SEGMENTS:-false}/" $DRUID_CONF_DIR/coordinator/runtime.properties
 
     if [ ! -z "${TELETRAAN_DRUID_TIER_MIRRORING_MAP}" ]; then
       if grep -q "druid.coordinator.tier.tierMirroringMap" $DRUID_CONF_DIR/coordinator/runtime.properties; then
@@ -165,7 +167,7 @@ EOF
 
     node=historical
   ;;
-  *"middleManager"*)COORDINATOR_PORT
+  *"middleManager"*)
     node=middleManager
     sed -i "s/<MIDDLE_MANAGER_PORT>/${TELETRAAN_MIDDLE_MANAGER_PORT:-8091}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<DRUID_INDEXER_RUNNER_START_PORT>/${TELETRAAN_DRUID_INDEXER_RUNNER_START_PORT:-8100}/" $DRUID_CONF_DIR/middleManager/runtime.properties
