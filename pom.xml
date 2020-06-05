@@ -117,75 +117,6 @@
         <docker.repository>998131032990.dkr.ecr.us-east-1.amazonaws.com/</docker.repository>
     </properties>
 
-    <modules>
-        <module>core</module>
-        <module>indexing-hadoop</module>
-        <module>indexing-service</module>
-        <module>processing</module>
-        <module>server</module>
-        <module>sql</module>
-        <module>services</module>
-        <module>integration-tests</module>
-        <module>benchmarks</module>
-        <module>extendedset</module>
-        <module>hll</module>
-        <module>web-console</module>
-        <!-- Core cloud functionality -->
-        <module>cloud/aws-common</module>
-        <module>cloud/gcp-common</module>
-        <!-- Core extensions -->
-        <module>extensions-core/avro-extensions</module>
-        <module>extensions-core/datasketches</module>
-        <module>extensions-core/druid-bloom-filter</module>
-        <module>extensions-core/druid-kerberos</module>
-        <module>extensions-core/hdfs-storage</module>
-        <module>extensions-core/histogram</module>
-        <module>extensions-core/stats</module>
-        <module>extensions-core/kafka-extraction-namespace</module>
-        <module>extensions-core/kafka-indexing-service</module>
-        <module>extensions-core/kinesis-indexing-service</module>
-        <module>extensions-core/mysql-metadata-storage</module>
-        <module>extensions-core/orc-extensions</module>
-        <module>extensions-core/parquet-extensions</module>
-        <module>extensions-core/postgresql-metadata-storage</module>
-        <module>extensions-core/protobuf-extensions</module>
-        <module>extensions-core/lookups-cached-global</module>
-        <module>extensions-core/lookups-cached-single</module>
-        <module>extensions-core/ec2-extensions</module>
-        <module>extensions-core/s3-extensions</module>
-        <module>extensions-core/simple-client-sslcontext</module>
-        <module>extensions-core/druid-basic-security</module>
-        <module>extensions-core/google-extensions</module>
-        <!-- Community extensions -->
-        <module>extensions-contrib/influx-extensions</module>
-        <module>extensions-contrib/azure-extensions</module>
-        <module>extensions-contrib/cassandra-storage</module>
-        <module>extensions-contrib/cloudfiles-extensions</module>
-        <module>extensions-contrib/graphite-emitter</module>
-        <module>extensions-contrib/distinctcount</module>
-        <module>extensions-contrib/statsd-emitter</module>
-        <module>extensions-contrib/time-min-max</module>
-        <module>extensions-contrib/virtual-columns</module>
-        <module>extensions-contrib/thrift-extensions</module>
-        <module>extensions-contrib/ambari-metrics-emitter</module>
-        <module>extensions-contrib/sqlserver-metadata-storage</module>
-        <module>extensions-contrib/kafka-emitter</module>
-        <module>extensions-contrib/redis-cache</module>
-        <module>extensions-contrib/opentsdb-emitter</module>
-        <module>extensions-contrib/materialized-view-maintenance</module>
-        <module>extensions-contrib/materialized-view-selection</module>
-        <module>extensions-contrib/momentsketch</module>
-        <module>extensions-contrib/moving-average-query</module>
-        <module>extensions-contrib/tdigestsketch</module>
-        <module>extensions-contrib/influxdb-emitter</module>
-        <module>extensions-contrib/knox-password-provider</module>
-        <module>extensions-contrib/hash-name-numbered-shard-spec</module>
-        <module>extensions-contrib/bloomfilter-name-numbered-shard-spec</module>
-        <module>extensions-contrib/collectset</module>
-        <module>extensions-contrib/serverset-password-provider</module>
-        <!-- distribution packaging -->
-        <module>distribution</module>
-    </modules>
 
     <repositories>
         <repository>
@@ -1857,6 +1788,134 @@
           <modules>
             <module>website</module>
           </modules>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!reducedBuild</name>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>indexing-hadoop</module>
+                <module>indexing-service</module>
+                <module>processing</module>
+                <module>server</module>
+                <module>sql</module>
+                <module>services</module>
+                <module>integration-tests</module>
+                <module>benchmarks</module>
+                <module>extendedset</module>
+                <module>hll</module>
+                <module>web-console</module>
+                <!-- Core cloud functionality -->
+                <module>cloud/aws-common</module>
+                <module>cloud/gcp-common</module>
+                <!-- Core extensions -->
+                <module>extensions-core/avro-extensions</module>
+                <module>extensions-core/datasketches</module>
+                <module>extensions-core/druid-bloom-filter</module>
+                <module>extensions-core/druid-kerberos</module>
+                <module>extensions-core/hdfs-storage</module>
+                <module>extensions-core/histogram</module>
+                <module>extensions-core/stats</module>
+                <module>extensions-core/kafka-extraction-namespace</module>
+                <module>extensions-core/kafka-indexing-service</module>
+                <module>extensions-core/kinesis-indexing-service</module>
+                <module>extensions-core/mysql-metadata-storage</module>
+                <module>extensions-core/orc-extensions</module>
+                <module>extensions-core/parquet-extensions</module>
+                <module>extensions-core/postgresql-metadata-storage</module>
+                <module>extensions-core/protobuf-extensions</module>
+                <module>extensions-core/lookups-cached-global</module>
+                <module>extensions-core/lookups-cached-single</module>
+                <module>extensions-core/ec2-extensions</module>
+                <module>extensions-core/s3-extensions</module>
+                <module>extensions-core/simple-client-sslcontext</module>
+                <module>extensions-core/druid-basic-security</module>
+                <module>extensions-core/google-extensions</module>
+                <!-- Community extensions -->
+                <module>extensions-contrib/influx-extensions</module>
+                <module>extensions-contrib/azure-extensions</module>
+                <module>extensions-contrib/cassandra-storage</module>
+                <module>extensions-contrib/cloudfiles-extensions</module>
+                <module>extensions-contrib/graphite-emitter</module>
+                <module>extensions-contrib/distinctcount</module>
+                <module>extensions-contrib/statsd-emitter</module>
+                <module>extensions-contrib/time-min-max</module>
+                <module>extensions-contrib/virtual-columns</module>
+                <module>extensions-contrib/thrift-extensions</module>
+                <module>extensions-contrib/ambari-metrics-emitter</module>
+                <module>extensions-contrib/sqlserver-metadata-storage</module>
+                <module>extensions-contrib/kafka-emitter</module>
+                <module>extensions-contrib/redis-cache</module>
+                <module>extensions-contrib/opentsdb-emitter</module>
+                <module>extensions-contrib/materialized-view-maintenance</module>
+                <module>extensions-contrib/materialized-view-selection</module>
+                <module>extensions-contrib/momentsketch</module>
+                <module>extensions-contrib/moving-average-query</module>
+                <module>extensions-contrib/tdigestsketch</module>
+                <module>extensions-contrib/influxdb-emitter</module>
+                <module>extensions-contrib/knox-password-provider</module>
+                <module>extensions-contrib/hash-name-numbered-shard-spec</module>
+                <module>extensions-contrib/bloomfilter-name-numbered-shard-spec</module>
+                <module>extensions-contrib/collectset</module>
+                <module>extensions-contrib/serverset-password-provider</module>
+                <!-- distribution packaging -->
+                <module>distribution</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- Build only the modules we deploy -->
+            <id>reduced-build</id>
+            <activation>
+                <property>
+                    <name>reducedBuild</name>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>indexing-hadoop</module>
+                <module>indexing-service</module>
+                <module>processing</module>
+                <module>server</module>
+                <module>sql</module>
+                <module>services</module>
+                <module>integration-tests</module>
+                <module>benchmarks</module>
+                <module>extendedset</module>
+                <module>hll</module>
+                <module>web-console</module>
+                <!-- Core cloud functionality -->
+                <module>cloud/aws-common</module>
+                <!-- Core extensions -->
+                <module>extensions-core/avro-extensions</module>
+                <module>extensions-core/datasketches</module>
+                <module>extensions-core/druid-bloom-filter</module>
+                <module>extensions-core/histogram</module>
+                <module>extensions-core/kafka-extraction-namespace</module>
+                <module>extensions-core/kafka-indexing-service</module>
+                <module>extensions-core/mysql-metadata-storage</module>
+                <module>extensions-core/parquet-extensions</module>
+                <module>extensions-core/lookups-cached-global</module>
+                <module>extensions-core/lookups-cached-single</module>
+                <module>extensions-core/ec2-extensions</module>
+                <module>extensions-core/s3-extensions</module>
+                <!-- Community extensions -->
+                <module>extensions-contrib/distinctcount</module>
+                <module>extensions-contrib/statsd-emitter</module>
+                <module>extensions-contrib/kafka-emitter</module>
+                <module>extensions-contrib/momentsketch</module>
+                <module>extensions-contrib/moving-average-query</module>
+                <module>extensions-contrib/knox-password-provider</module>
+                <module>extensions-contrib/hash-name-numbered-shard-spec</module>
+                <module>extensions-contrib/bloomfilter-name-numbered-shard-spec</module>
+                <module>extensions-contrib/collectset</module>
+                <module>extensions-contrib/serverset-password-provider</module>
+                <!-- distribution packaging -->
+                <module>distribution</module>
+            </modules>
         </profile>
     </profiles>
 </project>
