@@ -42,7 +42,7 @@
 	},
 	"tuningConfig": {
 		"type": "kafka",
-		"maxRowsPerSegment": 15000000,
+		"maxRowsPerSegment": 10000000,
 		"resetOffsetAutomatically": "true"
 	},
 	"ioConfig": {
@@ -53,7 +53,7 @@
 	        "file": "/var/serverset/discovery.m10nkafka02.prod"
 	      }
 	    },
-		"taskCount": 15,
+		"taskCount": 25,
 		"replicas": 1,
 		"taskDuration": "PT30M",
 		"useEarliestOffset": "true"
