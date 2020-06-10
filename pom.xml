@@ -1982,13 +1982,12 @@
                 <module>sql</module>
                 <module>services</module>
                 <module>integration-tests</module>
-                <module>benchmarks</module>
                 <module>extendedset</module>
                 <module>hll</module>
                 <module>web-console</module>
                 <!-- Core cloud functionality -->
                 <module>cloud/aws-common</module>
-                <module>cloud/gcp-common</module>
+                <module>cloud/gcp-common</module> <!-- Needed for druid-server -->
                 <!-- Core extensions -->
                 <module>extensions-core/avro-extensions</module>
                 <module>extensions-core/datasketches</module>
@@ -2002,6 +2001,8 @@
                 <module>extensions-core/lookups-cached-single</module>
                 <module>extensions-core/ec2-extensions</module>
                 <module>extensions-core/s3-extensions</module>
+                <module>extensions-core/simple-client-sslcontext</module> <!-- Needed for integration-tests -->
+                <module>extensions-core/druid-basic-security</module> <!-- Needed for integration-tests -->
                 <!-- Community extensions -->
                 <module>extensions-contrib/distinctcount</module>
                 <module>extensions-contrib/statsd-emitter</module>
