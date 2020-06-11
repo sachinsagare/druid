@@ -1908,8 +1908,6 @@
                 <module>extensions-contrib/distinctcount</module>
                 <module>extensions-contrib/statsd-emitter</module>
                 <module>extensions-contrib/kafka-emitter</module>
-                <module>extensions-contrib/momentsketch</module>
-                <module>extensions-contrib/moving-average-query</module>
                 <module>extensions-contrib/knox-password-provider</module>
                 <module>extensions-contrib/hash-name-numbered-shard-spec</module>
                 <module>extensions-contrib/bloomfilter-name-numbered-shard-spec</module>
