@@ -174,6 +174,8 @@ EOF
     sed -i "s/<DRUID_INDEXER_RUNNER_END_PORT>/${TELETRAAN_DRUID_INDEXER_RUNNER_END_PORT:-65535}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<THREADS>/${TELETRAAN_DRUID_THREADS:-7}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<PROCESSING_BUFFER_SIZEBYTES>/${TELETRAAN_PROCESSING_BUFFER_SIZEBYTES:-1073741824}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<GROUP_BY_INTERMEDIATE_COMBINE_DEGREE>/${TELETRAAN_GROUP_BY_INTERMEDIATE_COMBINE_DEGREE:-8}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<GROUP_BY_PARALLEL_COMBINE_THREADS>/${TELETRAAN_GROUP_BY_PARALLEL_COMBINE_THREADS:-16}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<HTTP_SERVER_THREADS>/${TELETRAAN_HTTP_SERVER_THREADS:-25}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<DRUID_WORKER_CAPACITY>/${TELETRAAN_DRUID_WORKER_CAPACITY:-7}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<TASK_CUSTOM_JVM_FLAGS>/${TELETRAAN_TASK_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/middleManager/runtime.properties
