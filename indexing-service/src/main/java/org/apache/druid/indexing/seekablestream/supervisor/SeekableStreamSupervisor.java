@@ -126,6 +126,8 @@ import java.util.stream.Stream;
 public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetType> implements Supervisor
 {
   public static final String CHECKPOINTS_CTX_KEY = "checkpoints";
+  public static final String PARTITION_DIMENSIONS_CTX_KEY = "partitionDimensions";
+  public static final String STREAM_PARTITIONS_CTX_KEY = "streamPartitions";
 
   private static final long MAX_RUN_FREQUENCY_MILLIS = 1000;
   private static final long MINIMUM_FUTURE_TIMEOUT_IN_SECONDS = 120;
@@ -2644,6 +2646,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
         group.baseSequenceName,
         sortingMapper,
         group.checkpointSequences,
+        partitionGroups.values().stream().mapToInt(Map::size).sum(),
         newIoConfig,
         taskTuningConfig,
         rowIngestionMetersFactory
@@ -2880,7 +2883,6 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
    * the given replicas count
    *
    * @return list of specific kafka/kinesis index taksks
-   *
    * @throws JsonProcessingException
    */
   protected abstract List<SeekableStreamIndexTask<PartitionIdType, SequenceOffsetType>> createIndexTasks(
@@ -2888,6 +2890,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
       String baseSequenceName,
       ObjectMapper sortingMapper,
       TreeMap<Integer, Map<PartitionIdType, SequenceOffsetType>> sequenceOffsets,
+      Integer streamPartitions,
       SeekableStreamIndexTaskIOConfig taskIoConfig,
       SeekableStreamIndexTaskTuningConfig taskTuningConfig,
       RowIngestionMetersFactory rowIngestionMetersFactory

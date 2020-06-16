@@ -198,6 +198,12 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
     assert !partitionDimensions.isEmpty();
     List<Object> groupKey = Lists.transform(partitionDimensions,
         o -> Collections.singletonList(partitionDimensionsFromDomain.get(o)));
+
+    return groupKeyIsInChunk(groupKey);
+  }
+
+  protected boolean groupKeyIsInChunk(List<Object> groupKey)
+  {
     try {
       return (Math.abs(hash(jsonMapper, groupKey)) - getPartitionNum()) % getPartitions() == 0;
     }

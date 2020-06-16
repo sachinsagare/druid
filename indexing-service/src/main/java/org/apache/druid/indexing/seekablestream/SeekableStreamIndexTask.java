@@ -59,10 +59,13 @@ import org.apache.druid.server.security.AuthorizerMapper;
 import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamHashBasedNumberedShardSpecFactory;
 import org.apache.druid.utils.CircularBuffer;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetType>
@@ -230,7 +233,10 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
   public StreamAppenderatorDriver newDriver(
       final Appenderator appenderator,
       final TaskToolbox toolbox,
-      final FireDepartmentMetrics metrics
+      final FireDepartmentMetrics metrics,
+      final List<String> partitionDimensions,
+      final Set<Integer> streamPartitionIds,
+      final Integer streamPartitions
   )
   {
     final String nameSpace = this.getContextValue("nameSpace");
@@ -238,7 +244,26 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
     if (nameSpace != null) {
       effectiveShardSpecFactory = NamedNumberedShardSpecFactory.instance(nameSpace);
     } else {
-      effectiveShardSpecFactory = NumberedShardSpecFactory.instance();
+      if (partitionDimensions != null
+          && !partitionDimensions.isEmpty()
+          && streamPartitionIds != null
+          && !streamPartitionIds.isEmpty()
+          && streamPartitions != null
+          && streamPartitions > 0) {
+        log.info(
+            "Include stream partition info in StreamHashBasedNumberedShardSpec: partitionDimensions [%s], streamPartitionIds [%s], streamPartitions [%d]",
+            partitionDimensions,
+            streamPartitionIds,
+            streamPartitions
+        );
+        effectiveShardSpecFactory = new StreamHashBasedNumberedShardSpecFactory(
+            partitionDimensions,
+            streamPartitionIds,
+            streamPartitions
+        );
+      } else {
+        effectiveShardSpecFactory = NumberedShardSpecFactory.instance();
+      }
     }
 
     return new StreamAppenderatorDriver(

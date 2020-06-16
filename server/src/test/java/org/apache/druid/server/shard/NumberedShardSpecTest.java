@@ -33,6 +33,7 @@ import org.apache.druid.timeline.partition.NumberedOverwriteShardSpec;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
+import org.apache.druid.timeline.partition.StreamHashBasedNumberedShardSpec;
 import org.joda.time.Interval;
 import org.junit.Assert;
 import org.junit.Test;
@@ -216,6 +217,7 @@ public class NumberedShardSpecTest
     final NumberedShardSpec spec = new NumberedShardSpec(0, 0);
     Assert.assertTrue(spec.isCompatible(NumberedShardSpec.class));
     Assert.assertTrue(spec.isCompatible(NumberedOverwriteShardSpec.class));
+    Assert.assertTrue(spec.isCompatible(StreamHashBasedNumberedShardSpec.class));
   }
 
   private static final class OvershadowableString implements Overshadowable<OvershadowableString>

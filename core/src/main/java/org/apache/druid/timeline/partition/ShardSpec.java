@@ -39,7 +39,8 @@ import java.util.Map;
     @JsonSubTypes.Type(name = "numbered", value = NumberedShardSpec.class),
     @JsonSubTypes.Type(name = "hashed", value = HashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "numbered_overwrite", value = NumberedOverwriteShardSpec.class),
-    @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpec.class)
+    @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpec.class),
+    @JsonSubTypes.Type(name = "stream_hashed", value = StreamHashBasedNumberedShardSpec.class)
 })
 public interface ShardSpec
 {
