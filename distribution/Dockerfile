@@ -1,4 +1,4 @@
-FROM 998131032990.dkr.ecr.us-east-1.amazonaws.com/openjdk8-xenial:latest
+FROM 998131032990.dkr.ecr.us-east-1.amazonaws.com/openjdk8-ubuntu18.04:latest
 
 WORKDIR /opt/druid
 
