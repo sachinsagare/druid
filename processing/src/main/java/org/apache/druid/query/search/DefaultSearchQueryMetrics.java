@@ -316,6 +316,12 @@ public class DefaultSearchQueryMetrics implements SearchQueryMetrics
   }
 
   @Override
+  public QueryMetrics reportNodeCount(int nodeCount)
+  {
+    return delegateQueryMetrics.reportNodeCount(nodeCount);
+  }
+
+  @Override
   public void emit(ServiceEmitter emitter)
   {
     delegateQueryMetrics.emit(emitter);

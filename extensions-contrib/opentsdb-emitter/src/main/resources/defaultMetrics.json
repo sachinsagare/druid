@@ -16,16 +16,16 @@
   "query/node/ttfb": [
     "server"
   ],
-<<<<<<< HEAD
-=======
   "query/node/exception": [
     "server",
     "exceptionName"
   ],
+  "query/node/count": [
+    "dataSource"
+  ],
   "query/intervalChunk/time": [
     "chunkInterval"
   ],
->>>>>>> b1b6efb624 (ignore alerts from middle manager nodes)
   "query/success/count": [],
   "query/failed/count": [],
   "query/interrupted/count": [],

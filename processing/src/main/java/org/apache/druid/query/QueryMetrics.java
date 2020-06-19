@@ -369,6 +369,7 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportPreFilteredRows(long numRows);
 
   /**
+<<<<<<< HEAD
    * Reports number of parallel tasks the broker used to process the query during parallel merge. This value is
    * identical to the {@link #parallelMergeParallelism} dimension value, but optionally also available as a metric.
    */
@@ -399,6 +400,11 @@ public interface QueryMetrics<QueryType extends Query<?>>
    * Reports broker total CPU time in nanoseconds where fork join merge combine tasks were doing work
    */
   QueryMetrics<QueryType> reportParallelMergeTotalCpuTime(long timeNs);
+
+  /**
+   * Reports the number of hosts queried.
+   */
+  QueryMetrics<QueryType> reportNodeCount(int nodeCount);
 
   /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.
