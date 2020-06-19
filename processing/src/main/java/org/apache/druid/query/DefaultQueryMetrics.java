@@ -314,14 +314,7 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
-/*<<<<<<< HEAD*/
   public QueryMetrics<QueryType> reportParallelMergeParallelism(int parallelism)
-/*=======*/
-
-
-/*  @Override
-  public QueryMetrics<QueryType> reportBitmapConstructionTime(long timeNs)*/
-/*>>>>>>> b1b6efb624 (ignore alerts from middle manager nodes)*/
   {
     // Don't emit by default.
     return this;
@@ -373,6 +366,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   {
     // Don't emit by default.
     return this;
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportNodeCount(int nodeCount)
+  {
+    return reportMetric("query/node/count", nodeCount);
   }
 
   @Override
