@@ -314,6 +314,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public QueryMetrics<QueryType> reportNodeCount(int nodeCount)
+  {
+    return reportMetric("query/node/count", nodeCount);
+  }
+
+  @Override
   public void emit(ServiceEmitter emitter)
   {
     checkModifiedFromOwnerThread();

@@ -51,6 +51,7 @@ import org.apache.druid.query.aggregation.CountAggregatorFactory;
 import org.apache.druid.query.context.ResponseContext;
 import org.apache.druid.query.select.SelectQueryConfig;
 import org.apache.druid.server.coordination.ServerType;
+import org.apache.druid.server.metrics.NoopServiceEmitter;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NoneShardSpec;
@@ -325,7 +326,8 @@ public class CachingClusteredClientFunctionalityTest
             return null;
           }
         },
-        ForkJoinPool.commonPool()
+        ForkJoinPool.commonPool(),
+        new NoopServiceEmitter()
     );
   }
 

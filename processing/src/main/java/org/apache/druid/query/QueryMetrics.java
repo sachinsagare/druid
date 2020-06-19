@@ -339,6 +339,11 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportPreFilteredRows(long numRows);
 
   /**
+   * Reports the number of hosts queried.
+   */
+  QueryMetrics<QueryType> reportNodeCount(int nodeCount);
+
+  /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.
    */
   void emit(ServiceEmitter emitter);

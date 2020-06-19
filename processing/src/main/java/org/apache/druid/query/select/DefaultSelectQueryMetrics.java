@@ -274,6 +274,12 @@ public class DefaultSelectQueryMetrics implements SelectQueryMetrics
   }
 
   @Override
+  public QueryMetrics reportNodeCount(int nodeCount)
+  {
+    return delegateQueryMetrics.reportNodeCount(nodeCount);
+  }
+
+  @Override
   public void emit(ServiceEmitter emitter)
   {
     delegateQueryMetrics.emit(emitter);

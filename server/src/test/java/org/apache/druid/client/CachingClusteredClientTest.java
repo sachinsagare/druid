@@ -128,6 +128,7 @@ import org.apache.druid.query.topn.TopNResultValue;
 import org.apache.druid.segment.TestHelper;
 import org.apache.druid.server.ServerTestHelper;
 import org.apache.druid.server.coordination.ServerType;
+import org.apache.druid.server.metrics.NoopServiceEmitter;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.VersionedIntervalTimeline;
@@ -2898,7 +2899,8 @@ public class CachingClusteredClientTest
             return null;
           }
         },
-        ForkJoinPool.commonPool()
+        ForkJoinPool.commonPool(),
+        new NoopServiceEmitter()
     );
   }
 

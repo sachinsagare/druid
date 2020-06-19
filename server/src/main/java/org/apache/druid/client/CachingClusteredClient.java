@@ -50,11 +50,13 @@ import org.apache.druid.java.util.common.guava.ParallelMergeCombiningSequence;
 import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.java.util.common.guava.Sequences;
 import org.apache.druid.java.util.emitter.EmittingLogger;
+import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.query.BySegmentResultValueClass;
 import org.apache.druid.query.CacheStrategy;
 import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.QueryContexts;
+import org.apache.druid.query.QueryMetrics;
 import org.apache.druid.query.QueryPlus;
 import org.apache.druid.query.QueryRunner;
 import org.apache.druid.query.QuerySegmentWalker;
@@ -111,6 +113,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
   private final DruidHttpClientConfig httpClientConfig;
   private final DruidProcessingConfig processingConfig;
   private final ForkJoinPool pool;
+  private final ServiceEmitter emitter;
 
   @Inject
   public CachingClusteredClient(
@@ -122,7 +125,8 @@ public class CachingClusteredClient implements QuerySegmentWalker
       CacheConfig cacheConfig,
       @Client DruidHttpClientConfig httpClientConfig,
       DruidProcessingConfig processingConfig,
-      @Merging ForkJoinPool pool
+      @Merging ForkJoinPool pool,
+      ServiceEmitter emitter
   )
   {
     this.warehouse = warehouse;
@@ -134,6 +138,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
     this.httpClientConfig = httpClientConfig;
     this.processingConfig = processingConfig;
     this.pool = pool;
+    this.emitter = emitter;
 
     if (cacheConfig.isQueryCacheable(Query.GROUP_BY) && (cacheConfig.isUseCache() || cacheConfig.isPopulateCache())) {
       log.warn(
@@ -293,6 +298,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
     private final Query<T> downstreamQuery;
     private final Map<String, Cache.NamedKey> cachePopulatorKeyMap = new HashMap<>();
     private final List<Interval> intervals;
+    private final QueryMetrics<? super Query<T>> queryMetrics;
 
     SpecificQueryRunnable(final QueryPlus<T> queryPlus, final ResponseContext responseContext)
     {
@@ -301,6 +307,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
       this.query = queryPlus.getQuery();
       this.toolChest = warehouse.getToolChest(query);
       this.strategy = toolChest.getCacheStrategy(query);
+
+      queryMetrics = toolChest.makeMetrics(query);
+      queryMetrics.query(query);
 
       this.useCache = CacheUtil.useCacheOnBrokers(query, strategy, cacheConfig);
       this.populateCache = CacheUtil.populateCacheOnBrokers(query, strategy, cacheConfig);
@@ -355,6 +364,8 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       final List<Pair<Interval, byte[]>> alreadyCachedResults = pruneSegmentsWithCachedResults(queryCacheKey, segments);
       final SortedMap<DruidServer, List<SegmentDescriptor>> segmentsByServer = groupSegmentsByServer(segments);
+      queryMetrics.reportNodeCount(segmentsByServer.size());
+      queryMetrics.emit(emitter);
       return new LazySequence<>(() -> {
         List<Sequence<T>> sequencesByInterval = new ArrayList<>(alreadyCachedResults.size() + segmentsByServer.size());
         addSequencesFromCache(sequencesByInterval, alreadyCachedResults);

@@ -160,5 +160,10 @@ public class DefaultQueryMetricsTest
     actualEvent = cachingEmitter.getLastEmittedEvent().toMap();
     Assert.assertEquals("query/node/exception", actualEvent.get("metric"));
     Assert.assertEquals(7L, actualEvent.get("value"));
+
+    queryMetrics.reportNodeCount(20).emit(serviceEmitter);
+    actualEvent = cachingEmitter.getLastEmittedEvent().toMap();
+    Assert.assertEquals("query/node/count", actualEvent.get("metric"));
+    Assert.assertEquals(20, actualEvent.get("value"));
   }
 }

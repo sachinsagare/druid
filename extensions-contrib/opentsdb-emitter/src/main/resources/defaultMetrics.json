@@ -20,6 +20,9 @@
     "server",
     "exceptionName"
   ],
+  "query/node/count": [
+    "dataSource"
+  ],
   "query/intervalChunk/time": [
     "chunkInterval"
   ],
