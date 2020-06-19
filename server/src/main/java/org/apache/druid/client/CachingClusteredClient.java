@@ -69,6 +69,7 @@ import org.apache.druid.query.filter.DimFilterUtils;
 import org.apache.druid.query.spec.MultipleSpecificSegmentSpec;
 import org.apache.druid.server.QueryResource;
 import org.apache.druid.server.coordination.DruidServerMetadata;
+import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
@@ -659,14 +660,23 @@ public class CachingClusteredClient implements QuerySegmentWalker
         final long maxQueuedBytesPerServer = maxQueuedBytes / segmentsByServer.size();
         final Sequence<T> serverResults;
 
-        if (isBySegment) {
-          serverResults = getBySegmentServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
-        } else if (!server.segmentReplicatable() || !populateCache) {
-          serverResults = getSimpleServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
-        } else {
-          serverResults = getAndCacheServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
+        try {
+          if (isBySegment) {
+            serverResults = getBySegmentServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
+          } else if (!server.segmentReplicatable() || !populateCache) {
+            serverResults = getSimpleServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
+          } else {
+            serverResults = getAndCacheServerResults(serverRunner, segmentsOfServerSpec, maxQueuedBytesPerServer);
+          }
+          listOfSequences.add(serverResults);
         }
-        listOfSequences.add(serverResults);
+        catch (RuntimeException ex) {
+          if (processingConfig.exceptionSkipRealtimeData() && server.getType() == ServerType.REALTIME) {
+            log.error("Unable to run Query[%s] for host [%s] : [%s]", query.getId(), server.getHost(), ex.getMessage());
+          } else {
+            throw ex;
+          }
+        }
       });
     }
 
