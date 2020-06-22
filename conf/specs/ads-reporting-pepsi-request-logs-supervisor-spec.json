@@ -33,6 +33,7 @@
             "spanId",
             "parentSpanId",
             "stageName",
+            "requestB64Encoded",
             {
               "type": "long",
               "name": "userId"
