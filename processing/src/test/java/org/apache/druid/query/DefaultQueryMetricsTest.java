@@ -161,5 +161,9 @@ public class DefaultQueryMetricsTest
     Assert.assertEquals("query/wait/node/http", actualEvent.get("metric"));
     Assert.assertEquals(9L, actualEvent.get("value"));
 
+    queryMetrics.reportNodeException(7).emit(serviceEmitter);
+    actualEvent = cachingEmitter.getLastEmittedEvent().toMap();
+    Assert.assertEquals("query/node/exception", actualEvent.get("metric"));
+    Assert.assertEquals(7L, actualEvent.get("value"));
   }
 }
