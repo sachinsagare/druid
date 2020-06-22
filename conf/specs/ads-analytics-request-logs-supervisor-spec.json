@@ -34,8 +34,9 @@
             "filterColumns",
             "filterOperators",
             "objectIdEntityType",
-            "ldap",
+            "ldap",            
             "druidRequestId",
+            "traced",
             "requestB64Encoded",
             {
               "type": "long",
