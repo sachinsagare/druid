@@ -234,7 +234,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
   }
 
   @Config(value = "${base_path}.exception.skipRealtimeData")
-  public boolean exceptionSkipRealtimeData()
+  public boolean skipRealtimeDataOnException()
   {
     return false;
   }
