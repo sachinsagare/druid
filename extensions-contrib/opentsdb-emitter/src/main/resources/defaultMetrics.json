@@ -16,6 +16,10 @@
   "query/node/ttfb": [
     "server"
   ],
+  "query/node/exception": [
+    "server",
+    "exceptionName"
+  ],
   "query/intervalChunk/time": [
     "chunkInterval"
   ],

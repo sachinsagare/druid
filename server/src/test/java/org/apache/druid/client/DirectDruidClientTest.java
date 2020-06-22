@@ -128,7 +128,8 @@ public class DirectDruidClientTest
         httpClient,
         "http",
         "foo",
-        new NoopServiceEmitter()
+        new NoopServiceEmitter(),
+        false
     );
     DirectDruidClient client2 = new DirectDruidClient(
         new ReflectionQueryToolChestWarehouse(),
@@ -137,7 +138,8 @@ public class DirectDruidClientTest
         httpClient,
         "http",
         "foo2",
-        new NoopServiceEmitter()
+        new NoopServiceEmitter(),
+        false
     );
 
     QueryableDruidServer queryableDruidServer1 = new QueryableDruidServer(
@@ -246,7 +248,8 @@ public class DirectDruidClientTest
         httpClient,
         "http",
         "foo",
-        new NoopServiceEmitter()
+        new NoopServiceEmitter(),
+        false
     );
 
     QueryableDruidServer queryableDruidServer1 = new QueryableDruidServer(
@@ -317,7 +320,8 @@ public class DirectDruidClientTest
         httpClient,
         "http",
         hostName,
-        new NoopServiceEmitter()
+        new NoopServiceEmitter(),
+        false
     );
 
     QueryableDruidServer queryableDruidServer = new QueryableDruidServer(

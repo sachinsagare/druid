@@ -92,6 +92,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
   private final String scheme;
   private final String host;
   private final ServiceEmitter emitter;
+  private final boolean skipDataOnException;
 
   private final AtomicInteger openConnections;
   private final boolean isSmile;
@@ -118,8 +119,8 @@ public class DirectDruidClient<T> implements QueryRunner<T>
       HttpClient httpClient,
       String scheme,
       String host,
-      ServiceEmitter emitter
-  )
+      ServiceEmitter emitter,
+      boolean skipDataOnException)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -128,6 +129,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
     this.scheme = scheme;
     this.host = host;
     this.emitter = emitter;
+    this.skipDataOnException = skipDataOnException;
 
     this.isSmile = this.objectMapper.getFactory() instanceof SmileFactory;
     this.openConnections = new AtomicInteger();
@@ -181,6 +183,12 @@ public class DirectDruidClient<T> implements QueryRunner<T>
             queryMetrics.server(host);
           }
           return queryMetrics;
+        }
+
+        @Override
+        public boolean skipDataOnException()
+        {
+          return skipDataOnException;
         }
 
         /**
@@ -434,6 +442,14 @@ public class DirectDruidClient<T> implements QueryRunner<T>
             setupResponseReadFailure(msg, null);
             throw new RE(msg);
           }
+        }
+
+        @Override
+        public void reportExceptionMetric(String exceptionName)
+        {
+          QueryMetrics<? super Query<T>> exceptionMetrics = acquireResponseMetrics();
+          exceptionMetrics.exceptionName(exceptionName);
+          exceptionMetrics.reportNodeException(1).emit(emitter);
         }
       };
 

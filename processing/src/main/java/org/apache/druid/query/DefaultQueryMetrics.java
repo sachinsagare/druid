@@ -120,6 +120,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public void exceptionName(String exceptionName)
+  {
+    setDimension("exceptionName", exceptionName);
+  }
+
+  @Override
   public void context(QueryType query)
   {
     if (query.getContext() != null) {
@@ -278,6 +284,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   public QueryMetrics<QueryType> reportTimeToAcquireHttpResource(long timeNs)
   {
     return reportMillisTimeMetric("query/wait/node/http", timeNs);
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportNodeException(long count)
+  {
+    return reportMetric("query/node/exception", count);
   }
 
   @Override

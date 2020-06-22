@@ -36,6 +36,7 @@ import org.apache.druid.jackson.DefaultObjectMapper;
 import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
 import org.apache.druid.query.TableDataSource;
@@ -154,6 +155,13 @@ public class BrokerServerViewTest extends CuratorTestBase
           public Map<String, List<String>> getMapping()
           {
             return dataSourceMultiComplimentMap;
+          }
+        },
+        new DruidProcessingConfig() {
+          @Override
+          public String getFormatString()
+          {
+            return null;
           }
         }
     );
@@ -458,7 +466,14 @@ public class BrokerServerViewTest extends CuratorTestBase
         new NoopServiceEmitter(),
         new BrokerSegmentWatcherConfig(),
         new BrokerDataSourceComplementConfig(),
-        new BrokerDataSourceMultiComplementConfig()
+        new BrokerDataSourceMultiComplementConfig(),
+        new DruidProcessingConfig() {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        }
     );
 
     baseView.start();

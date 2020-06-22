@@ -5,6 +5,7 @@
   "query/node/ttfb" : { "dimensions" : ["server"], "type" : "timer"},
   "query/node/bytes" : { "dimensions" : ["server"], "type" : "timer"},
   "query/node/backpressure": { "dimensions" : ["server"], "type" : "timer"},
+  "query/node/exception" : { "dimensions" : ["server", "exceptionName"], "type" : "timer" },
   "query/wait/node/http" : { "dimensions" : ["server"], "type" : "timer"},
   "query/intervalChunk/time" : { "dimensions" : [], "type" : "timer"},
 

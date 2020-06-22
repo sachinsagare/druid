@@ -94,6 +94,12 @@ public class DefaultSelectQueryMetrics implements SelectQueryMetrics
   }
 
   @Override
+  public void exceptionName(String exceptionName)
+  {
+    throw new ISE("Unsupported method in default query metrics implementation.");
+  }
+
+  @Override
   public void granularity(SelectQuery query)
   {
     // Don't emit by default
@@ -241,6 +247,12 @@ public class DefaultSelectQueryMetrics implements SelectQueryMetrics
   public QueryMetrics reportTimeToAcquireHttpResource(long timeNs)
   {
     return delegateQueryMetrics.reportTimeToAcquireHttpResource(timeNs);
+  }
+
+  @Override
+  public QueryMetrics reportNodeException(long count)
+  {
+    return delegateQueryMetrics.reportNodeException(count);
   }
 
   @Override
