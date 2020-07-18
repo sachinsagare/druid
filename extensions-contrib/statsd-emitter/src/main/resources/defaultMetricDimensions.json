@@ -5,7 +5,7 @@
   "query/node/ttfb" : { "dimensions" : ["server"], "type" : "timer"},
   "query/node/bytes" : { "dimensions" : ["server"], "type" : "count"},
   "query/node/backpressure": { "dimensions" : ["server"], "type" : "timer"},
-  "query/node/count": { "dimensions" : ["dataSource"], "type" : "count"},
+  "query/node/count": { "dimensions" : ["dataSource"], "type" : "gauge"},
   "query/intervalChunk/time" : { "dimensions" : [], "type" : "timer"},
 
   "query/segment/time" : { "dimensions" : [], "type" : "timer"},
