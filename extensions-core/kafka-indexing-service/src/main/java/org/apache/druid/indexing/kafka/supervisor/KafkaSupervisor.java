@@ -347,7 +347,7 @@ public class KafkaSupervisor extends SeekableStreamSupervisor<Integer, Long>
           }
           totalTimeLag += lag;
         }
-        avgTimeLag = partitionLags.size() == 0 ? 0 : totalTimeLag / partionTimeLags.size();
+        avgTimeLag = partionTimeLags.size() == 0 ? 0 : totalTimeLag / partionTimeLags.size();
 
         emitter.emit(
             ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/timeLag", totalTimeLag)
