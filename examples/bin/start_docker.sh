@@ -14,7 +14,7 @@ fi
 sed -i "s/<STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>/${TELETRAAN_STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD:-1000000}/g" /opt/druid/conf/druid/_common/metricDimensions.json
 
 export KNOX_MACHINE_AUTH=$(hostname)
-mysql_creds=$(knox get mysql:rbac:longqueryrw:credentials)
+mysql_creds=$(knox get mysql:rbac:druidrw:credentials)
 mysql_user=$(cut -d'@' -f1 <<< ${mysql_creds})
 
 sed -i "s/<MYSQL_USER>/${mysql_user}/" /opt/druid/conf/druid/_common/common.runtime.properties
