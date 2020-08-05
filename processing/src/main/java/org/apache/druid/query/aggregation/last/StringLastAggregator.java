@@ -20,6 +20,7 @@
 package org.apache.druid.query.aggregation.last;
 
 import org.apache.druid.java.util.common.ISE;
+import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.aggregation.SerializablePairLongString;
 import org.apache.druid.segment.BaseLongColumnValueSelector;
@@ -81,7 +82,7 @@ public class StringLastAggregator implements Aggregator
   @Override
   public Object get()
   {
-    return new SerializablePairLongString(lastTime, lastValue);
+    return new SerializablePairLongString(lastTime, StringUtils.chop(lastValue, maxStringBytes));
   }
 
   @Override

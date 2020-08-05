@@ -26,7 +26,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -66,6 +69,44 @@ public class StringUtils
       }
     }
     return length;
+  }
+
+  /**
+   * Encodes "string" into the buffer "byteBuffer", using no more than the number of bytes remaining in the buffer.
+   * Will only encode whole characters. The byteBuffer's position and limit may be changed during operation, but will
+   * be reset before this method call ends.
+   *
+   * @return the number of bytes written, which may be shorter than the full encoded string length if there
+   * is not enough room in the output buffer.
+   */
+  public static int toUtf8WithLimit(final String string, final ByteBuffer byteBuffer)
+  {
+    final CharsetEncoder encoder = StandardCharsets.UTF_8
+            .newEncoder()
+            .onMalformedInput(CodingErrorAction.REPLACE)
+            .onUnmappableCharacter(CodingErrorAction.REPLACE);
+
+    final int originalPosition = byteBuffer.position();
+    final int originalLimit = byteBuffer.limit();
+    final int maxBytes = byteBuffer.remaining();
+
+    try {
+      final char[] chars = string.toCharArray();
+      final CharBuffer charBuffer = CharBuffer.wrap(chars);
+
+      // No reason to look at the CoderResult from the "encode" call; we can tell the number of transferred characters
+      // by looking at the output buffer's position.
+      encoder.encode(charBuffer, byteBuffer, true);
+
+      final int bytesWritten = byteBuffer.position() - originalPosition;
+
+      assert bytesWritten <= maxBytes;
+      return bytesWritten;
+    }
+    finally {
+      byteBuffer.position(originalPosition);
+      byteBuffer.limit(originalLimit);
+    }
   }
 
   public static byte[] toUtf8WithNullToEmpty(final String string)
@@ -485,6 +526,28 @@ public class StringUtils
     }
 
     return new String(data);
+  }
+
+  /**
+   * Returns the string truncated to maxBytes.
+   * If given string input is shorter than maxBytes, then it remains the same.
+   *
+   * @param s The input string to possibly be truncated
+   * @param maxBytes  The max bytes that string input will be truncated to
+   *
+   * @return the string after truncated to maxBytes
+   */
+  @Nullable
+  public static String chop(@Nullable final String s, final int maxBytes)
+  {
+    if (s == null) {
+      return null;
+    } else {
+      // Shorten firstValue to what could fit in maxBytes as UTF-8.
+      final byte[] bytes = new byte[maxBytes];
+      final int len = StringUtils.toUtf8WithLimit(s, ByteBuffer.wrap(bytes));
+      return new String(bytes, 0, len, StandardCharsets.UTF_8);
+    }
   }
 
 }

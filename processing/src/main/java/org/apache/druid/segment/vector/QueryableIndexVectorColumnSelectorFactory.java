@@ -72,6 +72,12 @@ public class QueryableIndexVectorColumnSelectorFactory implements VectorColumnSe
   }
 
   @Override
+  public VectorSizeInspector getVectorSizeInspector()
+  {
+    return offset;
+  }
+
+  @Override
   public MultiValueDimensionVectorSelector makeMultiValueDimensionSelector(final DimensionSpec dimensionSpec)
   {
     if (!dimensionSpec.canVectorize()) {

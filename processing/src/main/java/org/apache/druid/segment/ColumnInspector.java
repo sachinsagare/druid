@@ -17,28 +17,21 @@
  * under the License.
  */
 
-package org.apache.druid.common.config;
+package org.apache.druid.segment;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.druid.segment.column.ColumnCapabilities;
 
-public class NullValueHandlingConfig
+import javax.annotation.Nullable;
+
+public interface ColumnInspector
 {
-  public static final String NULL_HANDLING_CONFIG_STRING = "druid.generic.useDefaultValueForNull";
-
-  @JsonProperty("useDefaultValueForNull")
-  private final boolean useDefaultValuesForNull;
-
-  @JsonCreator
-  public NullValueHandlingConfig(@JsonProperty("useDefaultValueForNull") Boolean useDefaultValuesForNull)
-  {
-    this.useDefaultValuesForNull = useDefaultValuesForNull == null
-        ? Boolean.valueOf(System.getProperty(NULL_HANDLING_CONFIG_STRING, "true"))
-        : useDefaultValuesForNull;
-  }
-
-  public boolean isUseDefaultValuesForNull()
-  {
-    return useDefaultValuesForNull;
-  }
+  /**
+   * Returns capabilities of a particular column.
+   *
+   * @param column column name
+   *
+   * @return capabilities, or null
+   */
+  @Nullable
+  ColumnCapabilities getColumnCapabilities(String column);
 }
