@@ -124,7 +124,35 @@ public class StringTopNColumnSelectorStrategy
   )
   {
     long processedRows = 0;
-    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
+    int[] operativeAggregatorIndexs = BaseTopNAlgorithm.getOperativeAggregators(query.getAggregatorSpecs());
+    int[] anyValueAggregatorIndexs = BaseTopNAlgorithm.getAnyValueAggregators(query.getAggregatorSpecs());
+    // AnyValue aggregations are a special case. Since we only need to read in a single row in order to evaluate
+    // doing that separately to avoid overhead looping through all rows
+    if (!cursor.isDone()) {
+      final IndexedInts dimValues = selector.getRow();
+      for (int i = 0, size = dimValues.size(); i < size; ++i) {
+        final int dimIndex = dimValues.get(i);
+        Aggregator[] theAggregators = rowSelector[dimIndex];
+        if (theAggregators == null) {
+          final Comparable<?> key = dimensionValueConverter.apply(selector.lookupName(dimIndex));
+          theAggregators = aggregatesStore.get(key);
+          if (theAggregators == null) {
+            theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
+            aggregatesStore.put(key, theAggregators);
+          }
+          rowSelector[dimIndex] = theAggregators;
+        }
+
+        for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
+          theAggregators[operativeAggregatorIndexs[j]].aggregate();
+        }
+        for (int j = 0; j < anyValueAggregatorIndexs.length; j++) {
+          theAggregators[anyValueAggregatorIndexs[j]].aggregate();
+        }
+      }
+      cursor.advance();
+      processedRows++;
+    }
     while (!cursor.isDone()) {
       final IndexedInts dimValues = selector.getRow();
       for (int i = 0, size = dimValues.size(); i < size; ++i) {
@@ -140,8 +168,8 @@ public class StringTopNColumnSelectorStrategy
           rowSelector[dimIndex] = theAggregators;
         }
 
-        for (int j = 0; j < noopAggregatorIndexs.length; j++) {
-          theAggregators[noopAggregatorIndexs[j]].aggregate();
+        for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
+          theAggregators[operativeAggregatorIndexs[j]].aggregate();
         }
       }
       cursor.advance();
@@ -158,7 +186,31 @@ public class StringTopNColumnSelectorStrategy
   )
   {
     long processedRows = 0;
-    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
+    int[] operativeAggregatorIndexs = BaseTopNAlgorithm.getOperativeAggregators(query.getAggregatorSpecs());
+    int[] anyValueAggregatorIndexs = BaseTopNAlgorithm.getAnyValueAggregators(query.getAggregatorSpecs());
+    // AnyValue aggregations are a special case. Since we only need to read in a single row in order to evaluate
+    // doing that separately to avoid overhead looping through all rows
+    if (!cursor.isDone()) {
+      final IndexedInts dimValues = selector.getRow();
+      for (int i = 0, size = dimValues.size(); i < size; ++i) {
+        final int dimIndex = dimValues.get(i);
+        final Comparable<?> key = dimensionValueConverter.apply(selector.lookupName(dimIndex));
+
+        Aggregator[] theAggregators = aggregatesStore.get(key);
+        if (theAggregators == null) {
+          theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
+          aggregatesStore.put(key, theAggregators);
+        }
+        for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
+          theAggregators[operativeAggregatorIndexs[j]].aggregate();
+        }
+        for (int j = 0; j < anyValueAggregatorIndexs.length; j++) {
+          theAggregators[anyValueAggregatorIndexs[j]].aggregate();
+        }
+      }
+      cursor.advance();
+      processedRows++;
+    }
     while (!cursor.isDone()) {
       final IndexedInts dimValues = selector.getRow();
       for (int i = 0, size = dimValues.size(); i < size; ++i) {
@@ -170,8 +222,8 @@ public class StringTopNColumnSelectorStrategy
           theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
           aggregatesStore.put(key, theAggregators);
         }
-        for (int j = 0; j < noopAggregatorIndexs.length; j++) {
-          theAggregators[noopAggregatorIndexs[j]].aggregate();
+        for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
+          theAggregators[operativeAggregatorIndexs[j]].aggregate();
         }
       }
       cursor.advance();

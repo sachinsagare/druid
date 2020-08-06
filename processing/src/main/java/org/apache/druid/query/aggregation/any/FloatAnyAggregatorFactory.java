@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class FloatAnyAggregatorFactory extends SimpleFloatAggregatorFactory
+public class FloatAnyAggregatorFactory extends SimpleFloatAggregatorFactory implements AnyAggregatorFactory
 {
   @JsonCreator
   public FloatAnyAggregatorFactory(

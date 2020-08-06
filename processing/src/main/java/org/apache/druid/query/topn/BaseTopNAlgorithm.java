@@ -27,6 +27,7 @@ import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.BufferAggregator;
 import org.apache.druid.query.aggregation.NoopNumberAggregatorFactory;
+import org.apache.druid.query.aggregation.any.AnyAggregatorFactory;
 import org.apache.druid.query.topn.types.TopNColumnSelectorStrategy;
 import org.apache.druid.segment.Capabilities;
 import org.apache.druid.segment.Cursor;
@@ -45,11 +46,23 @@ import java.util.List;
 public abstract class BaseTopNAlgorithm<DimValSelector, DimValAggregateStore, Parameters extends TopNParams>
     implements TopNAlgorithm<DimValSelector, Parameters>
 {
-  public static int[] getNonNoopAggregators(List<AggregatorFactory> aggregatorSpecs)
+  public static int[] getOperativeAggregators(List<AggregatorFactory> aggregatorSpecs)
   {
     List<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < aggregatorSpecs.size(); i++) {
-      if (!(aggregatorSpecs.get(i) instanceof NoopNumberAggregatorFactory)) {
+      if (!(aggregatorSpecs.get(i) instanceof NoopNumberAggregatorFactory)
+              && !(aggregatorSpecs.get(i) instanceof AnyAggregatorFactory)) {
+        indexes.add(i);
+      }
+    }
+    return Ints.toArray(indexes);
+  }
+
+  public static int[] getAnyValueAggregators(List<AggregatorFactory> aggregatorSpecs)
+  {
+    List<Integer> indexes = new ArrayList<>();
+    for (int i = 0; i < aggregatorSpecs.size(); i++) {
+      if (aggregatorSpecs.get(i) instanceof AnyAggregatorFactory) {
         indexes.add(i);
       }
     }
