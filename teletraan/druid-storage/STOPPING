@@ -26,6 +26,9 @@ else
         shared)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.shared.conf
             ;;
+        experiments)
+            configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.experiments.conf
+            ;;
 
         *)
             echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"

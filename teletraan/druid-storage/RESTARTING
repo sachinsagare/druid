@@ -33,6 +33,9 @@ case "${DEPLOY_TYPE}" in
     shared)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.shared.conf
         ;;
+    experiments)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.experiments.conf
+        ;;
     *)
         echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"
         exit 1
