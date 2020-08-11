@@ -11,6 +11,7 @@
     },
     "taskCount": 5
   },
+
   "tuningConfig": {
     "type": "kafka",
     "maxRowsPerSegment": 15000000,
