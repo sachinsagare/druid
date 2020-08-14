@@ -84,26 +84,7 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int[] operativeAggregatorIndexs = BaseTopNAlgorithm.getOperativeAggregators(query.getAggregatorSpecs());
-    int[] anyValueAggregatorIndexs = BaseTopNAlgorithm.getAnyValueAggregators(query.getAggregatorSpecs());
-    // AnyValue aggregations are a special case. Since we only need to read in a single row in order to evaluate
-    // doing that separately to avoid overhead looping through all rows
-    if (!cursor.isDone()) {
-      int key = Float.floatToIntBits(selector.getFloat());
-      Aggregator[] theAggregators = aggregatesStore.get(key);
-      if (theAggregators == null) {
-        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        aggregatesStore.put(key, theAggregators);
-      }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
-      }
-      for (int j = 0; j < anyValueAggregatorIndexs.length; j++) {
-        theAggregators[anyValueAggregatorIndexs[j]].aggregate();
-      }
-      cursor.advance();
-      processedRows++;
-    }
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       int key = Float.floatToIntBits(selector.getFloat());
       Aggregator[] theAggregators = aggregatesStore.get(key);
@@ -111,8 +92,8 @@ public abstract class NumericTopNColumnSelectorStrategy<
         theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;
@@ -128,26 +109,7 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int[] operativeAggregatorIndexs = BaseTopNAlgorithm.getOperativeAggregators(query.getAggregatorSpecs());
-    int[] anyValueAggregatorIndexs = BaseTopNAlgorithm.getAnyValueAggregators(query.getAggregatorSpecs());
-    // AnyValue aggregations are a special case. Since we only need to read in a single row in order to evaluate
-    // doing that separately to avoid overhead looping through all rows
-    if (!cursor.isDone()) {
-      long key = Double.doubleToLongBits(selector.getDouble());
-      Aggregator[] theAggregators = aggregatesStore.get(key);
-      if (theAggregators == null) {
-        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        aggregatesStore.put(key, theAggregators);
-      }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
-      }
-      for (int j = 0; j < anyValueAggregatorIndexs.length; j++) {
-        theAggregators[anyValueAggregatorIndexs[j]].aggregate();
-      }
-      cursor.advance();
-      processedRows++;
-    }
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       long key = Double.doubleToLongBits(selector.getDouble());
       Aggregator[] theAggregators = aggregatesStore.get(key);
@@ -155,8 +117,8 @@ public abstract class NumericTopNColumnSelectorStrategy<
         theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;
@@ -172,27 +134,7 @@ public abstract class NumericTopNColumnSelectorStrategy<
   )
   {
     long processedRows = 0;
-    int[] operativeAggregatorIndexs = BaseTopNAlgorithm.getOperativeAggregators(query.getAggregatorSpecs());
-    int[] anyValueAggregatorIndexs = BaseTopNAlgorithm.getAnyValueAggregators(query.getAggregatorSpecs());
-
-    // AnyValue aggregations are a special case. Since we only need to read in a single row in order to evaluate
-    // doing that separately to avoid overhead looping through all rows
-    if (!cursor.isDone()) {
-      long key = selector.getLong();
-      Aggregator[] theAggregators = aggregatesStore.get(key);
-      if (theAggregators == null) {
-        theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
-        aggregatesStore.put(key, theAggregators);
-      }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
-      }
-      for (int j = 0; j < anyValueAggregatorIndexs.length; j++) {
-        theAggregators[anyValueAggregatorIndexs[j]].aggregate();
-      }
-      cursor.advance();
-      processedRows++;
-    }
+    int[] noopAggregatorIndexs = BaseTopNAlgorithm.getNonNoopAggregators(query.getAggregatorSpecs());
     while (!cursor.isDone()) {
       long key = selector.getLong();
       Aggregator[] theAggregators = aggregatesStore.get(key);
@@ -200,8 +142,8 @@ public abstract class NumericTopNColumnSelectorStrategy<
         theAggregators = BaseTopNAlgorithm.makeAggregators(cursor, query.getAggregatorSpecs());
         aggregatesStore.put(key, theAggregators);
       }
-      for (int j = 0; j < operativeAggregatorIndexs.length; j++) {
-        theAggregators[operativeAggregatorIndexs[j]].aggregate();
+      for (int j = 0; j < noopAggregatorIndexs.length; j++) {
+        theAggregators[noopAggregatorIndexs[j]].aggregate();
       }
       cursor.advance();
       processedRows++;

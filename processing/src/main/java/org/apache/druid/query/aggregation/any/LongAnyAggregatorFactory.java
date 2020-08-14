@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class LongAnyAggregatorFactory extends SimpleLongAggregatorFactory implements AnyAggregatorFactory
+public class LongAnyAggregatorFactory extends SimpleLongAggregatorFactory
 {
   @JsonCreator
   public LongAnyAggregatorFactory(
