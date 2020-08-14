@@ -42,7 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class StringAnyAggregatorFactory extends AggregatorFactory implements AnyAggregatorFactory
+public class StringAnyAggregatorFactory extends AggregatorFactory
 {
   private static final Comparator<String> VALUE_COMPARATOR = Comparator.nullsFirst(Comparator.naturalOrder());
 
