@@ -34,6 +34,8 @@
             "parentSpanId",
             "stageName",
             "requestB64Encoded",
+            "filterColumns",
+            "filterOperators",
             {
               "type": "long",
               "name": "userId"
