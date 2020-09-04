@@ -58,6 +58,7 @@ import org.apache.druid.query.groupby.orderby.DefaultLimitSpec;
 import org.apache.druid.query.groupby.orderby.LimitSpec;
 import org.apache.druid.query.groupby.orderby.NoopLimitSpec;
 import org.apache.druid.query.groupby.orderby.OrderByColumnSpec;
+import org.apache.druid.query.groupby.zerofill.ZeroFilledDimensionSpec;
 import org.apache.druid.query.ordering.StringComparator;
 import org.apache.druid.query.ordering.StringComparators;
 import org.apache.druid.query.spec.LegacySegmentSpec;
@@ -114,6 +115,8 @@ public class GroupByQuery extends BaseQuery<ResultRow>
   private final List<String> resultRowOrder;
   private final Object2IntMap<String> resultRowPositionLookup;
 
+  @Nullable private final ZeroFilledDimensionSpec zeroFilledDimensionSpec;
+
   /**
    * This is set when we know that all rows will have the same timestamp, and allows us to not actually store
    * and track it throughout the query execution process.
@@ -167,13 +170,20 @@ public class GroupByQuery extends BaseQuery<ResultRow>
           }
       );
     }
+
+    if (zeroFilledDimensionSpec != null) {
+      // We want to zero fill before limit spec and havingSpecs are applied
+      postProcessingFn = Functions.compose(
+          postProcessingFn,
+          input -> zeroFilledDimensionSpec.zeroFill(this, input));
+    }
     return postProcessingFn;
   }
 
   /**
-   * A private constructor that avoids recomputing postProcessingFn.
+   * A protected constructor that avoids recomputing postProcessingFn.
    */
-  private GroupByQuery(
+  protected GroupByQuery(
       final DataSource dataSource,
       final QuerySegmentSpec querySegmentSpec,
       final VirtualColumns virtualColumns,
@@ -217,10 +227,21 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     // We're not counting __time, even though that name is problematic. See: https://github.com/apache/incubator-druid/pull/3684
     verifyOutputNames(this.dimensions, this.aggregatorSpecs, this.postAggregatorSpecs);
 
+    this.zeroFilledDimensionSpec = getOrDefaultZeroFilledDimensionSpec();
+
     this.postProcessingFn = postProcessingFn != null ? postProcessingFn : makePostProcessingFn();
 
     // Check if limit push down configuration is valid and check if limit push down will be applied
     this.applyLimitPushDown = determineApplyLimitPushDown();
+  }
+
+  @Nullable
+  private ZeroFilledDimensionSpec getOrDefaultZeroFilledDimensionSpec()
+  {
+    if (getContextValue(ZeroFilledDimensionSpec.ZERO_FILLED_DIMS_CONTEXT_KEY) == null) {
+      return null;
+    }
+    return new ZeroFilledDimensionSpec(getContext(), dimensions);
   }
 
   @Nullable
@@ -501,6 +522,10 @@ public class GroupByQuery extends BaseQuery<ResultRow>
 
   private boolean determineApplyLimitPushDown()
   {
+    // If we're zero filling dimensions we should not push limit down as it will complicate zero filling
+    if (zeroFilledDimensionSpec != null) {
+      return false;
+    }
     if (subtotalsSpec != null) {
       return false;
     }
