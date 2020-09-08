@@ -123,6 +123,8 @@ EOF
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/broker/jvm.config
     sed -i "s/<NEW_SIZE>/${TELETRAAN_DRUID_NEW_SIZE:-4}/" $DRUID_CONF_DIR/broker/jvm.config
     sed -i "s/<MAX_DIRECT_MEM>/${TELETRAAN_DRUID_MAX_DIRECT_MEM:-12}/" $DRUID_CONF_DIR/broker/jvm.config
+    sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/broker/jvm.config
+
 
     if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
       cat << EOF >> $DRUID_CONF_DIR/broker/jvm.config
