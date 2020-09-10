@@ -56,7 +56,9 @@ import java.util.Map;
     @JsonSubTypes.Type(name = ShardSpec.Type.SINGLE_EVEN_SIZE_NAMED_V2, value = SingleDimensionEvenSizeNamedV2ShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_FANOUT_HASHED, value = StreamFanOutHashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_HASHED, value = StreamHashBasedNumberedShardSpec.class),
-    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class)
+    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_EVEN_HASHED, value = SingleDimensionEvenSizeShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_EVEN_SIZE_NAMED, value = SingleDimensionEvenSizeNamedShardSpec.class)
 })
 
 public interface ShardSpec
@@ -190,5 +192,8 @@ public interface ShardSpec
 
     String STREAM_FANOUT_HASHED = "stream_fanout_hashed";
     String STREAM_HASHED = "stream_hashed";
+
+    String STREAM_EVEN_HASHED = "single_even_size";
+    String STREAM_EVEN_SIZE_NAMED = "single_even_size_named";
   }
 }
