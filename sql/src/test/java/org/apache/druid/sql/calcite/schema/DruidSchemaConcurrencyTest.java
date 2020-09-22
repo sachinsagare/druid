@@ -367,7 +367,8 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
           {
             return null;
           }
-        }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
   }
 
