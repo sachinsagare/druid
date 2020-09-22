@@ -163,7 +163,8 @@ public class BrokerServerViewTest extends CuratorTestBase
           {
             return null;
           }
-        }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
 
     baseView.start();
@@ -473,7 +474,8 @@ public class BrokerServerViewTest extends CuratorTestBase
           {
             return null;
           }
-        }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
 
     baseView.start();

@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -89,6 +90,7 @@ public class BrokerServerView implements TimelineServerView
   private final Predicate<Pair<DruidServerMetadata, DataSegment>> segmentFilter;
   private final Map<String, List<String>> dataSourceComplementaryMapToQueryOrder;
   private final DruidProcessingConfig processingConfig;
+  private final Set<String> lifetimeDataSource;
 
   private final CountDownLatch initialized = new CountDownLatch(1);
 
@@ -104,7 +106,8 @@ public class BrokerServerView implements TimelineServerView
       final BrokerSegmentWatcherConfig segmentWatcherConfig,
       final BrokerDataSourceComplementConfig dataSourceComplementConfig,
       final BrokerDataSourceMultiComplementConfig dataSourceMultiComplementConfig,
-      final DruidProcessingConfig processingConfig)
+      final DruidProcessingConfig processingConfig,
+      final BrokerDataSourceLifetimeConfig lifetimeConfig)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -123,6 +126,7 @@ public class BrokerServerView implements TimelineServerView
             dataSourceComplementaryMapToQueryOrder.putIfAbsent(key, dataSourceMultiComplementConfigMapping.get(key))
     );
 
+    this.lifetimeDataSource = lifetimeConfig.getMapping().keySet();
     this.clients = new ConcurrentHashMap<>();
     this.selectors = new HashMap<>();
     this.timelines = new HashMap<>();
@@ -393,10 +397,12 @@ public class BrokerServerView implements TimelineServerView
       for (String supportDataSource : dataSourceComplementaryMapToQueryOrder.get(dataSource)) {
         supportTimelinesByDataSource.putIfAbsent(supportDataSource, getTimeline(supportDataSource));
       }
+      boolean islifetime = this.lifetimeDataSource.contains(dataSource);
       timeline = new ComplementaryNamespacedVersionedIntervalTimeline(
               dataSource,
               supportTimelinesByDataSource,
-              dataSourceComplementaryMapToQueryOrder.get(dataSource));
+              dataSourceComplementaryMapToQueryOrder.get(dataSource),
+              islifetime);
       timelines.put(dataSource, timeline);
     } else {
       timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
