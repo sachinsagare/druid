@@ -15,7 +15,7 @@
             "requestType",
             "ldap",
             "clientType",
-            "pepsiFlags",
+            "flags",
             "priority",
             "timeout",
             "columns",
