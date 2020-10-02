@@ -22,6 +22,7 @@ package org.apache.druid.query.aggregation.collectset;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import gnu.trove.set.hash.THashSet;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.query.aggregation.AggregateCombiner;
@@ -35,10 +36,8 @@ import org.apache.druid.segment.ColumnValueSelector;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -49,17 +48,20 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
 
   private final String name;
   private final String fieldName;
+  private final int limit;
 
   @JsonCreator
   public CollectSetAggregatorFactory(
-      @JsonProperty("name") String name,
-      @JsonProperty("fieldName") String fieldName
+      @JsonProperty("name") final String name,
+      @JsonProperty("fieldName") final String fieldName,
+      @JsonProperty("limit") @Nullable final Integer limit
   )
   {
     Preconditions.checkNotNull(name);
     Preconditions.checkNotNull(fieldName);
     this.name = name;
     this.fieldName = fieldName;
+    this.limit = (limit == null) ? -1 : limit; // -1 means unlimited.
   }
 
   @Override
@@ -67,7 +69,7 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   {
     final ColumnValueSelector<Object> selector =
         columnSelectorFactory.makeColumnValueSelector(getFieldName());
-    return new CollectSetAggregator(selector);
+    return new CollectSetAggregator(selector, limit);
   }
 
   @Override
@@ -75,7 +77,7 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   {
     final ColumnValueSelector<Object> selector =
         columnSelectorFactory.makeColumnValueSelector(getFieldName());
-    return new CollectSetBufferAggregator(selector);
+    return new CollectSetBufferAggregator(selector, limit);
   }
 
   @Override
@@ -87,18 +89,17 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   @Override
   public Object combine(Object lhs, Object rhs)
   {
-    Set<Object> set = new HashSet<>();
+    Set<Object> set = new THashSet<>();
     if (lhs == null && rhs == null) {
       return set;
     } else if (rhs == null) {
-      set.addAll((Collection) lhs);
+      CollectSetUtil.addWithLimit(set, lhs, limit);
     } else if (lhs == null) {
-      set.addAll((Collection) rhs);
+      CollectSetUtil.addWithLimit(set, rhs, limit);
     } else {
-      set.addAll((Collection) lhs);
-      set.addAll((Collection) rhs);
+      CollectSetUtil.addWithLimit(set, lhs, limit);
+      CollectSetUtil.addWithLimit(set, rhs, limit);
     }
-
     return set;
   }
 
@@ -107,7 +108,7 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   {
     return new ObjectAggregateCombiner<Set>()
     {
-      private final Set<Object> unionSet = new HashSet<>();
+      private final Set<Object> unionSet = new THashSet<>();
 
       @Override
       public void reset(final ColumnValueSelector selector)
@@ -130,7 +131,7 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
       @Override
       public Set<Object> getObject()
       {
-        return new HashSet<>(unionSet);
+        return new THashSet<>(unionSet);
       }
 
       @Override
@@ -145,14 +146,14 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   @Override
   public AggregatorFactory getCombiningFactory()
   {
-    return new CollectSetAggregatorFactory(name, name);
+    return new CollectSetAggregatorFactory(name, name, limit);
   }
 
   @Override
   public List<AggregatorFactory> getRequiredColumns()
   {
     return Collections.singletonList(
-        new CollectSetAggregatorFactory(fieldName, fieldName)
+        new CollectSetAggregatorFactory(fieldName, fieldName, limit)
     );
   }
 
@@ -206,7 +207,7 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   @Override
   public int getMaxIntermediateSize()
   {
-    return Long.BYTES;
+    return Byte.BYTES;
   }
 
   @Override

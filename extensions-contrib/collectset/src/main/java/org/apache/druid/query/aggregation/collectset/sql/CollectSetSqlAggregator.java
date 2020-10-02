@@ -22,6 +22,7 @@ package org.apache.druid.query.aggregation.collectset.sql;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
@@ -91,6 +92,24 @@ public class CollectSetSqlAggregator implements SqlAggregator
       return null;
     }
 
+    Integer limit;
+    if (aggregateCall.getArgList().size() >= 2) {
+      final RexNode limitRexNode = Expressions.fromFieldAccess(
+          rowSignature,
+          project,
+          aggregateCall.getArgList().get(1)
+      );
+
+      if (!limitRexNode.isA(SqlKind.LITERAL)) {
+        // limit must be a literal in order to plan.
+        return null;
+      }
+
+      limit = new Integer(((Number) RexLiteral.value(limitRexNode)).intValue());
+    } else {
+      limit = new Integer(-1);
+    }
+
     final List<VirtualColumn> virtualColumns = new ArrayList<>();
     final AggregatorFactory aggregatorFactory;
     final String aggregatorName = finalizeAggregations ? Calcites.makePrefixedName(name, "a") : name;
@@ -120,7 +139,8 @@ public class CollectSetSqlAggregator implements SqlAggregator
 
       aggregatorFactory = new CollectSetAggregatorFactory(
           aggregatorName,
-          dimensionSpec.getDimension()
+          dimensionSpec.getDimension(),
+          limit
       );
     }
 
@@ -136,6 +156,8 @@ public class CollectSetSqlAggregator implements SqlAggregator
 
   private static class CollectSetSqlAggFunction extends SqlAggFunction
   {
+    private static final String SIGNATURE = "'" + NAME + "(column, limit)'\n";
+
     CollectSetSqlAggFunction()
     {
       super(
@@ -144,7 +166,13 @@ public class CollectSetSqlAggregator implements SqlAggregator
           SqlKind.OTHER_FUNCTION,
           ReturnTypes.explicit(SqlTypeName.OTHER),
           null,
-          OperandTypes.family(SqlTypeFamily.ANY),
+          OperandTypes.or(
+              OperandTypes.ANY,
+              OperandTypes.and(
+                  OperandTypes.sequence(SIGNATURE, OperandTypes.ANY, OperandTypes.LITERAL),
+                  OperandTypes.family(SqlTypeFamily.ANY, SqlTypeFamily.NUMERIC)
+              )
+          ),
           SqlFunctionCategory.USER_DEFINED_FUNCTION,
           false,
           false

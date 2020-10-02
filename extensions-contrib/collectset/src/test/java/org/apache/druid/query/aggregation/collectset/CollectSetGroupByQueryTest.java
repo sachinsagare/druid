@@ -19,6 +19,7 @@
 
 package org.apache.druid.query.aggregation.collectset;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.druid.data.input.InputRow;
 import org.apache.druid.java.util.common.Pair;
@@ -110,7 +111,9 @@ public class CollectSetGroupByQueryTest
                 10
             )
         )
-        .setAggregatorSpecs(new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[2], CollectSetTestHelper.DIMENSIONS[2]))
+        .setAggregatorSpecs(new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[2], CollectSetTestHelper.DIMENSIONS[2], null),
+                            new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[3], CollectSetTestHelper.DIMENSIONS[3], null),
+                            new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[3] + "a", CollectSetTestHelper.DIMENSIONS[3], 3))
         .build();
 
     final Segment incrementalIndexSegment = new IncrementalIndexSegment(index, null);
@@ -127,28 +130,36 @@ public class CollectSetGroupByQueryTest
             "1970-01-01T00:00:00.000Z",
             CollectSetTestHelper.DIMENSIONS[0], "0",
             CollectSetTestHelper.DIMENSIONS[1], "android",
-            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("image")
+            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("image"),
+            CollectSetTestHelper.DIMENSIONS[3], Sets.newHashSet("tag1", "tag4", "tag5", "tag6"),
+            CollectSetTestHelper.DIMENSIONS[3] + "a", Sets.newHashSet("tag1", "tag4", "tag5")
         ),
         GroupByQueryRunnerTestHelper.createExpectedRow(
             query,
             "1970-01-01T00:00:00.000Z",
             CollectSetTestHelper.DIMENSIONS[0], "0",
             CollectSetTestHelper.DIMENSIONS[1], "iphone",
-            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video", "text")
+            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video", "text"),
+            CollectSetTestHelper.DIMENSIONS[3], Sets.newHashSet("tag1", "tag2", "tag3", "tag4", "tag5", "tag7", "tag8"),
+            CollectSetTestHelper.DIMENSIONS[3] + "a", Sets.newHashSet("tag4", "tag5", "tag7")
         ),
         GroupByQueryRunnerTestHelper.createExpectedRow(
             query,
             "1970-01-01T00:00:00.000Z",
             CollectSetTestHelper.DIMENSIONS[0], "1",
             CollectSetTestHelper.DIMENSIONS[1], "iphone",
-            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video")
+            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video"),
+            CollectSetTestHelper.DIMENSIONS[3], ImmutableSet.of(),
+            CollectSetTestHelper.DIMENSIONS[3] + "a", ImmutableSet.of()
         ),
         GroupByQueryRunnerTestHelper.createExpectedRow(
             query,
             "1970-01-01T00:00:00.000Z",
             CollectSetTestHelper.DIMENSIONS[0], "2",
             CollectSetTestHelper.DIMENSIONS[1], "android",
-            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video")
+            CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("video"),
+            CollectSetTestHelper.DIMENSIONS[3], Sets.newHashSet("tag2"),
+            CollectSetTestHelper.DIMENSIONS[3] + "a", Sets.newHashSet("tag2")
         )
     );
     TestHelper.assertExpectedObjects(expectedResults, results, "collectset");

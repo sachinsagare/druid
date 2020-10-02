@@ -69,9 +69,11 @@ public class CollectSetTimeseriesQueryTest
                                   .intervals(QueryRunnerTestHelper.FULL_ON_INTERVAL_SPEC)
                                   .aggregators(
                                       Lists.newArrayList(
-                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[0], CollectSetTestHelper.DIMENSIONS[0]),
-                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[1], CollectSetTestHelper.DIMENSIONS[1]),
-                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[2], CollectSetTestHelper.DIMENSIONS[2])
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[0], CollectSetTestHelper.DIMENSIONS[0], null),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[1], CollectSetTestHelper.DIMENSIONS[1], null),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[2], CollectSetTestHelper.DIMENSIONS[2], 2),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[3], CollectSetTestHelper.DIMENSIONS[3], null),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[3] + "a", CollectSetTestHelper.DIMENSIONS[3], 4)
                                       )
                                   )
                                   .build();
@@ -86,7 +88,9 @@ public class CollectSetTimeseriesQueryTest
                 ImmutableMap.of(
                     CollectSetTestHelper.DIMENSIONS[0], Sets.newHashSet("0", "1", "2"),
                     CollectSetTestHelper.DIMENSIONS[1], Sets.newHashSet("android", "iphone"),
-                    CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("text", "video", "image"))
+                    CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("text", "image"),
+                    CollectSetTestHelper.DIMENSIONS[3], Sets.newHashSet("tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"),
+                    CollectSetTestHelper.DIMENSIONS[3] + "a", Sets.newHashSet("tag1", "tag4", "tag5", "tag6"))
             )
         )
     );
