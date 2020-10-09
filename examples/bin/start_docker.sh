@@ -35,6 +35,7 @@ case ${STAGE_NAME} in
     sed -i "s/<COORDINATOR_PORT>/${TELETRAAN_COORDINATOR_PORT:-9090}/" $DRUID_CONF_DIR/coordinator/runtime.properties
     # This property defaults to false before 0.18, so using that default here as well
     sed -i "s/<DRUID_CLEAN_UP_PENDING_SEGMENTS>/${TELETRAAN_CLEAN_UP_PENDING_SEGMENTS:-false}/" $DRUID_CONF_DIR/coordinator/runtime.properties
+    sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/coordinator/jvm.config
 
     if [ ! -z "${TELETRAAN_DRUID_TIER_MIRRORING_MAP}" ]; then
       if grep -q "druid.coordinator.tier.tierMirroringMap" $DRUID_CONF_DIR/coordinator/runtime.properties; then
@@ -57,6 +58,7 @@ EOF
     sed -i "s/<OVERLORD_PORT>/${TELETRAAN_OVERLORD_PORT:-9090}/" $DRUID_CONF_DIR/overlord/runtime.properties
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
+    sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/overlord/jvm.config
 
     if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
       cat << EOF >> $DRUID_CONF_DIR/overlord/jvm.config
