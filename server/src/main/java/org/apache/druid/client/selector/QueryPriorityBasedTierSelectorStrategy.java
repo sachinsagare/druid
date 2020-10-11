@@ -19,43 +19,51 @@
 
 package org.apache.druid.client.selector;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
 import org.apache.druid.timeline.DataSegment;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
  *
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "tier", defaultImpl = HighestPriorityTierSelectorStrategy.class)
-@JsonSubTypes(value = {
-    @JsonSubTypes.Type(name = "highestPriority", value = HighestPriorityTierSelectorStrategy.class),
-    @JsonSubTypes.Type(name = "lowestPriority", value = LowestPriorityTierSelectorStrategy.class),
-    @JsonSubTypes.Type(name = "custom", value = CustomTierSelectorStrategy.class),
-    @JsonSubTypes.Type(name = "queryPriorityBased", value = QueryPriorityBasedTierSelectorStrategy.class)
-})
-public interface TierSelectorStrategy
+public class QueryPriorityBasedTierSelectorStrategy extends HighestPriorityTierSelectorStrategy
 {
-  Comparator<Integer> getComparator();
+
+  private final Map<Integer, Integer> lookup;
+
+  @JsonCreator
+  public QueryPriorityBasedTierSelectorStrategy(
+      @JacksonInject ServerSelectorStrategy serverSelectorStrategy,
+      @JacksonInject QueryPriorityBasedTierSelectorStrategyConfig config
+  )
+  {
+    super(serverSelectorStrategy);
+    lookup = new HashMap<>(config.getQueryPriorityToTierPriorityMap());
+  }
+
 
   @Nullable
-  QueryableDruidServer pick(Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers, DataSegment segment);
-
-  @Nullable
-  QueryableDruidServer pick(
+  @Override
+  public QueryableDruidServer pick(
       int queryPriority,
       Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
       DataSegment segment
-  );
-
-  List<QueryableDruidServer> pick(
-      Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
-      DataSegment segment,
-      int numServersToPick
-  );
+  )
+  {
+    if (lookup.containsKey(queryPriority)) {
+      int tierPriority = lookup.get(queryPriority);
+      if (prioritizedServers.containsKey(tierPriority)) {
+        return Iterables.getOnlyElement(pick(prioritizedServers.get(tierPriority), segment, 1), null);
+      }
+    }
+    // Default to the parent which is the highest priority tier selector
+    return pick(prioritizedServers, segment);
+  }
 }

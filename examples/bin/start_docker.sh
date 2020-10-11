@@ -105,6 +105,14 @@ EOF
     sed -i "s/<DRUID_BROKER_SELECT_TIER_CUSTOM_PRIORITIES>/${TELETRAAN_DRUID_BROKER_SELECT_TIER_CUSTOM_PRIORITIES:-[]}/" $DRUID_CONF_DIR/broker/runtime.properties
     sed -i "s/<DRUID_PROCESSING_EXCEPTION_SKIP_REALTIME_DATA>/${TELETRAAN_DRUID_PROCESSING_EXCEPTION_SKIP_REALTIME_DATA:-false}/" $DRUID_CONF_DIR/broker/runtime.properties
 
+    if [ ! -z "${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}" ]; then
+      if grep -q "druid.broker.select.tier.queryPriorityBased.priorityMap" $DRUID_CONF_DIR/broker/runtime.properties; then
+        sed -i "s/^druid.broker.select.tier.queryPriorityBased.priorityMap=.*$/druid.broker.select.tier.queryPriorityBased.priorityMap=${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}/" $DRUID_CONF_DIR/broker/runtime.properties
+      else
+        sed -i "\$adruid.broker.select.tier.queryPriorityBased.priorityMap=${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}" $DRUID_CONF_DIR/broker/runtime.properties
+      fi
+    fi
+
     if [ ! -z "${TELETRAAN_DATASOURCE_COMPLEMENT_MAP}" ]; then
       if grep -q "druid.broker.dataSourceComplement.mapping" $DRUID_CONF_DIR/broker/runtime.properties; then
         sed -i "s/^druid.broker.dataSourceComplement.mapping=.*$/druid.broker.dataSourceComplement.mapping=${TELETRAAN_DATASOURCE_COMPLEMENT_MAP}/" $DRUID_CONF_DIR/broker/runtime.properties

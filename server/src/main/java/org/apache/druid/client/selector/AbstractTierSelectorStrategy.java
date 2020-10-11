@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ *
  */
 public abstract class AbstractTierSelectorStrategy implements TierSelectorStrategy
 {
@@ -49,6 +50,18 @@ public abstract class AbstractTierSelectorStrategy implements TierSelectorStrate
     return Iterables.getOnlyElement(pick(prioritizedServers, segment, 1), null);
   }
 
+  @Nullable
+  @Override
+  public QueryableDruidServer pick(
+      int queryPriority,
+      Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
+      DataSegment segment
+  )
+  {
+    // If not configured to use the priority based tier selector strategy, just ignore the priority input
+    return Iterables.getOnlyElement(pick(prioritizedServers, segment, 1), null);
+  }
+
   @Override
   public List<QueryableDruidServer> pick(
       Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
@@ -58,11 +71,20 @@ public abstract class AbstractTierSelectorStrategy implements TierSelectorStrate
   {
     List<QueryableDruidServer> result = new ArrayList<>(numServersToPick);
     for (Set<QueryableDruidServer> priorityServers : prioritizedServers.values()) {
-      result.addAll(serverSelectorStrategy.pick(priorityServers, segment, numServersToPick - result.size()));
+      result.addAll(pick(priorityServers, segment, numServersToPick - result.size()));
       if (result.size() == numServersToPick) {
         break;
       }
     }
     return result;
+  }
+
+  protected List<QueryableDruidServer> pick(
+      Set<QueryableDruidServer> priorityServers,
+      DataSegment segment,
+      int numServersToPick
+  )
+  {
+    return serverSelectorStrategy.pick(priorityServers, segment, numServersToPick);
   }
 }
