@@ -631,7 +631,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
     {
       final SortedMap<DruidServer, List<SegmentDescriptor>> serverSegments = new TreeMap<>();
       for (SegmentServerSelector segmentServer : segments) {
-        final QueryableDruidServer queryableDruidServer = segmentServer.getServer().pick(query);
+        final QueryableDruidServer queryableDruidServer = segmentServer.getServer().pickForPriority(QueryContexts.getPriority(query));
 
         if (queryableDruidServer == null) {
           log.makeAlert(
