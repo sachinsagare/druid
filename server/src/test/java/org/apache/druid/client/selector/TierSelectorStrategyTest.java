@@ -238,18 +238,17 @@ public class TierSelectorStrategyTest
         client
     );
 
-    TierSelectorStrategy tierSelectorStrategy =
-        new QueryPriorityBasedTierSelectorStrategy(
-            new ConnectionCountServerSelectorStrategy(),
-            new QueryPriorityBasedTierSelectorStrategyConfig()
-            {
-              @Override
-              public Map<Integer, Integer> getQueryPriorityToTierPriorityMap()
-              {
-                return ImmutableMap.of(1, 0, 2, 1);
-              }
-            }
-        );
+    TierSelectorStrategy tierSelectorStrategy = new QueryPriorityBasedTierSelectorStrategy(
+        new ConnectionCountServerSelectorStrategy(),
+        new QueryPriorityBasedTierSelectorStrategyConfig()
+        {
+          @Override
+          public Map<Integer, Integer> getQueryPriorityToTierPriorityMap()
+          {
+            return ImmutableMap.of(1, 0, 2, 1);
+          }
+        }
+    );
     final ServerSelector serverSelector = new ServerSelector(
         new DataSegment(
             "test",
