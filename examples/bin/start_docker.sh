@@ -131,9 +131,9 @@ EOF
 
     if [ ! -z "${TELETRAAN_DATASOURCE_LIFETIME_MAP}" ]; then
       if grep -q "druid.broker.dataSourceLifetime.mapping" $DRUID_CONF_DIR/broker/runtime.properties; then
-        sed -i "s/^druid.broker.dataSourceLifetime.mapping=.*$/druid.broker.dataSourceLifetime.mapping.mapping=${TELETRAAN_DATASOURCE_LIFETIME_MAP}/" $DRUID_CONF_DIR/broker/runtime.properties
+        sed -i "s/^druid.broker.dataSourceLifetime.mapping=.*$/druid.broker.dataSourceLifetime.mapping=${TELETRAAN_DATASOURCE_LIFETIME_MAP}/" $DRUID_CONF_DIR/broker/runtime.properties
       else
-        sed -i "\$adruid.broker.dataSourceLifetime.mapping.mapping=${TELETRAAN_DATASOURCE_LIFETIME_MAP}" $DRUID_CONF_DIR/broker/runtime.properties
+        sed -i "\$adruid.broker.dataSourceLifetime.mapping=${TELETRAAN_DATASOURCE_LIFETIME_MAP}" $DRUID_CONF_DIR/broker/runtime.properties
       fi
     fi
 
