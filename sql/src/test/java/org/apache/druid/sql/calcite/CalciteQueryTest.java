@@ -43,8 +43,14 @@ import org.apache.druid.query.aggregation.LongMaxAggregatorFactory;
 import org.apache.druid.query.aggregation.LongMinAggregatorFactory;
 import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
 import org.apache.druid.query.aggregation.cardinality.CardinalityAggregatorFactory;
+import org.apache.druid.query.aggregation.first.FloatFirstAggregatorFactory;
+import org.apache.druid.query.aggregation.first.LongFirstAggregatorFactory;
+import org.apache.druid.query.aggregation.first.StringFirstAggregatorFactory;
 import org.apache.druid.query.aggregation.hyperloglog.HyperUniqueFinalizingPostAggregator;
 import org.apache.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
+import org.apache.druid.query.aggregation.last.FloatLastAggregatorFactory;
+import org.apache.druid.query.aggregation.last.LongLastAggregatorFactory;
+import org.apache.druid.query.aggregation.last.StringLastAggregatorFactory;
 import org.apache.druid.query.aggregation.post.ArithmeticPostAggregator;
 import org.apache.druid.query.aggregation.post.FieldAccessPostAggregator;
 import org.apache.druid.query.dimension.DefaultDimensionSpec;
@@ -883,6 +889,86 @@ public class CalciteQueryTest extends BaseCalciteQueryTest
             new Object[]{"10.1"},
             new Object[]{"1"},
             new Object[]{""}
+        )
+    );
+  }
+
+  @Test
+  public void testEarliestAggregators() throws Exception
+  {
+    // Cannot vectorize EARLIEST aggregator.
+    skipVectorize();
+
+    testQuery(
+        "SELECT "
+        + "EARLIEST(cnt), EARLIEST(m1), EARLIEST(dim1, 10), "
+        + "EARLIEST(cnt + 1), EARLIEST(m1 + 1), EARLIEST(dim1 || CAST(cnt AS VARCHAR), 10) "
+        + "FROM druid.foo",
+        ImmutableList.of(
+            Druids.newTimeseriesQueryBuilder()
+                  .dataSource(CalciteTests.DATASOURCE1)
+                  .intervals(querySegmentSpec(Filtration.eternity()))
+                  .granularity(Granularities.ALL)
+                  .virtualColumns(
+                      expressionVirtualColumn("v0", "(\"cnt\" + 1)", ValueType.LONG),
+                      expressionVirtualColumn("v1", "(\"m1\" + 1)", ValueType.FLOAT),
+                      expressionVirtualColumn("v2", "concat(\"dim1\",CAST(\"cnt\", 'STRING'))", ValueType.STRING)
+                  )
+                  .aggregators(
+                      aggregators(
+                          new LongFirstAggregatorFactory("a0", "cnt"),
+                          new FloatFirstAggregatorFactory("a1", "m1"),
+                          new StringFirstAggregatorFactory("a2", "dim1", 10),
+                          new LongFirstAggregatorFactory("a3", "v0"),
+                          new FloatFirstAggregatorFactory("a4", "v1"),
+                          new StringFirstAggregatorFactory("a5", "v2", 10)
+                      )
+                  )
+                  .context(TIMESERIES_CONTEXT_DEFAULT)
+                  .build()
+        ),
+        ImmutableList.of(
+            new Object[]{1L, 1.0f, "", 2L, 2.0f, "1"}
+        )
+    );
+  }
+
+  @Test
+  public void testLatestAggregators() throws Exception
+  {
+    // Cannot vectorize LATEST aggregator.
+    skipVectorize();
+
+    testQuery(
+        "SELECT "
+        + "LATEST(cnt), LATEST(m1), LATEST(dim1, 10), "
+        + "LATEST(cnt + 1), LATEST(m1 + 1), LATEST(dim1 || CAST(cnt AS VARCHAR), 10) "
+        + "FROM druid.foo",
+        ImmutableList.of(
+            Druids.newTimeseriesQueryBuilder()
+                  .dataSource(CalciteTests.DATASOURCE1)
+                  .intervals(querySegmentSpec(Filtration.eternity()))
+                  .granularity(Granularities.ALL)
+                  .virtualColumns(
+                      expressionVirtualColumn("v0", "(\"cnt\" + 1)", ValueType.LONG),
+                      expressionVirtualColumn("v1", "(\"m1\" + 1)", ValueType.FLOAT),
+                      expressionVirtualColumn("v2", "concat(\"dim1\",CAST(\"cnt\", 'STRING'))", ValueType.STRING)
+                  )
+                  .aggregators(
+                      aggregators(
+                          new LongLastAggregatorFactory("a0", "cnt"),
+                          new FloatLastAggregatorFactory("a1", "m1"),
+                          new StringLastAggregatorFactory("a2", "dim1", 10),
+                          new LongLastAggregatorFactory("a3", "v0"),
+                          new FloatLastAggregatorFactory("a4", "v1"),
+                          new StringLastAggregatorFactory("a5", "v2", 10)
+                      )
+                  )
+                  .context(TIMESERIES_CONTEXT_DEFAULT)
+                  .build()
+        ),
+        ImmutableList.of(
+            new Object[]{1L, 6.0f, "abc", 2L, 7.0f, "abc1"}
         )
     );
   }
