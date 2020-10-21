@@ -56,6 +56,7 @@
 		"taskCount": 25,
 		"replicas": 1,
 		"taskDuration": "PT30M",
-		"useEarliestOffset": "true"
+		"lateMessageRejectionPeriod": "PT79200S",
+		"useEarliestOffset": false
 	}
 }

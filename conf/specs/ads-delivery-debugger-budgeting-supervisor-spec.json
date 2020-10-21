@@ -113,7 +113,7 @@
     "period": "PT30S",
     "useEarliestOffset": false,
     "completionTimeout": "PT1800S",
-    "lateMessageRejectionPeriod": null,
+    "lateMessageRejectionPeriod": "PT79200S",
     "earlyMessageRejectionPeriod": null,
     "stream": "delivery_debugger_budgeting",
     "useEarliestSequenceNumber": false,

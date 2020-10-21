@@ -9,7 +9,8 @@
       }
     },
     "topic": "delivery_debugger_pacing",
-    "useEarliestOffset": true,
+    "lateMessageRejectionPeriod": "PT79200S",
+    "useEarliestOffset": false,
     "taskCount": 5
   },
   "tuningConfig": {

@@ -9,7 +9,8 @@
       }
     },
     "topic": "delivery_debugger_lcb",
-    "useEarliestOffset": true,
+    "lateMessageRejectionPeriod": "PT79200S",
+    "useEarliestOffset": false,
     "taskCount": 5
   },
   "tuningConfig": {
