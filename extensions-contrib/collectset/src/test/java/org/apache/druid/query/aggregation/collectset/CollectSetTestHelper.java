@@ -57,9 +57,9 @@ public class CollectSetTestHelper
 
   public static final List<InputRow> INPUT_ROWS = ImmutableList.<Map<String, Object>>of(
       ImmutableMap.of(DIMENSIONS[0], "0", DIMENSIONS[1], "iphone", DIMENSIONS[2], "video", DIMENSIONS[3], ImmutableList.of("tag1", "tag2", "tag3")),
-      ImmutableMap.of(DIMENSIONS[0], "1", DIMENSIONS[1], "iphone", DIMENSIONS[2], "video", DIMENSIONS[3], ImmutableList.of()),
+      ImmutableMap.of(DIMENSIONS[0], "1", DIMENSIONS[1], "iphone", DIMENSIONS[2], "video", DIMENSIONS[3], ""),
       ImmutableMap.of(DIMENSIONS[0], "0", DIMENSIONS[1], "android", DIMENSIONS[2], "image", DIMENSIONS[3], ImmutableList.of("tag1", "tag4", "tag5", "tag6")),
-      ImmutableMap.of(DIMENSIONS[0], "2", DIMENSIONS[1], "android", DIMENSIONS[2], "video", DIMENSIONS[3], ImmutableList.of("tag2")),
+      ImmutableMap.of(DIMENSIONS[0], "2", DIMENSIONS[1], "android", DIMENSIONS[2], "video", DIMENSIONS[3], "tag2"),
       ImmutableMap.of(DIMENSIONS[0], "0", DIMENSIONS[1], "iphone", DIMENSIONS[2], "text", DIMENSIONS[3], ImmutableList.of("tag4", "tag5", "tag7", "tag8"))
   ).stream().map(e -> PARSER.parseBatch(e).get(0)).collect(Collectors.toList());
 

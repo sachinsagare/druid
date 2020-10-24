@@ -76,8 +76,9 @@ public class CollectSetBufferAggregator implements BufferAggregator
         return;
       }
 
-      if (value instanceof Collection<?>) {
-        CollectSetUtil.addWithLimit(set, value, limit);
+      if (value instanceof Collection) {
+        Collection<?> valueCollection = (Collection<?>) value;
+        CollectSetUtil.addCollectionWithLimit(set, valueCollection, limit);
       } else {
         set.add(value);
       }

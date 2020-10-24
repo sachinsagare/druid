@@ -36,6 +36,7 @@ import org.apache.druid.segment.ColumnValueSelector;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -90,15 +91,18 @@ public class CollectSetAggregatorFactory extends AggregatorFactory
   public Object combine(Object lhs, Object rhs)
   {
     Set<Object> set = new THashSet<>();
-    if (lhs == null && rhs == null) {
+    THashSet<Object> lhsSet = CollectSetUtil.flatten((Collection<?>) lhs);
+    THashSet<Object> rhsSet = CollectSetUtil.flatten((Collection<?>) rhs);
+
+    if (lhsSet == null && rhsSet == null) {
       return set;
-    } else if (rhs == null) {
-      CollectSetUtil.addWithLimit(set, lhs, limit);
-    } else if (lhs == null) {
-      CollectSetUtil.addWithLimit(set, rhs, limit);
+    } else if (rhsSet == null) {
+      CollectSetUtil.addCollectionWithLimit(set, lhsSet, limit);
+    } else if (lhsSet == null) {
+      CollectSetUtil.addCollectionWithLimit(set, rhsSet, limit);
     } else {
-      CollectSetUtil.addWithLimit(set, lhs, limit);
-      CollectSetUtil.addWithLimit(set, rhs, limit);
+      CollectSetUtil.addCollectionWithLimit(set, lhsSet, limit);
+      CollectSetUtil.addCollectionWithLimit(set, rhsSet, limit);
     }
     return set;
   }
