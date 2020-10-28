@@ -55,6 +55,8 @@
   "query/cache/total/averageBytes": [],
   "query/cache/total/timeouts": [],
   "query/cache/total/errors": [],
+  "query/mergeBufferMaxNum": [],
+  "query/mergeBufferAvailNum": [],
   "ingest/events/thrownAway": [
     "dataSource"
   ],
