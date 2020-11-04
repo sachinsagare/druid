@@ -119,7 +119,7 @@ public class StreamHashBasedNumberedShardSpec extends HashBasedNumberedShardSpec
   protected boolean groupKeyIsInChunk(List<Object> groupKey)
   {
     try {
-      return this.streamPartitionIds.contains(Math.abs(hash(jsonMapper, groupKey)) % getStreamPartitions());
+      return this.streamPartitionIds.contains(Math.abs(hash(jsonMapper, groupKey) % getStreamPartitions()));
     }
     catch (JsonProcessingException e) {
       throw new RuntimeException(e);

@@ -81,7 +81,7 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
   @Override
   public boolean isInChunk(long timestamp, InputRow inputRow)
   {
-    return (Math.abs(hash(timestamp, inputRow)) - getPartitionNum()) % getPartitions() == 0;
+    return Math.abs(hash(timestamp, inputRow) % getPartitions()) == getPartitionNum() % getPartitions();
   }
 
   protected int hash(long timestamp, InputRow inputRow)
@@ -205,7 +205,7 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
   protected boolean groupKeyIsInChunk(List<Object> groupKey)
   {
     try {
-      return (Math.abs(hash(jsonMapper, groupKey)) - getPartitionNum()) % getPartitions() == 0;
+      return Math.abs(hash(jsonMapper, groupKey) % getPartitions()) == getPartitionNum() % getPartitions();
     }
     catch (JsonProcessingException e) {
       throw new RuntimeException(e);
