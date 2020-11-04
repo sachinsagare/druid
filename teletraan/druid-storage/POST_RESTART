@@ -24,7 +24,8 @@ health_check=$GENERAL_HEALTH_CHECK
 
 echo "Wait for druid process to start"
 i=0
-while [ "$i" -lt 25 ]
+# Wait for 10 mins
+while [ "$i" -lt 121 ]
 do
   if curl -s http://localhost:$port/$health_check | grep "true"; then
          # Restart tcollector process to pick up tcollector.conf to begin health check
