@@ -192,6 +192,8 @@
     "dataSource"
   ],
   "segment/pendingDelete": [],
+  "thread/active": [],
+  "thread/task/pending": [],
   "jvm/pool/committed": [],
   "jvm/pool/init": [],
   "jvm/pool/max": [],

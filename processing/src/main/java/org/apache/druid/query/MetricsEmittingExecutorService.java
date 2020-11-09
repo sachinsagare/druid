@@ -66,6 +66,8 @@ public class MetricsEmittingExecutorService extends ForwardingListeningExecutorS
   {
     if (delegate instanceof PrioritizedExecutorService) {
       emitter.emit(metricBuilder.build("segment/scan/pending", ((PrioritizedExecutorService) delegate).getQueueSize()));
+      emitter.emit(metricBuilder.build("thread/active", ((PrioritizedExecutorService) delegate).getActiveThreadCount()));
+      emitter.emit(metricBuilder.build("thread/task/pending", ((PrioritizedExecutorService) delegate).getPendingTaskCount()));
     }
   }
 

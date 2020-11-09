@@ -96,6 +96,9 @@
   "segment/usedPercent" : { "dimensions" : ["dataSource", "tier", "priority"], "type" : "gauge", "convertRange" : true },
   "segment/pendingDelete" : { "dimensions" : [], "type" : "gauge"},
 
+  "thread/active" : { "dimensions" : [], "type" : "gauge"},
+  "thread/task/pending" : { "dimensions" : [], "type" : "gauge"},
+
   "jvm/threads/live" : { "dimensions" :  [], "type":  "gauge"},
   "jvm/pool/committed" : { "dimensions" : ["poolKind", "poolName"], "type" : "gauge" },
   "jvm/pool/init" : { "dimensions" : ["poolKind", "poolName"], "type" : "gauge" },

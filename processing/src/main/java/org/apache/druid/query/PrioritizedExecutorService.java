@@ -199,6 +199,16 @@ public class PrioritizedExecutorService extends AbstractExecutorService implemen
   {
     return delegateQueue.size();
   }
+
+  public int getActiveThreadCount()
+  {
+    return threadPoolExecutor.getActiveCount();
+  }
+
+  public long getPendingTaskCount()
+  {
+    return threadPoolExecutor.getTaskCount() - threadPoolExecutor.getCompletedTaskCount();
+  }
 }
 
 class PrioritizedListenableFutureTask<V> implements RunnableFuture<V>,
