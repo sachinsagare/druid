@@ -7,6 +7,7 @@
   "query/node/backpressure": { "dimensions" : ["server"], "type" : "timer"},
   "query/node/exception" : { "dimensions" : ["server", "exceptionName"], "type" : "timer" },
   "query/node/count": { "dimensions" : ["dataSource"], "type" : "gauge"},
+  "query/segment/count": { "dimensions" : ["dataSource", "type", "priority"], "type" : "count"},
   "query/wait/node/http" : { "dimensions" : ["server"], "type" : "timer"},
   "query/intervalChunk/time" : { "dimensions" : [], "type" : "timer"},
 

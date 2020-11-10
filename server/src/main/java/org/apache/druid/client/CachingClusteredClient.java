@@ -310,6 +310,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       queryMetrics = toolChest.makeMetrics(query);
       queryMetrics.query(query);
+      queryMetrics.context(query);
 
       this.useCache = CacheUtil.useCacheOnBrokers(query, strategy, cacheConfig);
       this.populateCache = CacheUtil.populateCacheOnBrokers(query, strategy, cacheConfig);
@@ -365,6 +366,10 @@ public class CachingClusteredClient implements QuerySegmentWalker
       final List<Pair<Interval, byte[]>> alreadyCachedResults = pruneSegmentsWithCachedResults(queryCacheKey, segments);
       final SortedMap<DruidServer, List<SegmentDescriptor>> segmentsByServer = groupSegmentsByServer(segments);
       queryMetrics.reportNodeCount(segmentsByServer.size());
+      queryMetrics.reportSegmentCount(segmentsByServer.values()
+                                                      .stream()
+                                                      .map(segmentList -> segmentList.size())
+                                                      .reduce(0, Integer::sum));
       queryMetrics.emit(emitter);
       return new LazySequence<>(() -> {
         List<Sequence<T>> sequencesByInterval = new ArrayList<>(alreadyCachedResults.size() + segmentsByServer.size());
