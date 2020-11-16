@@ -46,6 +46,7 @@
 
   "query/mergeBufferMaxNum" : { "dimensions" : [], "type" : "gauge"},
   "query/mergeBufferAvailNum" : { "dimensions" : [], "type" : "gauge"},
+  "query/intermResultBufferAvailNum" : { "dimensions" : [], "type" : "gauge"},
 
   "ingest/events/thrownAway" : { "dimensions" : ["dataSource"], "type" : "count" },
   "ingest/events/unparseable" : { "dimensions" : ["dataSource"], "type" : "count" },
@@ -98,6 +99,7 @@
 
   "thread/active" : { "dimensions" : [], "type" : "gauge"},
   "thread/task/pending" : { "dimensions" : [], "type" : "gauge"},
+  "thread/maxCount" : { "dimensions" : [], "type" : "gauge"},
 
   "jvm/threads/live" : { "dimensions" :  [], "type":  "gauge"},
   "jvm/pool/committed" : { "dimensions" : ["poolKind", "poolName"], "type" : "gauge" },

@@ -57,6 +57,7 @@
   "query/cache/total/errors": [],
   "query/mergeBufferMaxNum": [],
   "query/mergeBufferAvailNum": [],
+  "query/intermResultBufferAvailNum": [],
   "ingest/events/thrownAway": [
     "dataSource"
   ],
@@ -194,6 +195,7 @@
   "segment/pendingDelete": [],
   "thread/active": [],
   "thread/task/pending": [],
+  "thread/maxCount" : [],
   "jvm/pool/committed": [],
   "jvm/pool/init": [],
   "jvm/pool/max": [],

@@ -111,6 +111,11 @@ public class StupidPool<T> implements NonBlockingPool<T>
     }
   }
 
+  public long poolSize()
+  {
+    return poolSize.get();
+  }
+
   private ObjectResourceHolder makeObjectWithHandler()
   {
     T object = generator.get();
@@ -119,12 +124,6 @@ public class StupidPool<T> implements NonBlockingPool<T>
     // Using objectId as referent for Cleaner, because if the object itself (e. g. ByteBuffer) is leaked after taken
     // from the pool, and the ResourceHolder is not closed, Cleaner won't notify about the leak.
     return new ObjectResourceHolder(object, objectId, Cleaners.register(objectId, notifier), notifier);
-  }
-
-  @VisibleForTesting
-  long poolSize()
-  {
-    return poolSize.get();
   }
 
   @VisibleForTesting

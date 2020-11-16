@@ -200,6 +200,11 @@ public class PrioritizedExecutorService extends AbstractExecutorService implemen
     return delegateQueue.size();
   }
 
+  public int getMaxThreadCount()
+  {
+    return threadPoolExecutor.getMaximumPoolSize();
+  }
+
   public int getActiveThreadCount()
   {
     return threadPoolExecutor.getActiveCount();
