@@ -1600,6 +1600,128 @@ public class CalciteQueryTest extends BaseCalciteQueryTest
     );
   }
 
+  private void testConvertToTopNWithTwoGroupByDimensionsHelper(int limit, List<Object[]> groupByExpectedResults, List<Object[]> topNExpectedResults) throws Exception
+  {
+    String sql = "SELECT\n"
+                   + "  FLOOR(__time TO month),\n"
+                   + "  dim1,\n"
+                   + "  sum(m2)\n"
+                   + "FROM druid.foo\n"
+                   + "GROUP BY dim1, FLOOR(__time TO month)\n"
+                   + "ORDER BY dim1\n"
+                   + "LIMIT " + limit;
+
+    testQuery(
+        sql,
+        ImmutableList.of(
+            GroupByQuery.builder()
+                        .setDataSource(CalciteTests.DATASOURCE1)
+                        .setInterval(querySegmentSpec(Filtration.eternity()))
+                        .setGranularity(Granularities.ALL)
+                        .setVirtualColumns(
+                            expressionVirtualColumn(
+                                "v0",
+                                "timestamp_floor(\"__time\",'P1M',null,'UTC')",
+                                ValueType.LONG
+                            )
+                        )
+                        .setDimensions(dimensions(
+                            new DefaultDimensionSpec("dim1", "d0"),
+                            new DefaultDimensionSpec("v0", "v0", ValueType.LONG)
+                        ))
+                        .setAggregatorSpecs(aggregators(new DoubleSumAggregatorFactory("a0", "m2")))
+                        .setLimitSpec(
+                            new DefaultLimitSpec(
+                                ImmutableList.of(
+                                    new OrderByColumnSpec(
+                                        "d0",
+                                        OrderByColumnSpec.Direction.ASCENDING,
+                                        StringComparators.LEXICOGRAPHIC
+                                    )
+                                ),
+                                limit
+                            )
+                        )
+                        .setContext(QUERY_CONTEXT_DEFAULT)
+                        .build()
+        ),
+        groupByExpectedResults
+    );
+
+    testQuery(
+        PLANNER_CONFIG_DEFAULT,
+        QUERY_CONTEXT_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS,
+        sql,
+        CalciteTests.REGULAR_USER_AUTH_RESULT,
+        ImmutableList.of(new TopNQueryBuilder()
+                             .dataSource(CalciteTests.DATASOURCE1)
+                             .intervals(querySegmentSpec(Filtration.eternity()))
+                             .granularity(Granularities.MONTH)
+                             .dimension(new DefaultDimensionSpec("dim1", "d0"))
+                             .aggregators(aggregators(
+                                 new DoubleSumAggregatorFactory("a0", "m2")
+                             ))
+                             .metric(new DimensionTopNMetricSpec(null, StringComparators.LEXICOGRAPHIC))
+                             .virtualColumns(
+                                 expressionVirtualColumn(
+                                     "v0",
+                                     "timestamp_floor(\"__time\",'P1M',null,'UTC')",
+                                     ValueType.LONG
+                                 )
+                             )
+                             .threshold(limit)
+                             .context(QUERY_CONTEXT_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS)
+                             .build()),
+        topNExpectedResults
+    );
+  }
+
+  @Test
+  public void testConvertToTopNWithTwoGroupByDimensions() throws Exception
+  {
+    skipVectorize();
+
+    // When execute as a GROUP BY query, the limit is appied globally, so there will be at most `limit` number of rows returned
+    // When execute as a TOP N query, the limit is applied per group within each granular time bucket, so there will be at most (`limit` * number of distinct groups within each granular time bucket) number of rows returned
+    // When limit is large enough, the result is the same except for potential ordering difference
+
+    // Pick a large enough limit
+    testConvertToTopNWithTwoGroupByDimensionsHelper(
+        10,
+        ImmutableList.of(
+            new Object[]{timestamp("2000-01-01"), "", 1.0},
+            new Object[]{timestamp("2001-01-01"), "1", 4.0},
+            new Object[]{timestamp("2000-01-01"), "10.1", 2.0},
+            new Object[]{timestamp("2000-01-01"), "2", 3.0},
+            new Object[]{timestamp("2001-01-01"), "abc", 6.0},
+            new Object[]{timestamp("2001-01-01"), "def", 5.0}
+        ),
+        ImmutableList.of(
+            new Object[]{timestamp("2000-01-01"), "", 1.0},
+            new Object[]{timestamp("2000-01-01"), "10.1", 2.0},
+            new Object[]{timestamp("2000-01-01"), "2", 3.0},
+            new Object[]{timestamp("2001-01-01"), "1", 4.0},
+            new Object[]{timestamp("2001-01-01"), "abc", 6.0},
+            new Object[]{timestamp("2001-01-01"), "def", 5.0}
+        )
+    );
+
+    // Pick a limit smaller than number of distinct groups within each granular time bucket
+    testConvertToTopNWithTwoGroupByDimensionsHelper(
+        2,
+        ImmutableList.of(
+            new Object[]{timestamp("2000-01-01"), "", 1.0},
+            new Object[]{timestamp("2001-01-01"), "1", 4.0}
+        ),
+        ImmutableList.of(
+            new Object[]{timestamp("2000-01-01"), "", 1.0},
+            new Object[]{timestamp("2000-01-01"), "10.1", 2.0},
+            new Object[]{timestamp("2001-01-01"), "1", 4.0},
+            new Object[]{timestamp("2001-01-01"), "abc", 6.0}
+        )
+    );
+  }
+
   @Test
   public void testTopNWithSelectAndOrderByProjections() throws Exception
   {

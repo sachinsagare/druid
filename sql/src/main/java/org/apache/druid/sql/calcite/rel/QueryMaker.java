@@ -50,6 +50,7 @@ import org.apache.druid.query.topn.TopNResultValue;
 import org.apache.druid.segment.DimensionHandlerUtils;
 import org.apache.druid.server.QueryLifecycleFactory;
 import org.apache.druid.server.security.AuthenticationResult;
+import org.apache.druid.sql.calcite.expression.Expressions;
 import org.apache.druid.sql.calcite.planner.Calcites;
 import org.apache.druid.sql.calcite.planner.PlannerContext;
 import org.apache.druid.sql.calcite.table.RowSignature;
@@ -59,8 +60,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -237,11 +240,26 @@ public class QueryMaker
                 final List<DimensionAndMetricValueExtractor> rows = result.getValue().getValue();
                 final List<Object[]> retVals = new ArrayList<>(rows.size());
 
+                // Extract possible time output names when this TOP N query is converted from a SQL with two GROUP BY
+                // dimensions with one of them being a granular time dimension
+                Set<String> timeOutputNames = (druidQuery.getGrouping().getDimensions().size() == 2) ?
+                                              druidQuery.getGrouping()
+                                                        .getDimensions()
+                                                        .stream()
+                                                        .filter(d -> Expressions.toQueryGranularity(
+                                                            d.getDruidExpression(),
+                                                            plannerContext.getExprMacroTable()
+                                                        ) != null)
+                                                        .map(d -> d.getOutputName())
+                                                        .collect(Collectors.toSet()) : new HashSet<>();
+
                 for (DimensionAndMetricValueExtractor row : rows) {
                   final Object[] retVal = new Object[fieldList.size()];
                   for (final RelDataTypeField field : fieldList) {
                     final String outputName = druidQuery.getOutputRowSignature().getRowOrder().get(field.getIndex());
-                    retVal[field.getIndex()] = coerce(row.getMetric(outputName), field.getType().getSqlTypeName());
+                    Object value = (timeOutputNames.size() == 1 && timeOutputNames.contains(outputName)) ?
+                                   result.getTimestamp() : row.getMetric(outputName);
+                    retVal[field.getIndex()] = coerce(value, field.getType().getSqlTypeName());
                   }
 
                   retVals.add(retVal);

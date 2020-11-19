@@ -31,6 +31,8 @@ public class PlannerConfig
 {
   public static final String CTX_KEY_USE_APPROXIMATE_COUNT_DISTINCT = "useApproximateCountDistinct";
   public static final String CTX_KEY_USE_APPROXIMATE_TOPN = "useApproximateTopN";
+  public static final String CTX_KEY_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS =
+      "attemptConvertingToTopNWithTwoGroupByDimensions";
 
   @JsonProperty
   private Period metadataRefreshPeriod = new Period("PT1M");
@@ -64,6 +66,14 @@ public class PlannerConfig
 
   @JsonProperty
   private long metadataSegmentPollPeriod = 60000;
+
+  @JsonProperty
+  private boolean attemptConvertingToTopNWithTwoGroupByDimensions = false;
+
+  public boolean isAttemptConvertingToTopNWithTwoGroupByDimensions()
+  {
+    return attemptConvertingToTopNWithTwoGroupByDimensions;
+  }
 
   public long getMetadataSegmentPollPeriod()
   {
@@ -154,6 +164,11 @@ public class PlannerConfig
     newConfig.metadataSegmentCacheEnable = isMetadataSegmentCacheEnable();
     newConfig.metadataSegmentPollPeriod = getMetadataSegmentPollPeriod();
     newConfig.serializeComplexValues = shouldSerializeComplexValues();
+    newConfig.attemptConvertingToTopNWithTwoGroupByDimensions = getContextBoolean(
+        context,
+        CTX_KEY_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS,
+        isAttemptConvertingToTopNWithTwoGroupByDimensions()
+    );
     return newConfig;
   }
 
@@ -195,6 +210,7 @@ public class PlannerConfig
            metadataSegmentCacheEnable == that.metadataSegmentCacheEnable &&
            metadataSegmentPollPeriod == that.metadataSegmentPollPeriod &&
            serializeComplexValues == that.serializeComplexValues &&
+           attemptConvertingToTopNWithTwoGroupByDimensions == that.attemptConvertingToTopNWithTwoGroupByDimensions &&
            Objects.equals(metadataRefreshPeriod, that.metadataRefreshPeriod) &&
            Objects.equals(sqlTimeZone, that.sqlTimeZone);
   }
@@ -215,7 +231,8 @@ public class PlannerConfig
         sqlTimeZone,
         metadataSegmentCacheEnable,
         metadataSegmentPollPeriod,
-        serializeComplexValues
+        serializeComplexValues,
+        attemptConvertingToTopNWithTwoGroupByDimensions
     );
   }
 
@@ -235,6 +252,7 @@ public class PlannerConfig
            ", metadataSegmentPollPeriod=" + metadataSegmentPollPeriod +
            ", sqlTimeZone=" + sqlTimeZone +
            ", serializeComplexValues=" + serializeComplexValues +
+           ", attemptConvertingToTopNWithTwoGroupByDimensions=" + attemptConvertingToTopNWithTwoGroupByDimensions +
            '}';
   }
 }
