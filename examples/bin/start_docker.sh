@@ -56,6 +56,7 @@ EOF
   *"overlord"*)
     node=overlord
     sed -i "s/<OVERLORD_PORT>/${TELETRAAN_OVERLORD_PORT:-9090}/" $DRUID_CONF_DIR/overlord/runtime.properties
+    sed -i "s/<PENDING_TASKS_RUNNER_NUM_THREADS>/${TELETRAAN_PENDING_TASKS_RUNNER_NUM_THREADS:-1}/" $DRUID_CONF_DIR/overlord/runtime.properties
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
     sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/overlord/jvm.config
