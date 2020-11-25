@@ -176,7 +176,8 @@ public class WorkerHolder
             worker.getHost(),
             worker.getIp(),
             worker.getCapacity(),
-            ""
+            "",
+            worker.getCategory()
         );
       }
       w = disabledWorker;
