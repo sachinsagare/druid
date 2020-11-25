@@ -204,6 +204,7 @@ EOF
     sed -i "s/<GROUP_BY_PARALLEL_COMBINE_THREADS>/${TELETRAAN_GROUP_BY_PARALLEL_COMBINE_THREADS:-1}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<HTTP_SERVER_THREADS>/${TELETRAAN_HTTP_SERVER_THREADS:-25}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<DRUID_WORKER_CAPACITY>/${TELETRAAN_DRUID_WORKER_CAPACITY:-7}/" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<DRUID_WORKER_CATEGORY>/${TELETRAAN_DRUID_WORKER_CATEGORY:-_default_worker_category}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<TASK_CUSTOM_JVM_FLAGS>/${TELETRAAN_TASK_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<TASK_MEM_MIN>/${TELETRAAN_TASK_MEM_MIN:-3}/" $DRUID_CONF_DIR/middleManager/runtime.properties
     sed -i "s/<TASK_MEM_MAX>/${TELETRAAN_TASK_MEM_MAX:-3}/" $DRUID_CONF_DIR/middleManager/runtime.properties
