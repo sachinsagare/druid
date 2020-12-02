@@ -17,6 +17,9 @@ else
         insights)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.insights.conf
             ;;
+        insights-a)
+            configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.insights-a.conf
+            ;;
         spam)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.spam.conf
             ;;
