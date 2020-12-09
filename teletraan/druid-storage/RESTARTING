@@ -21,6 +21,9 @@ case "${DEPLOY_TYPE}" in
     dev2)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.dev2.conf
         ;;
+    dev4)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.dev4.conf
+        ;;
     insights)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.insights.conf
         ;;
