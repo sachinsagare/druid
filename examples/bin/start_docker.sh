@@ -19,7 +19,7 @@ mysql_user=$(cut -d'@' -f1 <<< ${mysql_creds})
 
 sed -i "s/<MYSQL_USER>/${mysql_user}/" /opt/druid/conf/druid/_common/common.runtime.properties
 
-nohup /opt/druid/bin/monitor_mysql_master.sh /var/druid/metadata.uri /var/config/config.services.general_mysql_databases_config >> /var/log/druid/mysql_monitor.log 2>&1 &
+echo "jdbc:mysql://${TELETRAAN_MYSQL_BACKEND_TYPE}.proxysql.pinadmin.com:3306" > /var/druid/metadata.uri
 
 DRUID_LIB_DIR=/opt/druid/lib
 DRUID_CONF_DIR=/opt/druid/conf/druid
