@@ -744,9 +744,9 @@ public class DruidQuery
   @Nullable
   public TopNQuery toTopNQuery()
   {
-    // Must have GROUP BY one column (or GROUP BY two columns as an experimental feature when attemptConvertingToTopNWithTwoGroupByDimensions is set to true in query context), ORDER BY zero or one column, limit less than maxTopNLimit, and no HAVING.
-    boolean topNOk = grouping != null
-                           && (grouping.getDimensions().size() == 1 || (plannerContext.getPlannerConfig().isAttemptConvertingToTopNWithTwoGroupByDimensions() && grouping.getDimensions().size() == 2))
+    // Must have GROUP BY one column, ORDER BY zero or one column, limit less than maxTopNLimit, and no HAVING.
+    final boolean topNOk = grouping != null
+                           && grouping.getDimensions().size() == 1
                            && sorting != null
                            && (sorting.getOrderBys().size() <= 1
                                && sorting.isLimited() && sorting.getLimit() <= plannerContext.getPlannerConfig()
@@ -757,42 +757,7 @@ public class DruidQuery
       return null;
     }
 
-    // When attemptConvertingToTopNWithTwoGroupByDimensions is set to true in query context:
-    // It is also convertable to TOP N query when GROUP BY two columns with one of them being a granular time
-    // Meanwhile, granularity can be inferred from the GROUP BY column of granular time
-    //
-    // Caveats:
-    // When execute as a GROUP BY query, the limit is appied globally, so there will be at most `limit` number of rows returned
-    // When execute as a TOP N query, the limit is applied per group within each granular time bucket, so there will be at most (`limit` * number of distinct groups within each granular time bucket) number of rows returned
-    // When limit is large enough, the result is the same except for potential ordering difference
-    final DimensionSpec dimensionSpec;
-    final Granularity granularity;
-    if (grouping.getDimensions().size() == 1) {
-      dimensionSpec = Iterables.getOnlyElement(grouping.getDimensions()).toDimensionSpec();
-      granularity = Granularities.ALL;
-    } else {
-      List<DimensionExpression> nonGranularTimeDimensions = new ArrayList<>();
-      List<DimensionExpression> granularTimeDimensions = new ArrayList<>();
-      grouping.getDimensions()
-              .forEach(d -> (
-                  Expressions.toQueryGranularity(
-                      d.getDruidExpression(),
-                      plannerContext.getExprMacroTable()
-                  ) == null ? nonGranularTimeDimensions : granularTimeDimensions)
-                  .add(d));
-
-      if (!(nonGranularTimeDimensions.size() == 1 && granularTimeDimensions.size() == 1)) {
-        // Not a TOP N query
-        return null;
-      } else {
-        dimensionSpec = Iterables.getOnlyElement(nonGranularTimeDimensions).toDimensionSpec();
-        granularity = Expressions.toQueryGranularity(
-            Iterables.getOnlyElement(granularTimeDimensions).getDruidExpression(),
-            plannerContext.getExprMacroTable()
-        );
-      }
-    }
-
+    final DimensionSpec dimensionSpec = Iterables.getOnlyElement(grouping.getDimensions()).toDimensionSpec();
     final OrderByColumnSpec limitColumn;
     if (sorting.getOrderBys().isEmpty()) {
       limitColumn = new OrderByColumnSpec(
@@ -839,7 +804,7 @@ public class DruidQuery
         Ints.checkedCast(sorting.getLimit()),
         filtration.getQuerySegmentSpec(),
         filtration.getDimFilter(),
-        granularity,
+        Granularities.ALL,
         grouping.getAggregatorFactories(),
         postAggregators,
         ImmutableSortedMap.copyOf(plannerContext.getQueryContext())

@@ -212,15 +212,6 @@ public class BaseCalciteQueryTest extends CalciteTestBase
       QueryContexts.MAX_SCATTER_GATHER_BYTES_KEY, Long.MAX_VALUE
   );
 
-  public static final Map<String, Object> QUERY_CONTEXT_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS =
-      ImmutableMap.of(
-          PlannerContext.CTX_SQL_QUERY_ID, DUMMY_SQL_ID,
-          PlannerContext.CTX_SQL_CURRENT_TIMESTAMP, "2000-01-01T00:00:00Z",
-          PlannerConfig.CTX_KEY_ATTEMPT_CONVERTING_TO_TOP_N_WITH_TWO_GROUP_BY_DIMENSIONS, "true",
-          QueryContexts.DEFAULT_TIMEOUT_KEY, QueryContexts.DEFAULT_TIMEOUT_MILLIS,
-          QueryContexts.MAX_SCATTER_GATHER_BYTES_KEY, Long.MAX_VALUE
-      );
-
   // Matches QUERY_CONTEXT_LOS_ANGELES
   public static final Map<String, Object> TIMESERIES_CONTEXT_LOS_ANGELES = new HashMap<>();
   public static final PagingSpec FIRST_PAGING_SPEC = new PagingSpec(null, 1000, true);
