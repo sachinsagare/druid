@@ -1238,6 +1238,9 @@ public class RowBasedGrouperHelper
 
       int aggCount = 0;
       boolean needsReverse;
+      int keyBufferTotalSize = Arrays.stream(serdeHelpers)
+                                     .mapToInt(RowBasedKeySerdeHelper::getKeyBufferValueSize)
+                                     .sum();
       for (OrderByColumnSpec orderSpec : limitSpec.getColumns()) {
         needsReverse = orderSpec.getDirection() != OrderByColumnSpec.Direction.ASCENDING;
         int dimIndex = OrderByColumnSpec.getDimIndexForOrderBy(orderSpec, dimensions);
@@ -1252,7 +1255,8 @@ public class RowBasedGrouperHelper
             final RowBasedKeySerdeHelper serdeHelper;
             final StringComparator stringComparator = orderSpec.getDimensionComparator();
             final String typeName = aggregatorFactories[aggIndex].getTypeName();
-            final int aggOffset = aggregatorOffsets[aggIndex] - Integer.BYTES;
+            // Aggregators start after dimensions
+            final int aggOffset = keyBufferTotalSize + aggregatorOffsets[aggIndex];
 
             aggCount++;
 
