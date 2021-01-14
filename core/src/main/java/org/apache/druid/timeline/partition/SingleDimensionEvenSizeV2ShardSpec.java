@@ -22,85 +22,77 @@ package org.apache.druid.timeline.partition;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import org.apache.druid.java.util.common.ISE;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * Unlike SingleDimensionShardSpec, start and end are both inclusive in SingleDimensionEvenSizeShardSpec as one
- * dimension value can span multiple shard specs
- */
-public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
+public class SingleDimensionEvenSizeV2ShardSpec extends SingleDimensionEvenSizeShardSpec
 {
   @JsonIgnore
-  private int partitionSize;
+  private final Map<String, Integer> largePartitionDimensionValues;
   @JsonIgnore
-  private final int startCount;
-  @JsonIgnore
-  private final int endCount;
-  @JsonIgnore
-  private int partitions;
+  private final Set<String> groupKeyDimensions;
 
   @JsonCreator
-  public SingleDimensionEvenSizeShardSpec(
+  public SingleDimensionEvenSizeV2ShardSpec(
           @JsonProperty("dimension") String dimension,
           @JsonProperty("start") String start,
           @JsonProperty("end") String end,
           @JsonProperty("partitionNum") int partitionNum,
           @JsonProperty("partitions") int partitions,
           @JsonProperty("partitionSize") int partitionSize,
-          @JsonProperty("startCount") int startCount,
-          @JsonProperty("endCount") int endCount,
+          @JsonProperty("largePartitionDimensionValues") Map<String, Integer> largePartitionDimensionValues,
+          @JsonProperty("groupKeyDimensions") Set<String> groupKeyDimensions,
           @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions, // nullable for backward compatibility
           @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(dimension, start, end, partitionNum, numCorePartitions);
-    this.partitions = partitions;
-    this.partitionSize = partitionSize;
-    this.startCount = startCount;
-    this.endCount = endCount;
+    super(dimension, start, end, partitionNum, partitions, partitionSize, 0, 0, numCorePartitions, jsonMapper);
+    this.largePartitionDimensionValues = largePartitionDimensionValues == null ? new HashMap<>() :
+                                         largePartitionDimensionValues;
+    this.groupKeyDimensions = groupKeyDimensions == null ? Collections.emptySet() : groupKeyDimensions;
   }
 
-  @JsonProperty("partitions")
-  public int getPartitions()
+  @JsonProperty("largePartitionDimensionValues")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  public Map<String, Integer> getLargePartitionDimensionValues()
   {
-    return partitions;
+    return largePartitionDimensionValues;
   }
 
-  public void setPartitions(int partitions)
+  @JsonProperty("groupKeyDimensions")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  public Set<String> getGroupKeyDimensions()
   {
-    this.partitions = partitions;
+    return groupKeyDimensions;
   }
 
-  @JsonProperty("partitionSize")
-  public int getPartitionSize()
-  {
-    return partitionSize;
-  }
-
-  public void setPartitionSize(int partitionSize)
-  {
-    this.partitionSize = partitionSize;
-  }
-
+  // Not used, skip in serde
+  @Override
   @JsonProperty("startCount")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public int getStartCount()
   {
-    return startCount;
+    return 0;
   }
 
+  // Not used, skip in serde
+  @Override
   @JsonProperty("endCount")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public int getEndCount()
   {
-    return endCount;
+    return 0;
   }
 
   @Override
@@ -110,19 +102,19 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
   }
 
   @Override
-  public List<String> getDomainDimensions()
-  {
-    return ImmutableList.of(getDimension());
-  }
-
-  @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
     RangeSet<String> rangeSet = domain.get(getDimension());
     if (rangeSet == null) {
       return true;
     }
-    return !rangeSet.subRangeSet(Range.closed(getStart(), getEnd())).isEmpty();
+
+    return largePartitionDimensionValues.keySet()
+                                        .stream()
+                                        .anyMatch(k -> rangeSet.contains(k)) ||
+           (getStart() != null &&
+            getEnd() != null &&
+            !rangeSet.subRangeSet(Range.closed(getStart(), getEnd())).isEmpty());
   }
 
   @Override
@@ -134,15 +126,15 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
   @Override
   public String toString()
   {
-    return "SingleDimensionEvenSizeShardSpec{" +
+    return "SingleDimensionEvenSizeV2ShardSpec{" +
            "dimension='" + getDimension() + '\'' +
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
            ", partitions=" + getPartitions() +
            ", partitionSize=" + getPartitionSize() +
-           ", startCount=" + getStartCount() +
-           ", endCount=" + getEndCount() +
+           ", largePartitionDimensionValues=" + getLargePartitionDimensionValues() +
+           ", groupKeyDimensions=" + getGroupKeyDimensions() +
            '}';
   }
 }

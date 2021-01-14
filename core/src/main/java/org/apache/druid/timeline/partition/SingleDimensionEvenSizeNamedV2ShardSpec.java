@@ -27,28 +27,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Set;
 
-public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSizeShardSpec
+public class SingleDimensionEvenSizeNamedV2ShardSpec extends SingleDimensionEvenSizeV2ShardSpec
 {
   @JsonIgnore
   private final String partitionName;
 
   @JsonCreator
-  public SingleDimensionEvenSizeNamedShardSpec(
-      @JsonProperty("dimension") String dimension,
-      @JsonProperty("start") String start,
-      @JsonProperty("end") String end,
-      @JsonProperty("partitionNum") int partitionNum,
-      @JsonProperty("partitions") int partitions,
-      @JsonProperty("partitionSize") int partitionSize,
-      @JsonProperty("startCount") int startCount,
-      @JsonProperty("endCount") int endCount,
-      @JsonProperty("partitionName") String partitionName,
-      @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions, // nullable for backward compatibility
-      @JacksonInject ObjectMapper jsonMapper
+  public SingleDimensionEvenSizeNamedV2ShardSpec(
+          @JsonProperty("dimension") String dimension,
+          @JsonProperty("start") String start,
+          @JsonProperty("end") String end,
+          @JsonProperty("partitionNum") int partitionNum,
+          @JsonProperty("partitions") int partitions,
+          @JsonProperty("partitionSize") int partitionSize,
+          @JsonProperty("largePartitionDimensionValues") Map<String, Integer> largePartitionDimensionValues,
+          @JsonProperty("groupKeyDimensions") Set<String> groupKeyDimensions,
+          @JsonProperty("partitionName") String partitionName,
+          @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions, // nullable for backward compatibility
+          @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(dimension, start, end, partitionNum, partitions, partitionSize, startCount, endCount, numCorePartitions, jsonMapper);
+    super(dimension, start, end, partitionNum, partitions, partitionSize, largePartitionDimensionValues,
+          groupKeyDimensions, numCorePartitions, jsonMapper);
     Preconditions.checkArgument(partitionName != null && !partitionName.isEmpty(), "partitionName");
     this.partitionName = partitionName;
   }
@@ -74,15 +77,15 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
   @Override
   public String toString()
   {
-    return "SingleDimensionEvenSizeNamedShardSpec{" +
+    return "SingleDimensionEvenSizeV2ShardSpec{" +
            "dimension='" + getDimension() + '\'' +
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
            ", partitions=" + getPartitions() +
            ", partitionSize=" + getPartitionSize() +
-           ", startCount=" + getStartCount() +
-           ", endCount=" + getEndCount() +
+           ", largePartitionDimensionValues=" + getLargePartitionDimensionValues() +
+           ", groupKeyDimensions=" + getGroupKeyDimensions() +
            ", partitionName=" + partitionName +
            '}';
   }
