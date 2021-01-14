@@ -26,26 +26,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
-public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSizeShardSpec
+import java.util.Map;
+import java.util.Set;
+
+public class SingleDimensionEvenSizeNamedV2ShardSpec extends SingleDimensionEvenSizeV2ShardSpec
 {
   @JsonIgnore
   private final String partitionName;
 
   @JsonCreator
-  public SingleDimensionEvenSizeNamedShardSpec(
+  public SingleDimensionEvenSizeNamedV2ShardSpec(
       @JsonProperty("dimension") String dimension,
       @JsonProperty("start") String start,
       @JsonProperty("end") String end,
       @JsonProperty("partitionNum") int partitionNum,
       @JsonProperty("partitions") int partitions,
       @JsonProperty("partitionSize") int partitionSize,
-      @JsonProperty("startCount") int startCount,
-      @JsonProperty("endCount") int endCount,
+      @JsonProperty("largePartitionDimensionValues") Map<String, Integer> largePartitionDimensionValues,
+      @JsonProperty("groupKeyDimensions") Set<String> groupKeyDimensions,
       @JsonProperty("partitionName") String partitionName,
       @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(dimension, start, end, partitionNum, partitions, partitionSize, startCount, endCount, jsonMapper);
+    super(dimension, start, end, partitionNum, partitions, partitionSize, largePartitionDimensionValues,
+          groupKeyDimensions, jsonMapper);
     Preconditions.checkArgument(partitionName != null && !partitionName.isEmpty(), "partitionName");
     this.partitionName = partitionName;
   }
@@ -71,15 +75,15 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
   @Override
   public String toString()
   {
-    return "SingleDimensionEvenSizeNamedShardSpec{" +
+    return "SingleDimensionEvenSizeV2ShardSpec{" +
            "dimension='" + getDimension() + '\'' +
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
            ", partitions=" + getPartitions() +
            ", partitionSize=" + getPartitionSize() +
-           ", startCount=" + getStartCount() +
-           ", endCount=" + getEndCount() +
+           ", largePartitionDimensionValues=" + getLargePartitionDimensionValues() +
+           ", groupKeyDimensions=" + getGroupKeyDimensions() +
            ", partitionName=" + partitionName +
            '}';
   }

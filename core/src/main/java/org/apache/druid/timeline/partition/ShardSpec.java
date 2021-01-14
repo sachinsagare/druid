@@ -42,7 +42,9 @@ import java.util.Map;
     @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "stream_hashed", value = StreamHashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "single_even_size", value = SingleDimensionEvenSizeShardSpec.class),
-    @JsonSubTypes.Type(name = "single_even_size_named", value = SingleDimensionEvenSizeNamedShardSpec.class)
+    @JsonSubTypes.Type(name = "single_even_size_named", value = SingleDimensionEvenSizeNamedShardSpec.class),
+    @JsonSubTypes.Type(name = "single_even_size_v2", value = SingleDimensionEvenSizeV2ShardSpec.class),
+    @JsonSubTypes.Type(name = "single_even_size_named_v2", value = SingleDimensionEvenSizeNamedV2ShardSpec.class)
 })
 public interface ShardSpec
 {
