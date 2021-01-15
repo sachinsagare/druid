@@ -60,6 +60,9 @@ Available Metrics
 |`query/success/count`|number of queries successfully processed|This metric is only available if the QueryCountStatsMonitor module is included.||
 |`query/failed/count`|number of failed queries|This metric is only available if the QueryCountStatsMonitor module is included.||
 |`query/interrupted/count`|number of queries interrupted due to cancellation or timeout|This metric is only available if the QueryCountStatsMonitor module is included.||
+|`query/speculativeExecutionBackupFired/count`|number of backup queries fired when speculative execution is enabled|This metric is only available if the QueryCountStatsMonitor module is included.||
+|`query/speculativeExecutionPrimaryWon/count`|number of primary queries won against backup queries when speculative execution is enabled|This metric is only available if the QueryCountStatsMonitor module is included.||
+|`query/speculativeExecutionPrimaryLost/count`|number of primary queries lost to backup queries when speculative execution is enabled|This metric is only available if the QueryCountStatsMonitor module is included.||
 
 ### Historical
 

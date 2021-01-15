@@ -29,6 +29,9 @@
   "query/success/count": [],
   "query/failed/count": [],
   "query/interrupted/count": [],
+  "query/speculativeExecutionBackupFired/count": [],
+  "query/speculativeExecutionPrimaryWon/count": [],
+  "query/speculativeExecutionPrimaryLost/count": [],
   "query/wait/time": [
     "segment"
   ],
