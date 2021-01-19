@@ -27,6 +27,13 @@
   "query/cpu/time" : { "dimensions" : ["dataSource", "type", "priority"], "type" : "timer" },
 
   "jetty/numOpenConnections": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolNumTotalThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolNumIdleThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolNumBusyThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolIsLowOnThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolMinThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolMaxThreads": {"dimensions" : [], "type": "gauge"},
+  "jetty/threadPoolQueueSize": {"dimensions" : [], "type": "gauge"},
 
   "query/cache/delta/numEntries" : { "dimensions" : [], "type" : "count" },
   "query/cache/delta/sizeBytes" : { "dimensions" : [], "type" : "count" },
