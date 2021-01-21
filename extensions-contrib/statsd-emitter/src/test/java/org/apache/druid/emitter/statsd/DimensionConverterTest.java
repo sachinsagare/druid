@@ -44,7 +44,7 @@ public class DimensionConverterTest
         .setDimension("id", "ID")
         .setDimension("context", "{context}")
         .build(DateTimes.nowUtc(), "query/time", 10)
-        .build("broker", "brokerHost1");
+        .build("broker", "brokerHost1:9090");
 
     ImmutableMap.Builder<String, String> actual = new ImmutableMap.Builder<>();
     StatsDMetric statsDMetric = dimensionConverter.addFilteredUserDims(
@@ -58,6 +58,7 @@ public class DimensionConverterTest
     Assert.assertEquals("correct StatsDMetric.Type", StatsDMetric.Type.timer, statsDMetric.type);
     ImmutableMap.Builder<String, String> expected = new ImmutableMap.Builder<>();
     expected.put("host", "_t_host.brokerHost1");
+    expected.put("port", "_t_port.9090");
     expected.put("dataSource", "_t_dataSource.data-source");
     expected.put("type", "_t_type.groupBy");
     Assert.assertEquals("correct Dimensions", expected.build(), actual.build());
