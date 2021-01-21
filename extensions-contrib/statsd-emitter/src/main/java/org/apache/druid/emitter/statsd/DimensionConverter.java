@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.logger.Logger;
 
@@ -44,6 +45,7 @@ public class DimensionConverter
   private static final String METRICS_AGENT_TAG_PREFIX = "_t_";
   private static final String METRICS_AGENT_TAG_DELIMITER = ".";
   private static final String METRICS_AGENT_TAG_HOST = "host";
+  private static final String METRICS_AGENT_TAG_PORT = "port";
 
   public DimensionConverter(ObjectMapper mapper, String dimensionMapPath)
   {
@@ -53,7 +55,7 @@ public class DimensionConverter
   @Nullable
   public StatsDMetric addFilteredUserDims(
       String service,
-      String host,
+      String hostAndPort,
       String metric,
       Number value,
       Map<String, Object> userDims,
@@ -71,9 +73,14 @@ public class DimensionConverter
       statsDMetric = metricMap.get(service + "-" + metric);
     }
     if (statsDMetric != null) {
-      if (host != null) {
-        builder.put("host", getTag(METRICS_AGENT_TAG_HOST, host));
+      if (hostAndPort != null) {
+        HostAndPort hp = HostAndPort.fromString(hostAndPort);
+        builder.put(METRICS_AGENT_TAG_HOST, getTag(METRICS_AGENT_TAG_HOST, hp.getHostText()));
+        if (hp.hasPort()) {
+          builder.put(METRICS_AGENT_TAG_PORT, getTag(METRICS_AGENT_TAG_PORT, String.valueOf(hp.getPort())));
+        }
       }
+
       for (String dim : statsDMetric.dimensions) {
         if (userDims.containsKey(dim) && (statsDMetric.dimensionThresholdMap == null
                                           || !statsDMetric.dimensionThresholdMap.containsKey(dim)
