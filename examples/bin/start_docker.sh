@@ -60,6 +60,7 @@ EOF
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-3}/" $DRUID_CONF_DIR/overlord/jvm.config
     sed -i "s/<CUSTOM_JVM_FLAGS>/${TELETRAAN_CUSTOM_JVM_FLAGS:- }/" $DRUID_CONF_DIR/overlord/jvm.config
+    sed -i "s/<HTTP_SERVER_THREADS>/${TELETRAAN_HTTP_SERVER_THREADS:-60}/" $DRUID_CONF_DIR/overlord/runtime.properties
 
     if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
       cat << EOF >> $DRUID_CONF_DIR/overlord/jvm.config
