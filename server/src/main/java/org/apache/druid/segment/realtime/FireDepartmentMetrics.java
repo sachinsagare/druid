@@ -45,6 +45,10 @@ public class FireDepartmentMetrics
   private final AtomicLong sinkCount = new AtomicLong(0);
   private final AtomicLong messageMaxTimestamp = new AtomicLong(0);
   private final AtomicLong messageGap = new AtomicLong(0);
+  private final AtomicLong rowsInMemory = new AtomicLong(0);
+  private final AtomicLong bytesInMemory = new AtomicLong(0);
+  private final AtomicLong maxRowsInMemory = new AtomicLong(0);
+  private final AtomicLong maxBytesInMemory = new AtomicLong(0);
 
   public void incrementProcessed()
   {
@@ -131,6 +135,26 @@ public class FireDepartmentMetrics
     this.messageMaxTimestamp.set(Math.max(messageMaxTimestamp, this.messageMaxTimestamp.get()));
   }
 
+  public void setRowsInMemory(long rowsInMemory)
+  {
+    this.rowsInMemory.set(rowsInMemory);
+  }
+
+  public void setBytesInMemory(long bytesInMemory)
+  {
+    this.bytesInMemory.set(bytesInMemory);
+  }
+
+  public void setMaxBytesInMemory(long maxBytesInMemory)
+  {
+    this.maxBytesInMemory.set(maxBytesInMemory);
+  }
+
+  public void setMaxRowsInMemory(long maxRowsInMemory)
+  {
+    this.maxRowsInMemory.set(maxRowsInMemory);
+  }
+
   public long processed()
   {
     return processedCount.get();
@@ -211,6 +235,26 @@ public class FireDepartmentMetrics
     return sinkCount.get();
   }
 
+  public long rowsInMemory()
+  {
+    return rowsInMemory.get();
+  }
+
+  public long bytesInMemory()
+  {
+    return bytesInMemory.get();
+  }
+
+  public long maxRowsInMemory()
+  {
+    return maxRowsInMemory.get();
+  }
+
+  public long maxBytesInMemory()
+  {
+    return maxBytesInMemory.get();
+  }
+
   public long messageMaxTimestamp()
   {
     return messageMaxTimestamp.get();
@@ -242,6 +286,10 @@ public class FireDepartmentMetrics
     retVal.sinkCount.set(sinkCount.get());
     retVal.messageMaxTimestamp.set(messageMaxTimestamp.get());
     retVal.messageGap.set(System.currentTimeMillis() - messageMaxTimestamp.get());
+    retVal.rowsInMemory.set(rowsInMemory.get());
+    retVal.bytesInMemory.set(bytesInMemory.get());
+    retVal.maxRowsInMemory.set(maxRowsInMemory.get());
+    retVal.maxBytesInMemory.set(maxBytesInMemory.get());
     return retVal;
   }
 
@@ -272,6 +320,10 @@ public class FireDepartmentMetrics
     sinkCount.addAndGet(otherSnapshot.sinkCount());
     messageMaxTimestamp.set(Math.max(messageMaxTimestamp(), otherSnapshot.messageMaxTimestamp()));
     messageGap.set(Math.max(messageGap(), otherSnapshot.messageGap()));
+    rowsInMemory.addAndGet(otherSnapshot.rowsInMemory());
+    bytesInMemory.addAndGet(otherSnapshot.bytesInMemory());
+    maxRowsInMemory.addAndGet(otherSnapshot.maxRowsInMemory());
+    maxBytesInMemory.addAndGet(otherSnapshot.maxBytesInMemory());
     return this;
   }
 }
