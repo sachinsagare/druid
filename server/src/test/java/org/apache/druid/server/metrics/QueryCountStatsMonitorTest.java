@@ -102,7 +102,7 @@ public class QueryCountStatsMonitorTest
   public void testMonitor()
   {
 
-    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider, MERGE_BUFFER_POOL, BUFFER_POOL);
+    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider);
     final StubServiceEmitter emitter = new StubServiceEmitter("service", "host");
     monitor.doMonitor(emitter);
     // Trigger metric emission
