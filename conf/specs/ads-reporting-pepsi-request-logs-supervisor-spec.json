@@ -36,6 +36,7 @@
             "requestB64Encoded",
             "filterColumns",
             "filterOperators",
+            "filterValues",
             {
               "type": "long",
               "name": "userId"
@@ -59,6 +60,10 @@
             {
               "type": "long",
               "name": "endTime"
+            },
+            {
+              "type": "string",
+              "name": "userId_str"
             }
           ],
           "dimensionExclusions": [
@@ -86,6 +91,11 @@
         "type": "longSum",
         "name": "rowsReturned",
         "fieldName": "rowsReturned"
+      },
+      {
+        "type" : "longSum",
+        "name": "countFilters",
+        "fieldName": "countFilters"
       }
     ],
     "transformSpec": {
@@ -94,6 +104,11 @@
           "type": "expression",
           "name": "userId",
           "expression": "cast(userId, 'long')"
+        },
+        {
+          "type": "expression",
+          "name": "userId_str",
+          "expression": "cast(userId, 'string')"
         },
         {
           "type": "expression",
