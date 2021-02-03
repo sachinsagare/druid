@@ -175,6 +175,25 @@ public class StatsDEmitterTest
   }
 
   @Test
+  public void testDenyCharHolderOptions()
+  {
+    StatsDClient client = EasyMock.createMock(StatsDClient.class);
+    StatsDEmitter emitter = new StatsDEmitter(
+        new StatsDEmitterConfig("localhost", 8888, null, null, true, null, null, null, null, null),
+        new ObjectMapper(),
+        client
+    );
+    client.count("broker.jvm.gc.count._t_host.brokerHost1._t_gcName.-G1-GC-", 1, new String[0]);
+    EasyMock.replay(client);
+    emitter.emit(new ServiceMetricEvent.Builder()
+                     .setDimension("gcName", "[G1 GC]")
+                     .build(DateTimes.nowUtc(), "jvm/gc/count", 1)
+                     .build("broker", "brokerHost1")
+    );
+    EasyMock.verify(client);
+  }
+
+  @Test
   public void testServiceAsTagOption()
   {
     StatsDClient client = EasyMock.createMock(StatsDClient.class);

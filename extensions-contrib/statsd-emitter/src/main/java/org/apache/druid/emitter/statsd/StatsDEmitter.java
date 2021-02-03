@@ -47,6 +47,8 @@ public class StatsDEmitter implements Emitter
   private static final Pattern STATSD_SEPARATOR = Pattern.compile("[:|]");
   private static final Pattern BLANK = Pattern.compile("\\s+");
   private static final String[] EMPTY_ARRAY = new String[0];
+  private static final Pattern DENY_CHAR_PATTERN = Pattern.compile("[\\[\\]]");
+  private static final String DENY_CHAR_REPLACEMENT = "-";
 
   static StatsDEmitter of(StatsDEmitterConfig config, ObjectMapper mapper)
   {
@@ -141,6 +143,7 @@ public class StatsDEmitter implements Emitter
         fullName = StringUtils.replaceChar(fullName, DRUID_METRIC_SEPARATOR, config.getSeparator());
         fullName = STATSD_SEPARATOR.matcher(fullName).replaceAll(config.getSeparator());
         fullName = BLANK.matcher(fullName).replaceAll(config.getBlankHolder());
+        fullName = DENY_CHAR_PATTERN.matcher(fullName).replaceAll(DENY_CHAR_REPLACEMENT);
 
         if (config.isDogstatsd() && (value instanceof Float || value instanceof Double)) {
           switch (statsDMetric.type) {
