@@ -30,6 +30,9 @@ case "${DEPLOY_TYPE}" in
     insights-a)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.insights-a.conf
         ;;
+    insights-b)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.insights-b.conf
+        ;;
     spam)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.spam.conf
         ;;
