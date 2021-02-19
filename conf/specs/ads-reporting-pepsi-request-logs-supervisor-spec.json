@@ -19,6 +19,7 @@
             "priority",
             "timeout",
             "columns",
+            "sortColumns",
             "granularity",
             "requestSucceeded",
             "exceptionMessage",
