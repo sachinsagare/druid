@@ -79,6 +79,11 @@
       },
       {
         "type" : "longSum",
+        "name": "responseTime",
+        "fieldName": "responseTime"
+      },
+      {
+        "type" : "longSum",
         "name": "daysRequested",
         "fieldName": "daysRequested"
       },
