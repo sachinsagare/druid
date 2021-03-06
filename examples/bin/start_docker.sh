@@ -11,6 +11,14 @@ if [ ! -z "${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP}" ]; then
   fi
 fi
 
+if [ ! -z "${TELETRAAN_DRUID_ZK_SESSION_TIMEOUT_MS}" ]; then
+  if grep -q "druid.zk.service.sessionTimeoutMs" /opt/druid/conf/druid/_common/common.runtime.properties; then
+    sed -i "s/^druid.zk.service.sessionTimeoutMs=.*$/druid.zk.service.sessionTimeoutMs=${TELETRAAN_DRUID_ZK_SESSION_TIMEOUT_MS}/" /opt/druid/conf/druid/_common/common.runtime.properties
+  else
+    sed -i "\$adruid.zk.service.sessionTimeoutMs=${TELETRAAN_DRUID_ZK_SESSION_TIMEOUT_MS}" /opt/druid/conf/druid/_common/common.runtime.properties
+  fi
+fi
+
 sed -i "s/<STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD>/${TELETRAAN_STATS_SEGMENT_TIME_BREAKDOWN_THRESHOLD:-1000000}/g" /opt/druid/conf/druid/_common/metricDimensions.json
 
 export KNOX_MACHINE_AUTH=$(hostname)
