@@ -34,6 +34,8 @@ public class FireDepartmentMetrics
   private final AtomicLong dedupCount = new AtomicLong(0);
   private final AtomicLong rowOutputCount = new AtomicLong(0);
   private final AtomicLong numPersists = new AtomicLong(0);
+  private final AtomicLong numPersistSegment = new AtomicLong(0);
+  private final AtomicLong numPersistAll = new AtomicLong(0);
   private final AtomicLong persistTimeMillis = new AtomicLong(0);
   private final AtomicLong persistBackPressureMillis = new AtomicLong(0);
   private final AtomicLong failedPersists = new AtomicLong(0);
@@ -48,6 +50,7 @@ public class FireDepartmentMetrics
   private final AtomicLong rowsInMemory = new AtomicLong(0);
   private final AtomicLong bytesInMemory = new AtomicLong(0);
   private final AtomicLong maxRowsInMemory = new AtomicLong(0);
+  private final AtomicLong maxRowsInMemoryPerSegment = new AtomicLong(0);
   private final AtomicLong maxBytesInMemory = new AtomicLong(0);
 
   public void incrementProcessed()
@@ -83,6 +86,16 @@ public class FireDepartmentMetrics
   public void incrementNumPersists()
   {
     numPersists.incrementAndGet();
+  }
+
+  public void incrementPersistSegment()
+  {
+    numPersistSegment.incrementAndGet();
+  }
+
+  public void incrementPersistAll()
+  {
+    numPersistAll.incrementAndGet();
   }
 
   public void incrementPersistTimeMillis(long millis)
@@ -155,6 +168,11 @@ public class FireDepartmentMetrics
     this.maxRowsInMemory.set(maxRowsInMemory);
   }
 
+  public void setMaxRowsInMemoryPerSegment(long maxRowsInMemoryPerSegment)
+  {
+    this.maxRowsInMemoryPerSegment.set(maxRowsInMemoryPerSegment);
+  }
+
   public long processed()
   {
     return processedCount.get();
@@ -188,6 +206,16 @@ public class FireDepartmentMetrics
   public long numPersists()
   {
     return numPersists.get();
+  }
+
+  public long numPersistSegment()
+  {
+    return numPersistSegment.get();
+  }
+
+  public long numersistAll()
+  {
+    return numPersistAll.get();
   }
 
   public long persistTimeMillis()
@@ -250,6 +278,11 @@ public class FireDepartmentMetrics
     return maxRowsInMemory.get();
   }
 
+  public long maxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment.get();
+  }
+
   public long maxBytesInMemory()
   {
     return maxBytesInMemory.get();
@@ -275,6 +308,8 @@ public class FireDepartmentMetrics
     retVal.dedupCount.set(dedupCount.get());
     retVal.rowOutputCount.set(rowOutputCount.get());
     retVal.numPersists.set(numPersists.get());
+    retVal.numPersistSegment.set(numPersistSegment.get());
+    retVal.numPersistAll.set(numPersistAll.get());
     retVal.persistTimeMillis.set(persistTimeMillis.get());
     retVal.persistBackPressureMillis.set(persistBackPressureMillis.get());
     retVal.failedPersists.set(failedPersists.get());
@@ -289,6 +324,7 @@ public class FireDepartmentMetrics
     retVal.rowsInMemory.set(rowsInMemory.get());
     retVal.bytesInMemory.set(bytesInMemory.get());
     retVal.maxRowsInMemory.set(maxRowsInMemory.get());
+    retVal.maxRowsInMemoryPerSegment.set(maxRowsInMemoryPerSegment.get());
     retVal.maxBytesInMemory.set(maxBytesInMemory.get());
     return retVal;
   }
@@ -309,6 +345,8 @@ public class FireDepartmentMetrics
     unparseableCount.addAndGet(otherSnapshot.unparseable());
     dedupCount.addAndGet(otherSnapshot.dedup());
     numPersists.addAndGet(otherSnapshot.numPersists());
+    numPersistSegment.addAndGet(otherSnapshot.numPersistSegment());
+    numPersistAll.addAndGet(otherSnapshot.numersistAll());
     persistTimeMillis.addAndGet(otherSnapshot.persistTimeMillis());
     persistBackPressureMillis.addAndGet(otherSnapshot.persistBackPressureMillis());
     failedPersists.addAndGet(otherSnapshot.failedPersists());
@@ -323,6 +361,7 @@ public class FireDepartmentMetrics
     rowsInMemory.addAndGet(otherSnapshot.rowsInMemory());
     bytesInMemory.addAndGet(otherSnapshot.bytesInMemory());
     maxRowsInMemory.addAndGet(otherSnapshot.maxRowsInMemory());
+    maxRowsInMemoryPerSegment.addAndGet(otherSnapshot.maxRowsInMemoryPerSegment());
     maxBytesInMemory.addAndGet(otherSnapshot.maxBytesInMemory());
     return this;
   }

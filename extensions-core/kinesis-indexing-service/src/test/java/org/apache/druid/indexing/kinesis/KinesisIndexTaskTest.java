@@ -2665,6 +2665,7 @@ public class KinesisIndexTaskTest extends EasyMockSupport
     final KinesisIndexTaskTuningConfig tuningConfig = new KinesisIndexTaskTuningConfig(
         maxRowsInMemory,
         null,
+        null,
         maxRowsPerSegment,
         maxTotalRows,
         new Period("P1Y"),

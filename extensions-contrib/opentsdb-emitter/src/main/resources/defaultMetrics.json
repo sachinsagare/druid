@@ -89,6 +89,9 @@
   "ingest/rows/maxInMemory": [
     "dataSource"
   ],
+  "ingest/rows/maxInMemoryPerSegment": [
+    "dataSource"
+  ],
   "ingest/bytes/inMemory": [
     "dataSource"
   ],
@@ -96,6 +99,12 @@
     "dataSource"
   ],
   "ingest/persists/count": [
+    "dataSource"
+  ],
+  "ingest/persists/segment": [
+    "dataSource"
+  ],
+  "ingest/persists/all": [
     "dataSource"
   ],
   "ingest/persists/time": [

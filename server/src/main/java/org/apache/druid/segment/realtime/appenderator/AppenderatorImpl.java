@@ -242,6 +242,7 @@ public class AppenderatorImpl implements Appenderator
     maxBytesTuningConfig = TuningConfigs.getMaxBytesInMemoryOrDefault(tuningConfig.getMaxBytesInMemory());
     this.metrics.setMaxBytesInMemory(maxBytesTuningConfig);
     this.metrics.setMaxRowsInMemory(tuningConfig.getMaxRowsInMemory());
+    this.metrics.setMaxRowsInMemoryPerSegment(tuningConfig.getMaxRowsInMemoryPerSegment());
     log.info("Created Appenderator for dataSource[%s].", schema.getDataSource());
   }
 
@@ -318,16 +319,15 @@ public class AppenderatorImpl implements Appenderator
     metrics.setBytesInMemory(bytesCurrentlyInMemory.addAndGet(bytesInMemoryAfterAdd - bytesInMemoryBeforeAdd));
     totalRows.addAndGet(numAddedRows);
 
-    boolean isPersistRequired = false;
-    boolean persist = false;
+    PersistType persistType = PersistType.NONE;
     List<String> persistReasons = new ArrayList<>();
 
     if (!sink.canAppendRow()) {
-      persist = true;
+      persistType = PersistType.SINGLE_PERSIST;
       persistReasons.add("No more rows can be appended to sink");
     }
     if (System.currentTimeMillis() > nextFlush) {
-      persist = true;
+      persistType = PersistType.FULL_PERSIST;
       persistReasons.add(StringUtils.format(
           "current time[%d] is greater than nextFlush[%d]",
           System.currentTimeMillis(),
@@ -335,7 +335,7 @@ public class AppenderatorImpl implements Appenderator
       ));
     }
     if (rowsCurrentlyInMemory.get() >= tuningConfig.getMaxRowsInMemory()) {
-      persist = true;
+      persistType = PersistType.FULL_PERSIST;
       persistReasons.add(StringUtils.format(
           "rowsCurrentlyInMemory[%d] is greater than maxRowsInMemory[%d]",
           rowsCurrentlyInMemory.get(),
@@ -343,40 +343,65 @@ public class AppenderatorImpl implements Appenderator
       ));
     }
     if (bytesCurrentlyInMemory.get() >= maxBytesTuningConfig) {
-      persist = true;
+      persistType = PersistType.FULL_PERSIST;
       persistReasons.add(StringUtils.format(
           "bytesCurrentlyInMemory[%d] is greater than maxBytesInMemory[%d]",
           bytesCurrentlyInMemory.get(),
           maxBytesTuningConfig
       ));
     }
-    if (persist) {
+    if (!PersistType.NONE.equals(persistType)) {
       if (allowIncrementalPersists) {
         // persistAll clears rowsCurrentlyInMemory, no need to update it.
         log.info("allowIncrementalPersists is true - Persisting rows in memory due to: [%s]", String.join(",", persistReasons));
-        Futures.addCallback(
-            persistAll(committerSupplier == null ? null : committerSupplier.get()),
-            new FutureCallback<Object>()
-            {
-              @Override
-              public void onSuccess(@Nullable Object result)
+        if (PersistType.FULL_PERSIST.equals(persistType)) {
+          Futures.addCallback(
+              persistAll(committerSupplier == null ? null : committerSupplier.get()),
+              new FutureCallback<Object>()
               {
-                // do nothing
-              }
+                @Override
+                public void onSuccess(@Nullable Object result)
+                {
+                  // do nothing
+                }
 
-              @Override
-              public void onFailure(Throwable t)
-              {
-                persistError = t;
+                @Override
+                public void onFailure(Throwable t)
+                {
+                  persistError = t;
+                }
               }
-            }
-        );
+          );
+        } else {
+          Futures.addCallback(
+              persistSingle(committerSupplier == null ? null : committerSupplier.get(), identifier),
+              new FutureCallback<Object>() {
+                @Override
+                public void onSuccess(@Nullable Object result)
+                {
+                  // do nothing
+                }
+
+                @Override
+                public void onFailure(Throwable t)
+                {
+                  persistError = t;
+                }
+              }
+          );
+        }
       } else {
         log.info("allowIncrementalPersists is false - Persisting rows in memory due to: [%s]", String.join(",", persistReasons));
-        isPersistRequired = true;
       }
     }
-    return new AppenderatorAddResult(identifier, sink.getNumRows(), isPersistRequired, addResult.getParseException());
+    return new AppenderatorAddResult(identifier, sink.getNumRows(), persistType, addResult.getParseException());
+  }
+
+  public enum PersistType
+  {
+    SINGLE_PERSIST,
+    FULL_PERSIST,
+    NONE;
   }
 
   @Override
@@ -437,7 +462,7 @@ public class AppenderatorImpl implements Appenderator
           schema,
           identifier.getShardSpec(),
           identifier.getVersion(),
-          tuningConfig.getMaxRowsInMemory(),
+          tuningConfig.getMaxRowsInMemoryPerSegment(),
           maxBytesTuningConfig,
           tuningConfig.isReportParseExceptions(),
           null,
@@ -567,6 +592,19 @@ public class AppenderatorImpl implements Appenderator
         indexesToPersist.add(Pair.of(sink.swap(), identifier));
       }
     }
+    try {
+      return submitForPersist(committer, currentHydrants, indexesToPersist, numPersistedRows, bytesPersisted);
+    }
+    finally {
+      metrics.incrementPersistAll();
+    }
+  }
+
+  private ListenableFuture<Object> submitForPersist(@Nullable final Committer committer,
+      final Map<String, Integer> currentHydrants,
+      final List<Pair<FireHydrant, SegmentIdWithShardSpec>> indexesToPersist, int numPersistedRows,
+      long bytesPersisted)
+  {
 
     log.info("Submitting persist runnable for dataSource[%s]", schema.getDataSource());
 
@@ -645,6 +683,44 @@ public class AppenderatorImpl implements Appenderator
     rowsCurrentlyInMemory.addAndGet(-numPersistedRows);
     bytesCurrentlyInMemory.addAndGet(-bytesPersisted);
     return future;
+  }
+
+  @Override
+  public ListenableFuture<Object> persistSingle(@Nullable final Committer committer, final SegmentIdWithShardSpec identifier)
+  {
+    throwPersistErrorIfExists();
+
+    final Map<String, Integer> currentHydrants = new HashMap<>();
+    final List<Pair<FireHydrant, SegmentIdWithShardSpec>> indexesToPersist = new ArrayList<>();
+
+    final Sink sink = sinks.get(identifier);
+    if (sink == null) {
+      throw new ISE("No sink for identifier: %s", identifier);
+    }
+    final List<FireHydrant> hydrants = Lists.newArrayList(sink);
+    currentHydrants.put(identifier.toString(), hydrants.size());
+    int numPersistedRows = sink.getNumRowsInMemory();
+    long bytesPersisted = sink.getBytesInMemory();
+
+    final int limit = sink.isWritable() ? hydrants.size() - 1 : hydrants.size();
+
+    for (FireHydrant hydrant : hydrants.subList(0, limit)) {
+      if (!hydrant.hasSwapped()) {
+        log.info("Hydrant[%s] hasn't persisted yet, persisting. Segment[%s]", hydrant, identifier);
+        indexesToPersist.add(Pair.of(hydrant, identifier));
+      }
+    }
+
+    if (sink.swappable()) {
+      indexesToPersist.add(Pair.of(sink.swap(), identifier));
+    }
+
+    try {
+      return submitForPersist(committer, currentHydrants, indexesToPersist, numPersistedRows, bytesPersisted);
+    }
+    finally {
+      metrics.incrementPersistSegment();
+    }
   }
 
   @Override
@@ -1111,7 +1187,7 @@ public class AppenderatorImpl implements Appenderator
             schema,
             identifier.getShardSpec(),
             identifier.getVersion(),
-            tuningConfig.getMaxRowsInMemory(),
+            tuningConfig.getMaxRowsInMemoryPerSegment(),
             maxBytesTuningConfig,
             tuningConfig.isReportParseExceptions(),
             null,

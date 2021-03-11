@@ -378,6 +378,12 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
+    public int getMaxRowsInMemoryPerSegment()
+    {
+      return Integer.MAX_VALUE;
+    }
+
+    @Override
     public long getMaxBytesInMemory()
     {
       return newMaxBytesInMemory;

@@ -1412,6 +1412,7 @@ public class AppenderatorDriverRealtimeIndexTaskTest
     RealtimeAppenderatorTuningConfig tuningConfig = new RealtimeAppenderatorTuningConfig(
         1000,
         null,
+        null,
         maxRowsPerSegment,
         maxTotalRows,
         null,

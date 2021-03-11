@@ -58,6 +58,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -414,7 +415,7 @@ public class StreamAppenderatorDriverFailTest extends EasyMockSupport
     {
       rows.computeIfAbsent(identifier, k -> new ArrayList<>()).add(row);
       numRows++;
-      return new AppenderatorAddResult(identifier, numRows, false, null);
+      return new AppenderatorAddResult(identifier, numRows, null, null);
     }
 
     @Override
@@ -466,6 +467,12 @@ public class StreamAppenderatorDriverFailTest extends EasyMockSupport
       } else {
         return Futures.immediateFailedFuture(new ISE("Fail test while persisting segments[%s]", rows.keySet()));
       }
+    }
+
+    @Override
+    public ListenableFuture<Object> persistSingle(@Nullable Committer committer, SegmentIdWithShardSpec identifier)
+    {
+      return Futures.immediateFailedFuture(new ISE("Fail test while persisting single segment [%s]", identifier.getIdentifierAsString()));
     }
 
     @Override

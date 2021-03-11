@@ -101,6 +101,8 @@ public class RealtimeMetricsMonitor extends AbstractMonitor
       emitter.emit(builder.build("ingest/persists/count", metrics.numPersists() - previous.numPersists()));
       emitter.emit(builder.build("ingest/persists/time", metrics.persistTimeMillis() - previous.persistTimeMillis()));
       emitter.emit(builder.build("ingest/persists/cpu", metrics.persistCpuTime() - previous.persistCpuTime()));
+      emitter.emit(builder.build("ingest/persists/segment", metrics.numPersistSegment() - previous.numPersistSegment()));
+      emitter.emit(builder.build("ingest/persists/all", metrics.numersistAll() - previous.numersistAll()));
       emitter.emit(
           builder.build(
               "ingest/persists/backPressure",

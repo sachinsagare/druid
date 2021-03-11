@@ -67,6 +67,7 @@ public class ParallelIndexTuningConfigTest
     final ParallelIndexTuningConfig tuningConfig = new ParallelIndexTuningConfig(
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -106,6 +107,7 @@ public class ParallelIndexTuningConfigTest
   {
     final int maxNumConcurrentSubTasks = 250;
     final ParallelIndexTuningConfig tuningConfig = new ParallelIndexTuningConfig(
+        null,
         null,
         null,
         10,
@@ -149,6 +151,7 @@ public class ParallelIndexTuningConfigTest
     final ParallelIndexTuningConfig tuningConfig = new ParallelIndexTuningConfig(
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -190,6 +193,7 @@ public class ParallelIndexTuningConfigTest
     expectedException.expectMessage("Can't use both maxNumSubTasks and maxNumConcurrentSubTasks");
     final int maxNumSubTasks = 250;
     final ParallelIndexTuningConfig tuningConfig = new ParallelIndexTuningConfig(
+        null,
         null,
         null,
         10,

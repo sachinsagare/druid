@@ -75,6 +75,7 @@ import org.apache.druid.segment.realtime.FireDepartment;
 import org.apache.druid.segment.realtime.FireDepartmentMetrics;
 import org.apache.druid.segment.realtime.appenderator.Appenderator;
 import org.apache.druid.segment.realtime.appenderator.AppenderatorDriverAddResult;
+import org.apache.druid.segment.realtime.appenderator.AppenderatorImpl;
 import org.apache.druid.segment.realtime.appenderator.AppenderatorsManager;
 import org.apache.druid.segment.realtime.appenderator.SegmentsAndMetadata;
 import org.apache.druid.segment.realtime.appenderator.StreamAppenderatorDriver;
@@ -681,6 +682,28 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
                       handleParseException(addResult.getParseException(), record);
                     } else {
                       rowIngestionMeters.incrementProcessed();
+                    }
+
+                    if (isPersistRequired && AppenderatorImpl.PersistType.SINGLE_PERSIST == addResult.getPersistType()) {
+                      Futures.addCallback(
+                          driver.persistSingleAsync(committerSupplier.get(), driver.getSegment(row, sequenceToUse.getSequenceName(), true)),
+                          new FutureCallback<Object>()
+                          {
+                            @Override
+                            public void onSuccess(@Nullable Object result)
+                            {
+                              log.info("Persist completed with metadata [%s]", result);
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t)
+                            {
+                              log.error("Persist failed, dying");
+                              backgroundThreadException = t;
+                            }
+                          }
+                      );
+                      isPersistRequired = false;
                     }
                   } else {
                     rowIngestionMeters.incrementThrownAway();

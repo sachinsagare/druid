@@ -196,6 +196,7 @@ public class TaskSerdeTest
             new IndexTuningConfig(
                 null,
                 null,
+                null,
                 10,
                 null,
                 null,
@@ -278,6 +279,7 @@ public class TaskSerdeTest
             ),
             new IndexIOConfig(new LocalFirehoseFactory(new File("lol"), "rofl", null), true),
             new IndexTuningConfig(
+                null,
                 null,
                 null,
                 10,
@@ -388,6 +390,7 @@ public class TaskSerdeTest
 
             new RealtimeTuningConfig(
                 1,
+                null,
                 null,
                 new Period("PT10M"),
                 null,

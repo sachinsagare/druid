@@ -38,6 +38,11 @@ public interface AppenderatorConfig
   int getMaxRowsInMemory();
 
   /**
+   * Maximum number of rows in memory per single segment before persisting to local storage
+   */
+  int getMaxRowsInMemoryPerSegment();
+
+  /**
    * Maximum number of bytes (estimated) to store in memory before persisting to local storage
    */
   long getMaxBytesInMemory();

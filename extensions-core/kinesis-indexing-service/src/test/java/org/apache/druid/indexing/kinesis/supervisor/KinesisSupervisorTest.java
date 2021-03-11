@@ -165,6 +165,7 @@ public class KinesisSupervisorTest extends EasyMockSupport
     tuningConfig = new KinesisSupervisorTuningConfig(
         1000,
         null,
+        null,
         50000,
         null,
         new Period("P1Y"),
@@ -3705,6 +3706,7 @@ public class KinesisSupervisorTest extends EasyMockSupport
     KinesisSupervisorTuningConfig modifiedTuningConfig = new KinesisSupervisorTuningConfig(
         1000,
         null,
+        null,
         50000,
         null,
         new Period("P1Y"),
@@ -3902,6 +3904,7 @@ public class KinesisSupervisorTest extends EasyMockSupport
 
     final KinesisSupervisorTuningConfig tuningConfig = new KinesisSupervisorTuningConfig(
         1000,
+        null,
         null,
         50000,
         null,

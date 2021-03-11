@@ -338,6 +338,56 @@ public class AppenderatorTest
   }
 
   @Test
+  public void testMaxRowsInMemoryPerSegment() throws Exception
+  {
+    try (final AppenderatorTester tester = new AppenderatorTester(3, 2)) {
+      final Appenderator appenderator = tester.getAppenderator();
+      final AtomicInteger eventCount = new AtomicInteger(0);
+      final Supplier<Committer> committerSupplier = new Supplier<Committer>()
+      {
+        @Override
+        public Committer get()
+        {
+          final Object metadata = ImmutableMap.of("eventCount", eventCount.get());
+
+          return new Committer()
+          {
+            @Override
+            public Object getMetadata()
+            {
+              return metadata;
+            }
+
+            @Override
+            public void run()
+            {
+              // Do nothing
+            }
+          };
+        }
+      };
+
+      StringBuilder b = new StringBuilder();
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.startJob();
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "foo", 1), committerSupplier);
+      Assert.assertEquals(1, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "bar", 1), committerSupplier);
+      // persisted single segment only
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "baz", 1), committerSupplier);
+      Assert.assertEquals(1, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(1), ir("2000", "bar", 1), committerSupplier);
+      Assert.assertEquals(2, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "qux", 1), committerSupplier);
+      // persisted all segments
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.close();
+    }
+  }
+
+  @Test
   public void testMaxRowsInMemoryDisallowIncrementalPersists() throws Exception
   {
     try (final AppenderatorTester tester = new AppenderatorTester(3, false)) {
@@ -430,6 +480,7 @@ public class AppenderatorTest
       appenderator.close();
 
       try (final AppenderatorTester tester2 = new AppenderatorTester(
+          2,
           2,
           -1,
           tuningConfig.getBasePersistDirectory(),

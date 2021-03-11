@@ -1082,6 +1082,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     private static final long DEFAULT_PUSH_TIMEOUT = 0;
 
     private final int maxRowsInMemory;
+    private final int maxRowsInMemoryPerSegment;
     private final long maxBytesInMemory;
 
     // null if all partitionsSpec related params are null. see getDefaultPartitionsSpec() for details.
@@ -1158,6 +1159,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
         @JsonProperty("targetPartitionSize") @Deprecated @Nullable Integer targetPartitionSize,
         @JsonProperty("maxRowsPerSegment") @Deprecated @Nullable Integer maxRowsPerSegment,
         @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
+        @JsonProperty("maxRowsInMemoryPerSegment") @Nullable Integer maxRowsInMemoryPerSegment,
         @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
         @JsonProperty("maxTotalRows") @Deprecated @Nullable Long maxTotalRows,
         @JsonProperty("rowFlushBoundary") @Deprecated @Nullable Integer rowFlushBoundary_forBackCompatibility,
@@ -1180,6 +1182,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       this(
           maxRowsInMemory != null ? maxRowsInMemory : rowFlushBoundary_forBackCompatibility,
+          maxRowsInMemoryPerSegment != null ? maxRowsInMemoryPerSegment : maxRowsInMemory,
           maxBytesInMemory != null ? maxBytesInMemory : 0,
           getDefaultPartitionsSpec(
               forceGuaranteedRollup == null ? DEFAULT_GUARANTEE_ROLLUP : forceGuaranteedRollup,
@@ -1210,11 +1213,12 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
 
     private IndexTuningConfig()
     {
-      this(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+      this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     private IndexTuningConfig(
         @Nullable Integer maxRowsInMemory,
+        @Nullable Integer maxRowsInMemoryPerSegment,
         @Nullable Long maxBytesInMemory,
         @Nullable PartitionsSpec partitionsSpec,
         @Nullable IndexSpec indexSpec,
@@ -1231,6 +1235,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     )
     {
       this.maxRowsInMemory = maxRowsInMemory == null ? TuningConfig.DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+      this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
       // initializing this to 0, it will be lazily initialized to a value
       // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
       this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -1269,6 +1274,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       return new IndexTuningConfig(
           maxRowsInMemory,
+          maxRowsInMemoryPerSegment,
           maxBytesInMemory,
           partitionsSpec,
           indexSpec,
@@ -1289,6 +1295,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       return new IndexTuningConfig(
           maxRowsInMemory,
+          maxRowsInMemoryPerSegment,
           maxBytesInMemory,
           partitionsSpec,
           indexSpec,
@@ -1308,6 +1315,13 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     @JsonProperty
     @Override
     public int getMaxRowsInMemory()
+    {
+      return maxRowsInMemory;
+    }
+
+    @JsonProperty
+    @Override
+    public int getMaxRowsInMemoryPerSegment()
     {
       return maxRowsInMemory;
     }
@@ -1529,6 +1543,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       return "IndexTuningConfig{" +
              "maxRowsInMemory=" + maxRowsInMemory +
+             ", maxRowsInMemoryPerSegment=" + maxRowsInMemoryPerSegment +
              ", maxBytesInMemory=" + maxBytesInMemory +
              ", partitionsSpec=" + partitionsSpec +
              ", indexSpec=" + indexSpec +

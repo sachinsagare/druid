@@ -644,6 +644,7 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
         null,
         null,
         tuningConfig.getMaxRowsInMemory(),
+        tuningConfig.getMaxRowsInMemoryPerSegment(),
         tuningConfig.getMaxBytesInMemory(),
         null,
         null,

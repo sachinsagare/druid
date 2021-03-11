@@ -303,6 +303,7 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
             null,
             null,
             null,
+            null,
             1,
             null,
             null,
@@ -363,6 +364,7 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
         segmentGranularity,
         ioConfig,
         new ParallelIndexTuningConfig(
+            null,
             null,
             null,
             null,

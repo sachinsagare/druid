@@ -45,6 +45,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
 
   public KafkaSupervisorTuningConfig(
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
       @JsonProperty("maxTotalRows") Long maxTotalRows,
@@ -75,6 +76,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
   {
     super(
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         maxRowsPerSegment,
         maxTotalRows,
@@ -155,6 +157,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
   {
     return "KafkaSupervisorTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
            ", maxTotalRows=" + getMaxTotalRows() +
            ", maxBytesInMemory=" + TuningConfigs.getMaxBytesInMemoryOrDefault(getMaxBytesInMemory()) +
@@ -186,6 +189,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
   {
     return new KafkaIndexTaskTuningConfig(
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         getMaxRowsPerSegment(),
         getMaxTotalRows(),

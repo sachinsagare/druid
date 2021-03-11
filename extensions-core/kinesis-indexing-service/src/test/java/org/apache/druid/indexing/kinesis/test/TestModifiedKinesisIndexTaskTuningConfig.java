@@ -67,6 +67,7 @@ public class TestModifiedKinesisIndexTaskTuningConfig extends KinesisIndexTaskTu
   {
     super(
         maxRowsInMemory,
+        null,
         maxBytesInMemory,
         maxRowsPerSegment,
         maxTotalRows,
@@ -99,6 +100,7 @@ public class TestModifiedKinesisIndexTaskTuningConfig extends KinesisIndexTaskTu
   {
     super(
         base.getMaxRowsInMemory(),
+        base.getMaxRowsInMemoryPerSegment(),
         base.getMaxBytesInMemory(),
         base.getMaxRowsPerSegment(),
         base.getMaxTotalRows(),

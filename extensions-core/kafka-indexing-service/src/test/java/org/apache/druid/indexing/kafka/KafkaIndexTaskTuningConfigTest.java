@@ -118,6 +118,7 @@ public class KafkaIndexTaskTuningConfigTest
     KafkaSupervisorTuningConfig original = new KafkaSupervisorTuningConfig(
         1,
         null,
+        null,
         2,
         10L,
         new Period("PT3S"),
@@ -162,6 +163,7 @@ public class KafkaIndexTaskTuningConfigTest
   {
     KafkaIndexTaskTuningConfig base = new KafkaIndexTaskTuningConfig(
         1,
+        null,
         null,
         2,
         10L,
@@ -259,6 +261,7 @@ public class KafkaIndexTaskTuningConfigTest
   {
     return new KafkaIndexTaskTuningConfig(
         config.getMaxRowsInMemory(),
+        null,
         config.getMaxBytesInMemory(),
         config.getMaxRowsPerSegment(),
         config.getMaxTotalRows(),

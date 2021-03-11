@@ -74,6 +74,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   {
     return new RealtimeTuningConfig(
         DEFAULT_MAX_ROWS_IN_MEMORY,
+        Integer.MAX_VALUE,
         0L,
         DEFAULT_INTERMEDIATE_PERSIST_PERIOD,
         DEFAULT_WINDOW_PERIOD,
@@ -97,6 +98,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   }
 
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final Period intermediatePersistPeriod;
   private final Period windowPeriod;
@@ -121,6 +123,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   @JsonCreator
   public RealtimeTuningConfig(
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("intermediatePersistPeriod") Period intermediatePersistPeriod,
       @JsonProperty("windowPeriod") Period windowPeriod,
@@ -144,6 +147,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   )
   {
     this.maxRowsInMemory = maxRowsInMemory == null ? DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     // initializing this to 0, it will be lazily initialized to a value
     // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -183,6 +187,12 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   public int getMaxRowsInMemory()
   {
     return maxRowsInMemory;
+  }
+
+  @Override
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
   }
 
   @Override
@@ -317,6 +327,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   {
     return new RealtimeTuningConfig(
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         intermediatePersistPeriod,
         windowPeriod,
@@ -344,6 +355,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   {
     return new RealtimeTuningConfig(
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         intermediatePersistPeriod,
         windowPeriod,

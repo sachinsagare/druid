@@ -256,6 +256,20 @@ public class StreamAppenderatorDriver extends BaseAppenderatorDriver
   }
 
   /**
+   * Persist a single segment's data indexed through this driver. Returns a future of persisted commitMetadata.
+   * <p>
+   * Should be called after all data has been added through {@link #add(InputRow, String, Supplier, boolean, boolean)}.
+   *
+   * @param committer committer representing all data that has been added so far
+   *
+   * @return future containing commitMetadata persisted
+   */
+  public ListenableFuture<Object> persistSingleAsync(final Committer committer, SegmentIdWithShardSpec segmentIdentifier)
+  {
+    return appenderator.persistSingle(wrapCommitter(committer), segmentIdentifier);
+  }
+
+  /**
    * Execute a task in background to publish all segments corresponding to the given sequence names.  The task
    * internally pushes the segments to the deep storage first, and then publishes the metadata to the metadata storage.
    *

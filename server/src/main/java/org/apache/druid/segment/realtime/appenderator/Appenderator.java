@@ -174,6 +174,20 @@ public interface Appenderator extends QuerySegmentWalker
   ListenableFuture<Object> persistAll(@Nullable Committer committer);
 
   /**
+   * Persist any in-memory indexed data to durable storage. This may be only somewhat durable, e.g. the
+   * machine's local disk. The Committer will be made synchronously with the call to persistSingle, but will actually
+   * be used asynchronously. Any metadata returned by the committer will be associated with the data persisted to
+   * disk.
+   * <p>
+   * If committer is not provided, no metadata is persisted.
+   *
+   * @param committer a committer associated with all data that has been added so far
+   *
+   * @return future that resolves when all pending data has been persisted, contains commit metadata for this persist
+   */
+  ListenableFuture<Object> persistSingle(@Nullable Committer committer, SegmentIdWithShardSpec identifier);
+
+  /**
    * Merge and push particular segments to deep storage. This will trigger an implicit
    * {@link #persistAll(Committer)} using the provided Committer.
    * <p>
@@ -220,21 +234,21 @@ public interface Appenderator extends QuerySegmentWalker
   {
     private final SegmentIdWithShardSpec segmentIdentifier;
     private final int numRowsInSegment;
-    private final boolean isPersistRequired;
 
     @Nullable
     private final ParseException parseException;
+    private AppenderatorImpl.PersistType persistRequiredType;
 
     AppenderatorAddResult(
         SegmentIdWithShardSpec identifier,
         int numRowsInSegment,
-        boolean isPersistRequired,
+        AppenderatorImpl.PersistType persistType,
         @Nullable ParseException parseException
     )
     {
       this.segmentIdentifier = identifier;
       this.numRowsInSegment = numRowsInSegment;
-      this.isPersistRequired = isPersistRequired;
+      this.persistRequiredType = persistType;
       this.parseException = parseException;
     }
 
@@ -250,13 +264,18 @@ public interface Appenderator extends QuerySegmentWalker
 
     boolean isPersistRequired()
     {
-      return isPersistRequired;
+      return persistRequiredType != AppenderatorImpl.PersistType.NONE;
     }
 
     @Nullable
     public ParseException getParseException()
     {
       return parseException;
+    }
+
+    AppenderatorImpl.PersistType getPersistType()
+    {
+      return persistRequiredType;
     }
   }
 }

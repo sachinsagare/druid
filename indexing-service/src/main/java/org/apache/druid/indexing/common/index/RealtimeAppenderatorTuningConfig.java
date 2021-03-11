@@ -54,6 +54,7 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
   }
 
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final DynamicPartitionsSpec partitionsSpec;
   private final Period intermediatePersistPeriod;
@@ -75,6 +76,7 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
   @JsonCreator
   public RealtimeAppenderatorTuningConfig(
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
       @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
       @JsonProperty("maxTotalRows") @Nullable Long maxTotalRows,
@@ -94,6 +96,7 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
   )
   {
     this.maxRowsInMemory = maxRowsInMemory == null ? DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     // initializing this to 0, it will be lazily intialized to a value
     // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -140,6 +143,12 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
   public int getMaxRowsInMemory()
   {
     return maxRowsInMemory;
+  }
+
+  @Override
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
   }
 
   @Override
@@ -265,6 +274,7 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
   {
     return new RealtimeAppenderatorTuningConfig(
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         partitionsSpec.getMaxRowsPerSegment(),
         partitionsSpec.getMaxTotalRows(),

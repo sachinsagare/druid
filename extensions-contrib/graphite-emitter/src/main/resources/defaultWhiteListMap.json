@@ -5,6 +5,7 @@
   "ingest/rows/output": [],
   "ingest/rows/inMemory": [],
   "ingest/rows/maxInMemory": [],
+  "ingest/rows/maxInMemoryPerSegment": [],
   "ingest/bytes/inMemory": [],
   "ingest/bytes/maxInMemory": [],
   "jvm/gc": [],

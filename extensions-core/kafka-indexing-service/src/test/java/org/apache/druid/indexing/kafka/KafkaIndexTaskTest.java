@@ -2558,6 +2558,7 @@ public class KafkaIndexTaskTest
     final KafkaIndexTaskTuningConfig tuningConfig = new KafkaIndexTaskTuningConfig(
         1000,
         null,
+        null,
         maxRowsPerSegment,
         maxTotalRows,
         new Period("P1Y"),

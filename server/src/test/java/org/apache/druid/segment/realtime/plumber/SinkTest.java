@@ -65,6 +65,7 @@ public class SinkTest
     final String version = DateTimes.nowUtc().toString();
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         100,
+        100,
         null,
         new Period("P1Y"),
         null,
@@ -221,6 +222,7 @@ public class SinkTest
     final Interval interval = Intervals.of("2013-01-01/2013-01-02");
     final String version = DateTimes.nowUtc().toString();
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
+        100,
         100,
         null,
         new Period("P1Y"),

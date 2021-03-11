@@ -33,7 +33,7 @@ public class AppenderatorDriverAddResult
   private final SegmentIdWithShardSpec segmentIdentifier;
   private final int numRowsInSegment;
   private final long totalNumRowsInAppenderator;
-  private final boolean isPersistRequired;
+  private final AppenderatorImpl.PersistType persistType;
 
   @Nullable
   private final ParseException parseException;
@@ -42,7 +42,7 @@ public class AppenderatorDriverAddResult
       SegmentIdWithShardSpec segmentIdentifier,
       int numRowsInSegment,
       long totalNumRowsInAppenderator,
-      boolean isPersistRequired,
+      AppenderatorImpl.PersistType persistType,
       @Nullable ParseException parseException
   )
   {
@@ -50,28 +50,28 @@ public class AppenderatorDriverAddResult
         segmentIdentifier,
         numRowsInSegment,
         totalNumRowsInAppenderator,
-        isPersistRequired,
+        persistType,
         parseException
     );
   }
 
   public static AppenderatorDriverAddResult fail()
   {
-    return new AppenderatorDriverAddResult(null, 0, 0, false, null);
+    return new AppenderatorDriverAddResult(null, 0, 0, null, null);
   }
 
   private AppenderatorDriverAddResult(
       @Nullable SegmentIdWithShardSpec segmentIdentifier,
       int numRowsInSegment,
       long totalNumRowsInAppenderator,
-      boolean isPersistRequired,
+      AppenderatorImpl.PersistType persistType,
       @Nullable ParseException parseException
   )
   {
     this.segmentIdentifier = segmentIdentifier;
     this.numRowsInSegment = numRowsInSegment;
     this.totalNumRowsInAppenderator = totalNumRowsInAppenderator;
-    this.isPersistRequired = isPersistRequired;
+    this.persistType = persistType;
     this.parseException = parseException;
   }
 
@@ -95,9 +95,14 @@ public class AppenderatorDriverAddResult
     return totalNumRowsInAppenderator;
   }
 
+  public AppenderatorImpl.PersistType getPersistType()
+  {
+    return persistType;
+  }
+
   public boolean isPersistRequired()
   {
-    return isPersistRequired;
+    return persistType != AppenderatorImpl.PersistType.NONE;
   }
 
   public boolean isPushRequired(@Nullable Integer maxRowsPerSegment, @Nullable Long maxTotalRows)

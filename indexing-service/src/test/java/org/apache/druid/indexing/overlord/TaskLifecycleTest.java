@@ -706,6 +706,7 @@ public class TaskLifecycleTest
             new IndexIOConfig(new MockFirehoseFactory(false), false),
             new IndexTuningConfig(
                 null,
+                null,
                 10000,
                 10,
                 null,
@@ -789,6 +790,7 @@ public class TaskLifecycleTest
             ),
             new IndexIOConfig(new MockExceptionalFirehoseFactory(), false),
             new IndexTuningConfig(
+                null,
                 null,
                 10000,
                 10,
@@ -1213,6 +1215,7 @@ public class TaskLifecycleTest
             new IndexIOConfig(new MockFirehoseFactory(false), false),
             new IndexTuningConfig(
                 null,
+                null,
                 10000,
                 10,
                 null,
@@ -1318,6 +1321,7 @@ public class TaskLifecycleTest
             ),
             new IndexIOConfig(new MockFirehoseFactory(false), false),
             new IndexTuningConfig(
+                null,
                 null,
                 10000,
                 10,
@@ -1427,6 +1431,7 @@ public class TaskLifecycleTest
     );
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(
         1000,
+        null,
         null,
         new Period("P1Y"),
         null, //default window period of 10 minutes

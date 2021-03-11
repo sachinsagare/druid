@@ -38,6 +38,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   private static final boolean DEFAULT_SKIP_SEQUENCE_NUMBER_AVAILABILITY_CHECK = false;
 
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final DynamicPartitionsSpec partitionsSpec;
   private final Period intermediatePersistPeriod;
@@ -62,6 +63,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
 
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable Integer maxRowsInMemory,
+      @Nullable Integer maxRowsInMemoryPerSegment,
       @Nullable Long maxBytesInMemory,
       @Nullable Integer maxRowsPerSegment,
       @Nullable Long maxTotalRows,
@@ -89,6 +91,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
     final RealtimeTuningConfig defaults = RealtimeTuningConfig.makeDefaultTuningConfig(basePersistDirectory);
 
     this.maxRowsInMemory = maxRowsInMemory == null ? defaults.getMaxRowsInMemory() : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     this.partitionsSpec = new DynamicPartitionsSpec(maxRowsPerSegment, maxTotalRows);
     // initializing this to 0, it will be lazily initialized to a value
     // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
@@ -143,6 +146,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   public int getMaxRowsInMemory()
   {
     return maxRowsInMemory;
+  }
+
+  @Override
+  @JsonProperty
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
   }
 
   @Override
@@ -302,6 +312,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
     }
     SeekableStreamIndexTaskTuningConfig that = (SeekableStreamIndexTaskTuningConfig) o;
     return maxRowsInMemory == that.maxRowsInMemory &&
+           Objects.equals(maxRowsInMemoryPerSegment, that.maxRowsInMemoryPerSegment) &&
            maxBytesInMemory == that.maxBytesInMemory &&
            maxPendingPersists == that.maxPendingPersists &&
            reportParseExceptions == that.reportParseExceptions &&
@@ -327,6 +338,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   {
     return Objects.hash(
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         partitionsSpec,
         intermediatePersistPeriod,

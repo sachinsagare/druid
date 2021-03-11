@@ -279,6 +279,7 @@ public class CompactionTaskTest
   {
     return new IndexTuningConfig(
         null,
+        null,
         null, // null to compute maxRowsPerSegment automatically
         500000,
         1000000L,
@@ -458,6 +459,7 @@ public class CompactionTaskTest
     final IndexTuningConfig tuningConfig = new IndexTuningConfig(
         null,
         null,
+        null,
         500000,
         1000000L,
         null,
@@ -519,6 +521,7 @@ public class CompactionTaskTest
     final IndexTuningConfig tuningConfig = new IndexTuningConfig(
         null,
         null,
+        null,
         500000,
         1000000L,
         null,
@@ -578,6 +581,7 @@ public class CompactionTaskTest
   public void testCreateIngestionSchemaWithNumShards() throws IOException, SegmentLoadingException
   {
     final IndexTuningConfig tuningConfig = new IndexTuningConfig(
+        null,
         null,
         null,
         500000,
@@ -846,6 +850,7 @@ public class CompactionTaskTest
     final IndexTuningConfig tuningConfig = new IndexTuningConfig(
         null,
         null,
+        null,
         500000,
         1000000L,
         null,
@@ -1033,6 +1038,7 @@ public class CompactionTaskTest
         expectedMetricsSpec,
         expectedSegmentIntervals,
         new IndexTuningConfig(
+            null,
             null,
             null,
             500000,
