@@ -183,9 +183,12 @@ batch ingestion emit the following metrics. These metrics are deltas for each em
 |`ingest/rows/output`|Number of Druid rows persisted.|dataSource, taskId, taskType.|Your # of events with rollup.|
 |`ingest/rows/inMemory`|Number of Druid rows currently in memory.|dataSource.|Your # of events with rollup that are currently in memory.|
 |`ingest/rows/MaxInMemory`|Max number of Druid rows configured to be in memory before triggering persistence.|dataSource.|maxRowsInMemory in tuningConfig.|
+|`ingest/rows/MaxInMemoryPerSegment`|Max number of Druid rows configured to be in memory for a single segment before triggering persistence.|dataSource.|Defaults to maxRowsInMemory in tuningConfig.|
 |`ingest/bytes/inMemory`|Number of bytes of Druid rows currently in memory.|dataSource.|Bytes of your events with rollup that are currently in memory.|
 |`ingest/bytes/maxInMemory`|Max number of bytes of Druid rows configured to be in memory before triggering persistence.|dataSource.|maxBytesInMemory in tuningConfig.|
 |`ingest/persists/count`|Number of times persist occurred.|dataSource, taskId, taskType.|Depends on configuration.|
+|`ingest/persists/segment`|Number of times persist occurred for a single segment.|dataSource, taskId, taskType.|Depends on configuration.|
+|`ingest/persists/all`|Number of times persist occurred for all segments.|dataSource, taskId, taskType.|Depends on configuration.|
 |`ingest/persists/time`|Milliseconds spent doing intermediate persist.|dataSource, taskId, taskType.|Depends on configuration. Generally a few minutes at most.|
 |`ingest/persists/cpu`|Cpu time in Nanoseconds spent on doing intermediate persist.|dataSource, taskId, taskType.|Depends on configuration. Generally a few minutes at most.|
 |`ingest/persists/backPressure`|Milliseconds spent creating persist tasks and blocking waiting for them to finish.|dataSource, taskId, taskType.|0 or very low|

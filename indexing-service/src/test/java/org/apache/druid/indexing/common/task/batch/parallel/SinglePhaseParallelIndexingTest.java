@@ -586,6 +586,7 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
             null,
             null,
             null,
+            null,
             1,
             null,
             null,
@@ -710,6 +711,8 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
             null,
             null,
             null,
+            2L,
+            null,
             null,
             null,
             1,
@@ -723,8 +726,7 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
             null,
             null,
             null,
-            null,
-            0
+            null
         ),
         VALID_INPUT_SOURCE_FILTER
     );
@@ -755,6 +757,7 @@ public class SinglePhaseParallelIndexingTest extends AbstractParallelIndexSuperv
         appendToExisting,
         true,
         new ParallelIndexTuningConfig(
+            null,
             null,
             null,
             null,

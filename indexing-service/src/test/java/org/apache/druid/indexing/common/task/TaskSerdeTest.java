@@ -409,6 +409,7 @@ public class TaskSerdeTest
                 1,
                 10L,
                 null,
+                null,
                 new Period("PT10M"),
                 null,
                 null,

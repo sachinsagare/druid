@@ -67,6 +67,7 @@ public class SinkTest extends InitializedNullHandlingTest
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
         100,
+        100,
         null,
         null,
         new Period("P1Y"),
@@ -224,6 +225,7 @@ public class SinkTest extends InitializedNullHandlingTest
     final String version = DateTimes.nowUtc().toString();
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
+        100,
         100,
         null,
         null,

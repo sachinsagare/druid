@@ -158,6 +158,7 @@ public class DruidJsonValidatorTest
             new RealtimeTuningConfig(
                 null,
                 1,
+                1,
                 null,
                 null,
                 new Period("PT10M"),

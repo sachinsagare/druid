@@ -132,6 +132,7 @@ public class IndexTaskSerdeTest
   {
     final IndexTuningConfig tuningConfig = new IndexTuningConfig(
         null,
+        null,
         1000,
         null,
         100,

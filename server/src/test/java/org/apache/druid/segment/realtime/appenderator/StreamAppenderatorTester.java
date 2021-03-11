@@ -178,6 +178,7 @@ public class StreamAppenderatorTester implements AutoCloseable
     tuningConfig = new RealtimeTuningConfig(
         null,
         maxRowsInMemory,
+       null,
         maxSizeInBytes == 0L ? getDefaultMaxBytesInMemory() : maxSizeInBytes,
         skipBytesInMemoryOverheadCheck,
         null,

@@ -246,6 +246,8 @@ public class AppenderatorImpl implements Appenderator
 
     this.metrics.setMaxBytesInMemory(maxBytesTuningConfig);
     this.metrics.setMaxRowsInMemory(tuningConfig.getMaxRowsInMemory());
+    this.metrics.setMaxRowsInMemoryPerSegment(tuningConfig.getMaxRowsInMemoryPerSegment());
+    log.info("Created Appenderator for dataSource[%s].", schema.getDataSource());
   }
 
   @Override
@@ -497,7 +499,7 @@ public class AppenderatorImpl implements Appenderator
           identifier.getShardSpec(),
           identifier.getVersion(),
           tuningConfig.getAppendableIndexSpec(),
-          tuningConfig.getMaxRowsInMemory(),
+          tuningConfig.getMaxRowsInMemoryPerSegment(),
           maxBytesTuningConfig,
           null,
           tuningConfig.isEnableInMemoryBitmap()
@@ -1304,7 +1306,7 @@ public class AppenderatorImpl implements Appenderator
             identifier.getShardSpec(),
             identifier.getVersion(),
             tuningConfig.getAppendableIndexSpec(),
-            tuningConfig.getMaxRowsInMemory(),
+            tuningConfig.getMaxRowsInMemoryPerSegment(),
             maxBytesTuningConfig,
             null,
             hydrants,

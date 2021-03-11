@@ -203,6 +203,7 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
     tuningConfig = new RealtimeTuningConfig(
         null,
         1,
+        1,
         null,
         null,
         null,

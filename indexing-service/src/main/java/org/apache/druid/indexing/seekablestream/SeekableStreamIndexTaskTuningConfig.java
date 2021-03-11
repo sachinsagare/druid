@@ -40,6 +40,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
 
   private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final boolean skipBytesInMemoryOverheadCheck;
   private final DynamicPartitionsSpec partitionsSpec;
@@ -66,6 +67,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable AppendableIndexSpec appendableIndexSpec,
       @Nullable Integer maxRowsInMemory,
+      @Nullable Integer maxRowsInMemoryPerSegment,
       @Nullable Long maxBytesInMemory,
       @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @Nullable Integer maxRowsPerSegment,
@@ -93,6 +95,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
 
     this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
     this.maxRowsInMemory = maxRowsInMemory == null ? defaults.getMaxRowsInMemory() : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     this.partitionsSpec = new DynamicPartitionsSpec(maxRowsPerSegment, maxTotalRows);
     // initializing this to 0, it will be lazily initialized to a value
     // @see #getMaxBytesInMemoryOrDefault()
@@ -156,6 +159,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   public int getMaxRowsInMemory()
   {
     return maxRowsInMemory;
+  }
+
+  @Override
+  @JsonProperty
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
   }
 
   @Override
@@ -351,6 +361,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     return Objects.hash(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         partitionsSpec,

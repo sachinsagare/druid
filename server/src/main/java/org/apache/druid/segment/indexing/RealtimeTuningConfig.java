@@ -68,6 +68,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
     return new RealtimeTuningConfig(
         DEFAULT_APPENDABLE_INDEX,
         DEFAULT_MAX_ROWS_IN_MEMORY,
+        Integer.MAX_VALUE,
         0L,
         DEFAULT_SKIP_BYTES_IN_MEMORY_OVERHEAD_CHECK,
         DEFAULT_INTERMEDIATE_PERSIST_PERIOD,
@@ -92,6 +93,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
 
   private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final boolean skipBytesInMemoryOverheadCheck;
   private final Period intermediatePersistPeriod;
@@ -118,6 +120,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
   public RealtimeTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("intermediatePersistPeriod") Period intermediatePersistPeriod,
@@ -141,6 +144,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
   {
     this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
     this.maxRowsInMemory = maxRowsInMemory == null ? DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     // initializing this to 0, it will be lazily initialized to a value
     // @see #getMaxBytesInMemoryOrDefault()
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -193,6 +197,12 @@ public class RealtimeTuningConfig implements AppenderatorConfig
 
   @Override
   @JsonProperty
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
+  }
+
+  @Override
   public long getMaxBytesInMemory()
   {
     return maxBytesInMemory;
@@ -328,6 +338,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
     return new RealtimeTuningConfig(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         intermediatePersistPeriod,
@@ -356,6 +367,7 @@ public class RealtimeTuningConfig implements AppenderatorConfig
     return new RealtimeTuningConfig(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         intermediatePersistPeriod,

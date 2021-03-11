@@ -36,6 +36,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
   public KafkaIndexTaskTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") @Nullable Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
@@ -60,6 +61,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
     super(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
@@ -89,6 +91,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
     return new KafkaIndexTaskTuningConfig(
         getAppendableIndexSpec(),
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),
@@ -117,6 +120,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
   {
     return "KafkaIndexTaskTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
            ", maxTotalRows=" + getMaxTotalRows() +
            ", maxBytesInMemory=" + getMaxBytesInMemory() +

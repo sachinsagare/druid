@@ -749,6 +749,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
+                null,
                 10000,
                 null,
                 10,
@@ -832,6 +833,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             ),
             new IndexIOConfig(null, new MockExceptionInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
+                null,
                 null,
                 10000,
                 null,
@@ -1268,6 +1270,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
+                null,
                 10000,
                 null,
                 10,
@@ -1378,6 +1381,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             ),
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
+                null,
                 null,
                 10000,
                 null,

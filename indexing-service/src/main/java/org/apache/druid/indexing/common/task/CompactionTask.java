@@ -1247,6 +1247,7 @@ public class CompactionTask extends AbstractBatchIndexTask
           maxRowsPerSegment,
           appendableIndexSpec,
           maxRowsInMemory,
+          null,
           maxBytesInMemory,
           skipBytesInMemoryOverheadCheck,
           maxTotalRows,
@@ -1273,7 +1274,7 @@ public class CompactionTask extends AbstractBatchIndexTask
           maxSavedParseExceptions,
           maxColumnsToMerge,
           awaitSegmentAvailabilityTimeoutMillis,
-          null
+         null
       );
 
       Preconditions.checkArgument(

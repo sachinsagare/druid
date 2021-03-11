@@ -53,6 +53,7 @@ public class KinesisIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningC
   public KinesisIndexTaskTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
@@ -82,6 +83,7 @@ public class KinesisIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningC
     super(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
@@ -161,6 +163,7 @@ public class KinesisIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningC
     return new KinesisIndexTaskTuningConfig(
         getAppendableIndexSpec(),
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),
@@ -228,6 +231,7 @@ public class KinesisIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningC
   {
     return "KinesisIndexTaskTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxBytesInMemory=" + getMaxBytesInMemory() +
            ", skipBytesInMemoryOverheadCheck=" + isSkipBytesInMemoryOverheadCheck() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
