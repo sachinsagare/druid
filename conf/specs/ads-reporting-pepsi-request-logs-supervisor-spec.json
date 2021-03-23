@@ -38,6 +38,7 @@
             "filterColumns",
             "filterOperators",
             "filterValues",
+            "customColumnIds",
             {
               "type": "long",
               "name": "userId"
