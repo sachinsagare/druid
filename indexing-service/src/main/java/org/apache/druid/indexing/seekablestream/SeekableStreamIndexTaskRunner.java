@@ -401,6 +401,8 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
 
       final List<String> partitionDimensions = task.getContextValue(SeekableStreamSupervisor.PARTITION_DIMENSIONS_CTX_KEY);
       final Integer streamPartitions = task.getContextValue(SeekableStreamSupervisor.STREAM_PARTITIONS_CTX_KEY);
+      final Integer fanOutSize = task.getContextValue(SeekableStreamSupervisor.PARTITION_FAN_OUT_SIZE);
+
       // Only support single sequence for now
       final Set<PartitionIdType> rawStreamPartitionIds = sequences.size() == 1
                                                    ? sequences.get(0).startOffsets.keySet()
@@ -417,7 +419,8 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
           fireDepartmentMetrics,
           partitionDimensions,
           streamPartitionIds,
-          streamPartitions
+          streamPartitions,
+          fanOutSize
       );
 
       // Start up, set up initial sequences.

@@ -300,6 +300,13 @@ public class MovingAverageQueryTest
     Assert.assertNotNull(expectedResults);
     Assert.assertThat(expectedResults, IsInstanceOf.instanceOf(List.class));
 
+    ServiceEmitter emitter = new ServiceEmitter("", "", null) {
+      @Override
+      public void emit(Event event)
+      {
+      }
+    };
+
     CachingClusteredClient baseClient = new CachingClusteredClient(
         warehouse,
         new TimelineServerView()
@@ -360,17 +367,12 @@ public class MovingAverageQueryTest
             return null;
           }
         },
-        ForkJoinPool.commonPool()
+        ForkJoinPool.commonPool(),
+        emitter
     );
 
     ClientQuerySegmentWalker walker = new ClientQuerySegmentWalker(
-        new ServiceEmitter("", "", null)
-        {
-          @Override
-          public void emit(Event event)
-          {
-          }
-        },
+        emitter,
         baseClient, warehouse, retryConfig, jsonMapper, serverConfig, null, new CacheConfig()
     );
 

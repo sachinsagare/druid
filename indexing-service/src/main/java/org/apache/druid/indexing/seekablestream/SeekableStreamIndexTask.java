@@ -59,6 +59,7 @@ import org.apache.druid.server.security.AuthorizerMapper;
 import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamFanOutHashBasedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.StreamHashBasedNumberedShardSpecFactory;
 import org.apache.druid.utils.CircularBuffer;
 
@@ -236,7 +237,8 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
       final FireDepartmentMetrics metrics,
       final List<String> partitionDimensions,
       final Set<Integer> streamPartitionIds,
-      final Integer streamPartitions
+      final Integer streamPartitions,
+      final Integer fanOutSize
   )
   {
     final String nameSpace = this.getContextValue("nameSpace");
@@ -256,11 +258,16 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
             streamPartitionIds,
             streamPartitions
         );
-        effectiveShardSpecFactory = new StreamHashBasedNumberedShardSpecFactory(
-            partitionDimensions,
-            streamPartitionIds,
-            streamPartitions
-        );
+        effectiveShardSpecFactory = (fanOutSize != null) ?
+                                    new StreamFanOutHashBasedNumberedShardSpecFactory(
+                                        partitionDimensions,
+                                        streamPartitionIds,
+                                        streamPartitions,
+                                        fanOutSize) :
+                                    new StreamHashBasedNumberedShardSpecFactory(
+                                        partitionDimensions,
+                                        streamPartitionIds,
+                                        streamPartitions);
       } else {
         effectiveShardSpecFactory = NumberedShardSpecFactory.instance();
       }
