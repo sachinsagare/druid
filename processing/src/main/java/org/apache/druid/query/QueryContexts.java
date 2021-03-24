@@ -44,6 +44,7 @@ public class QueryContexts
   public static final String BROKER_PARALLEL_MERGE_INITIAL_YIELD_ROWS_KEY = "parallelMergeInitialYieldRows";
   public static final String BROKER_PARALLEL_MERGE_SMALL_BATCH_ROWS_KEY = "parallelMergeSmallBatchRows";
   public static final String BROKER_PARALLELISM = "parallelMergeParallelism";
+  public static final String BROKER_ALLOWED_SERVER_KEYWORD = "allowedServerKeyword";
 
   @Deprecated
   public static final String CHUNK_PERIOD_KEY = "chunkPeriod";
@@ -218,6 +219,11 @@ public class QueryContexts
   public static <T> int getParallelMergeParallelism(Query<T> query, int defaultValue)
   {
     return parseInt(query, BROKER_PARALLELISM, defaultValue);
+  }
+
+  public static <T> String getAllowedServerKeyword(Query<T> query)
+  {
+    return query.getContextValue(BROKER_ALLOWED_SERVER_KEYWORD, null);
   }
 
   @Deprecated

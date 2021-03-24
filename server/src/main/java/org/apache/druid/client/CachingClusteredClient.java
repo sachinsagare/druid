@@ -367,7 +367,25 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       final List<Pair<Interval, byte[]>> alreadyCachedResults = pruneSegmentsWithCachedResults(queryCacheKey, segments);
       final SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
-          segmentsByServer = groupSegmentsByServer(segments);
+          rawSegmentsByServer = groupSegmentsByServer(segments);
+      final SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
+          segmentsByServer;
+      // Optinally get partial results. Sometimes you only want the queries to hit historicals, then
+      // "allowedServerKeyword" can be set to "data" if that's part of the hostname of historicals and not middle
+      // managers
+      String allowedServerKeyword = QueryContexts.getAllowedServerKeyword(query);
+      if (allowedServerKeyword != null) {
+        segmentsByServer = new TreeMap<>();
+        rawSegmentsByServer.forEach(
+            (k, v) -> {
+              if (k.getHost().contains(allowedServerKeyword)) {
+                segmentsByServer.put(k, v);
+              }
+            }
+        );
+      } else {
+        segmentsByServer = rawSegmentsByServer;
+      }
       queryMetrics.reportNodeCount(segmentsByServer.size());
       queryMetrics.reportSegmentCount(segmentsByServer.values()
                                                       .stream()
