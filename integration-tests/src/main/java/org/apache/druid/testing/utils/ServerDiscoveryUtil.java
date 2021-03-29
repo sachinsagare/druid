@@ -34,7 +34,7 @@ public class ServerDiscoveryUtil
   public static boolean isInstanceReady(ServerDiscoverySelector serviceProvider)
   {
     try {
-      Server instance = serviceProvider.pick();
+      Server instance = serviceProvider.pick(true);
       if (instance == null) {
         LOG.warn("Unable to find a host");
         return false;

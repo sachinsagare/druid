@@ -163,31 +163,39 @@ public class ServerSelector implements DiscoverySelector<QueryableDruidServer>, 
 
   @Nullable
   @Override
-  public QueryableDruidServer pick()
+  public QueryableDruidServer pick(boolean includeRealtimeServers)
   {
     synchronized (this) {
       if (!historicalServers.isEmpty()) {
         return strategy.pick(historicalServers, segment.get());
       }
-      return strategy.pick(realtimeServers, segment.get());
+      if (includeRealtimeServers) {
+        return strategy.pick(realtimeServers, segment.get());
+      } else {
+        return null;
+      }
     }
   }
 
   @NotNull
-  public List<QueryableDruidServer> pickForPriority(int queryPriority, int numServersToPick)
+  public List<QueryableDruidServer> pickForPriority(int queryPriority, int numServersToPick, boolean includeRealtimeServers)
   {
     synchronized (this) {
       if (!historicalServers.isEmpty()) {
         return strategy.pick(queryPriority, historicalServers, segment.get(), numServersToPick);
       }
-      return strategy.pick(queryPriority, realtimeServers, segment.get(), numServersToPick);
+      if (includeRealtimeServers) {
+        return strategy.pick(queryPriority, realtimeServers, segment.get(), numServersToPick);
+      } else {
+        return new ArrayList<>();
+      }
     }
   }
 
   @Nullable
-  public QueryableDruidServer pickForPriority(int queryPriority)
+  public QueryableDruidServer pickForPriority(int queryPriority, boolean includeRealtimeMetrics)
   {
-    return Iterables.getOnlyElement(pickForPriority(queryPriority, 1), null);
+    return Iterables.getOnlyElement(pickForPriority(queryPriority, 1, includeRealtimeMetrics), null);
   }
 
   @Override

@@ -199,7 +199,7 @@ public class ITUnionQueryTest extends AbstractIndexerTest
     try {
       ServerDiscoveryUtil.waitUntilInstanceReady(eventReceiverSelector, "Event Receiver");
       // Access the docker VM mapped host and port instead of service announced in zookeeper
-      String host = config.getMiddleManagerHost() + ":" + eventReceiverSelector.pick().getPort();
+      String host = config.getMiddleManagerHost() + ":" + eventReceiverSelector.pick(true).getPort();
 
       LOG.info("Event Receiver Found at host [%s]", host);
 

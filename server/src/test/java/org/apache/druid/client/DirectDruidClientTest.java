@@ -190,7 +190,7 @@ public class DirectDruidClientTest
 
     Assert.assertTrue(client2.getNumOpenConnections() == 2);
 
-    Assert.assertTrue(serverSelector.pick() == queryableDruidServer2);
+    Assert.assertTrue(serverSelector.pick(true) == queryableDruidServer2);
 
     EasyMock.verify(httpClient);
   }

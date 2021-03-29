@@ -189,7 +189,7 @@ public class DruidLeaderClientTest extends BaseJettyTest
   public void testServerFailureAndRedirect() throws Exception
   {
     ServerDiscoverySelector serverDiscoverySelector = EasyMock.createMock(ServerDiscoverySelector.class);
-    EasyMock.expect(serverDiscoverySelector.pick()).andReturn(null).anyTimes();
+    EasyMock.expect(serverDiscoverySelector.pick(true)).andReturn(null).anyTimes();
 
     DruidNodeDiscovery druidNodeDiscovery = EasyMock.createMock(DruidNodeDiscovery.class);
     DiscoveryDruidNode dummyNode = new DiscoveryDruidNode(

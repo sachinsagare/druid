@@ -88,7 +88,7 @@ public class ITRealtimeIndexTaskTest extends AbstractITRealtimeIndexTaskTest
     try (BufferedReader reader = new BufferedReader(isr)) {
       ServerDiscoveryUtil.waitUntilInstanceReady(eventReceiverSelector, "Event Receiver");
       // Use the host from the config file and the port announced in zookeeper
-      String host = config.getMiddleManagerHost() + ":" + eventReceiverSelector.pick().getPort();
+      String host = config.getMiddleManagerHost() + ":" + eventReceiverSelector.pick(true).getPort();
       LOG.info("Event Receiver Found at host [%s]", host);
       EventReceiverFirehoseTestClient client = new EventReceiverFirehoseTestClient(
           host,

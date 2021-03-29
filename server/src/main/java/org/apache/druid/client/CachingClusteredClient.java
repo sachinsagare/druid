@@ -517,8 +517,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
     {
       Hasher hasher = Hashing.sha1().newHasher();
       boolean hasOnlyHistoricalSegments = true;
+      boolean includeRealtimeServers = QueryContexts.isIncludeRealtimeServers(query);
       for (ServerToSegment p : segments) {
-        if (!p.getServer().pick().getServer().segmentReplicatable()) {
+        if (!p.getServer().pick(includeRealtimeServers).getServer().segmentReplicatable()) {
           hasOnlyHistoricalSegments = false;
           break;
         }
@@ -629,14 +630,17 @@ public class CachingClusteredClient implements QuerySegmentWalker
             serverToSegment.getServer()
                            .pickForPriority(
                                QueryContexts.getPriority(query),
-                               QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED
+                               QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED,
+                               QueryContexts.isIncludeRealtimeServers(query)
                            );
         if (queryableDruidServers.isEmpty()) {
-          log.makeAlert(
-              "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
-              serverToSegment.getSegmentDescriptor(),
-              query.getDataSource()
-          ).emit();
+          if (QueryContexts.isIncludeRealtimeServers(query)) {
+            log.makeAlert(
+                    "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
+                    serverToSegment.getSegmentDescriptor(),
+                    query.getDataSource()
+            ).emit();
+          }
         } else {
           final DruidServer primaryServer = queryableDruidServers.get(0).getServer();
           serverSegments.computeIfAbsent(primaryServer, s -> Pair.of(new ArrayList<>(), new TreeMap<>()))

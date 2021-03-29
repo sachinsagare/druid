@@ -218,9 +218,9 @@ public class TierSelectorStrategyTest
       serverSelector.addServerAndUpdateSegment(server, serverSelector.getSegment());
     }
 
-    Assert.assertEquals(expectedSelection[0], serverSelector.pick());
+    Assert.assertEquals(expectedSelection[0], serverSelector.pick(true));
     // Should be the same when not using query priority based tier selector strategy
-    Assert.assertEquals(expectedSelection[0], serverSelector.pickForPriority(10));
+    Assert.assertEquals(expectedSelection[0], serverSelector.pickForPriority(10, true));
     Assert.assertEquals(expectedCandidates, serverSelector.getCandidates(-1));
     Assert.assertEquals(expectedCandidates.subList(0, 2), serverSelector.getCandidates(2));
   }
@@ -266,9 +266,9 @@ public class TierSelectorStrategyTest
     serverSelector.addServerAndUpdateSegment(priority0, serverSelector.getSegment());
     serverSelector.addServerAndUpdateSegment(priority1, serverSelector.getSegment());
 
-    Assert.assertEquals(priority0, serverSelector.pickForPriority(1));
-    Assert.assertEquals(priority1, serverSelector.pickForPriority(2));
-    Assert.assertEquals(priority1, serverSelector.pickForPriority(3));
-    Assert.assertEquals(priority1, serverSelector.pickForPriority(0));
+    Assert.assertEquals(priority0, serverSelector.pickForPriority(1, true));
+    Assert.assertEquals(priority1, serverSelector.pickForPriority(2, true));
+    Assert.assertEquals(priority1, serverSelector.pickForPriority(3, true));
+    Assert.assertEquals(priority1, serverSelector.pickForPriority(0, true));
   }
 }

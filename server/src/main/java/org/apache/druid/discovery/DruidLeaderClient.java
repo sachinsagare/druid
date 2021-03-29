@@ -303,7 +303,7 @@ public class DruidLeaderClient
   @Nullable
   private String pickOneHost()
   {
-    Server server = serverDiscoverySelector.pick();
+    Server server = serverDiscoverySelector.pick(true);
     if (server != null) {
       return StringUtils.format(
           "%s://%s:%s",
