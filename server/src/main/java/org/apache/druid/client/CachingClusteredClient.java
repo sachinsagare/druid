@@ -651,12 +651,14 @@ public class CachingClusteredClient implements QuerySegmentWalker
                                 QueryContexts.getPriority(query),
                                 QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED
                         );
-        if (queryableDruidServers == null) {
-          log.makeAlert(
-                  "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
-                  serverToSegment.getSegmentDescriptor(),
-                  query.getDataSource()
-          ).emit();
+        if (queryableDruidServers.isEmpty()) {
+          if (QueryContexts.isIncludeRealtimeServers(query)) {
+            log.makeAlert(
+                    "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
+                    serverToSegment.getSegmentDescriptor(),
+                    query.getDataSource()
+            ).emit();
+          }
         } else {
           final DruidServer primaryServer = queryableDruidServers.get(0).getServer();
           serverSegments.computeIfAbsent(primaryServer, s -> Pair.of(new ArrayList<>(), new TreeMap<>()))
