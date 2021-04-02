@@ -125,7 +125,7 @@ public class StreamAppenderatorTester implements AutoCloseable
       final boolean enablePushFailure
   )
   {
-    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, new SimpleRowIngestionMeters(), false);
+    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, new SimpleRowIngestionMeters(), false, false);
   }
 
   public StreamAppenderatorTester(
@@ -136,7 +136,7 @@ public class StreamAppenderatorTester implements AutoCloseable
       final RowIngestionMeters rowIngestionMeters
   )
   {
-    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, rowIngestionMeters, false);
+    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, rowIngestionMeters, false, false);
   }
 
   public StreamAppenderatorTester(
@@ -145,7 +145,8 @@ public class StreamAppenderatorTester implements AutoCloseable
       final File basePersistDirectory,
       final boolean enablePushFailure,
       final RowIngestionMeters rowIngestionMeters,
-      final boolean skipBytesInMemoryOverheadCheck
+      final boolean skipBytesInMemoryOverheadCheck,
+      final boolean enableInMemoryBitmap
   )
   {
     objectMapper = new DefaultObjectMapper();
@@ -194,7 +195,8 @@ public class StreamAppenderatorTester implements AutoCloseable
         null,
         null,
         null,
-        null
+        null,
+        enableInMemoryBitmap
     );
 
     metrics = new FireDepartmentMetrics();

@@ -499,7 +499,8 @@ public class AppenderatorImpl implements Appenderator
           tuningConfig.getAppendableIndexSpec(),
           tuningConfig.getMaxRowsInMemory(),
           maxBytesTuningConfig,
-          null
+          null,
+          tuningConfig.isEnableInMemoryBitmap()
       );
       bytesCurrentlyInMemory.addAndGet(calculateSinkMemoryInUsed(retVal));
 
@@ -1306,7 +1307,8 @@ public class AppenderatorImpl implements Appenderator
             tuningConfig.getMaxRowsInMemory(),
             maxBytesTuningConfig,
             null,
-            hydrants
+            hydrants,
+            tuningConfig.isEnableInMemoryBitmap()
         );
         rowsSoFar += currSink.getNumRows();
         sinks.put(identifier, currSink);

@@ -1430,7 +1430,8 @@ public class CompactionTaskRunTest extends IngestionTestBase
           VirtualColumns.EMPTY,
           Granularities.ALL,
           false,
-          null
+          null,
+          false
       );
       cursors.addAll(cursorSequence.toList());
     }

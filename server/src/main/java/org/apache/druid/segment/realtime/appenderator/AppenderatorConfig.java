@@ -30,6 +30,18 @@ public interface AppenderatorConfig extends TuningConfig
 {
   boolean isReportParseExceptions();
 
+  boolean isEnableInMemoryBitmap();
+
+  /**
+   * Maximum number of rows in memory before persisting to local storage
+   */
+  int getMaxRowsInMemory();
+
+  /**
+   * Maximum number of bytes (estimated) to store in memory before persisting to local storage
+   */
+  long getMaxBytesInMemory();
+
   int getMaxPendingPersists();
 
   boolean isSkipBytesInMemoryOverheadCheck();

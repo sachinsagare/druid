@@ -163,7 +163,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -215,7 +216,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -400,7 +402,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -1209,6 +1212,22 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
         ImmutableMap.of(
             "dim",
             dim,
+            "met",
+            met
+        )
+    );
+  }
+
+  static InputRow ir(String ts, String dim1, String dim2, long met)
+  {
+    return new MapBasedInputRow(
+        DateTimes.of(ts).getMillis(),
+        ImmutableList.of("dim1", "dim2"),
+        ImmutableMap.of(
+            "dim1",
+            dim1,
+            "dim2",
+            dim2,
             "met",
             met
         )

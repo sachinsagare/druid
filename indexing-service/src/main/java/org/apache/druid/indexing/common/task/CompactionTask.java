@@ -966,7 +966,8 @@ public class CompactionTask extends AbstractBatchIndexTask
         DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(
             name,
             capabilities,
-            multiValueHandling
+            multiValueHandling,
+            false
         );
         return handler.getDimensionSchema(capabilities);
     }
