@@ -843,6 +843,7 @@ public class RealtimeIndexTaskTest
         handoffTimeout,
         null,
         null,
+        null,
         null
     );
     return new RealtimeIndexTask(

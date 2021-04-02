@@ -1380,6 +1380,12 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       return reportParseExceptions;
     }
 
+    @Override
+    public boolean isEnableInMemoryBitmap()
+    {
+      return false;
+    }
+
     @JsonProperty
     public long getPushTimeout()
     {

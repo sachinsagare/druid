@@ -247,6 +247,7 @@ public class TimeseriesQueryEngine
       final boolean descending
   )
   {
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
     final boolean skipEmptyBuckets = query.isSkipEmptyBuckets();
     final List<AggregatorFactory> aggregatorSpecs = query.getAggregatorSpecs();
 
@@ -292,7 +293,8 @@ public class TimeseriesQueryEngine
               agg.close();
             }
           }
-        }
+        },
+        useInMemoryBitmapInQuery
     );
   }
 }

@@ -267,7 +267,8 @@ public class SegmentAnalyzer
               VirtualColumns.EMPTY,
               Granularities.ALL,
               false,
-              null
+              null,
+              false
           );
 
       size = cursors.accumulate(

@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 
 /**
  */
-class SimpleColumnHolder implements ColumnHolder
+public class SimpleColumnHolder implements ColumnHolder
 {
   private final ColumnCapabilities capabilities;
   private final Supplier<? extends BaseColumn> columnSupplier;
@@ -35,7 +35,7 @@ class SimpleColumnHolder implements ColumnHolder
   @Nullable
   private final Supplier<SpatialIndex> spatialIndex;
 
-  SimpleColumnHolder(
+  public SimpleColumnHolder(
       ColumnCapabilities capabilities,
       Supplier<? extends BaseColumn> columnSupplier,
       @Nullable Supplier<BitmapIndex> bitmapIndex,

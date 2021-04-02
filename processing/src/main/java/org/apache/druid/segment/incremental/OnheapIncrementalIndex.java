@@ -31,6 +31,7 @@ import org.apache.druid.query.dimension.DimensionSpec;
 import org.apache.druid.segment.ColumnSelectorFactory;
 import org.apache.druid.segment.ColumnValueSelector;
 import org.apache.druid.segment.DimensionSelector;
+import org.apache.druid.segment.StringDimensionIndexer;
 import org.apache.druid.segment.column.ColumnCapabilities;
 
 import javax.annotation.Nullable;
@@ -73,13 +74,16 @@ public class OnheapIncrementalIndex extends IncrementalIndex<Aggregator>
       boolean concurrentEventAdd,
       boolean sortFacts,
       int maxRowCount,
-      long maxBytesInMemory
+      long maxBytesInMemory,
+      boolean enableInMemoryBitmap
   )
   {
-    super(incrementalIndexSchema, deserializeComplexMetrics, reportParseExceptions, concurrentEventAdd);
+    super(incrementalIndexSchema, deserializeComplexMetrics, reportParseExceptions, concurrentEventAdd,
+          enableInMemoryBitmap);
     this.maxRowCount = maxRowCount;
     this.maxBytesInMemory = maxBytesInMemory == 0 ? Long.MAX_VALUE : maxBytesInMemory;
-    this.facts = incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts, dimsComparator(), getDimensions())
+    this.facts = incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts, dimsComparator(), getDimensions(),
+                                                                           enableInMemoryBitmap)
                                                    : new PlainFactsHolder(sortFacts, dimsComparator());
     maxBytesPerRowForAggregators = getMaxBytesPerRowForAggregators(incrementalIndexSchema);
   }
@@ -180,6 +184,21 @@ public class OnheapIncrementalIndex extends IncrementalIndex<Aggregator>
       }
       final int prev = facts.putIfAbsent(key, rowIndex);
       if (IncrementalIndexRow.EMPTY_ROW_INDEX == prev) {
+        if (isEnableInMemoryBitmap()) {
+          // After a new row is added, update indexes for all dimensions that enable bitmaps
+          for (int i = 0; i < key.getDims().length; i++) {
+            if (key.getDimensionDescsList().get(i).getCapabilities().hasBitmapIndexes()) {
+              ((StringDimensionIndexer) key.getDimensionDescsList()
+                                          .get(i)
+                                          .getIndexer())
+                  .fillInMemoryBitmapsFromUnsortedEncodedKeyComponent(
+                      (int[]) key.getDims()[i],
+                     rowIndex,
+                     inMemoryBitmapFactory);
+            }
+          }
+        }
+
         numEntries.incrementAndGet();
         long estimatedRowSize = estimateRowSizeInBytes(key, maxBytesPerRowForAggregators);
         sizeInBytes.addAndGet(estimatedRowSize);

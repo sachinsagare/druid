@@ -264,7 +264,8 @@ public abstract class BaseFilterTest
         VIRTUAL_COLUMNS,
         Granularities.ALL,
         false,
-        null
+        null,
+        false
     );
   }
 

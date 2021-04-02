@@ -111,6 +111,8 @@ public class TimeBoundaryQueryRunnerFactory
 
     private DateTime getTimeBoundary(StorageAdapter adapter, TimeBoundaryQuery legacyQuery, boolean descending)
     {
+      final boolean useInMemoryBitmapInQuery = legacyQuery.getContextBoolean("useInMemoryBitmapInQuery", false);
+
       final Sequence<Result<DateTime>> resultSequence = QueryRunnerHelper.makeCursorBasedQuery(
           adapter,
           legacyQuery.getQuerySegmentSpec().getIntervals(),
@@ -118,7 +120,8 @@ public class TimeBoundaryQueryRunnerFactory
           VirtualColumns.EMPTY,
           descending,
           Granularities.ALL,
-          this.skipToFirstMatching
+          this.skipToFirstMatching,
+          useInMemoryBitmapInQuery
       );
       final List<Result<DateTime>> resultList = resultSequence.limit(1).toList();
       if (resultList.size() > 0) {

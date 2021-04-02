@@ -219,6 +219,8 @@ public class SelectQueryEngine
 
     final Filter filter = Filters.convertToCNFFromQueryContext(query, Filters.toFilter(query.getDimensionsFilter()));
 
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+
     return QueryRunnerHelper.makeCursorBasedQuery(
         adapter,
         query.getQuerySegmentSpec().getIntervals(),
@@ -286,7 +288,8 @@ public class SelectQueryEngine
 
             return builder.build();
           }
-        }
+        },
+        useInMemoryBitmapInQuery
     );
   }
 

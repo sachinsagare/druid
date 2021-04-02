@@ -94,7 +94,8 @@ public class CursorOnlyStrategy extends SearchStrategy
           VirtualColumns.EMPTY,
           query.getGranularity(),
           query.isDescending(),
-          null
+          null,
+          false
       );
 
       final Object2IntRBTreeMap<SearchHit> retVal = new Object2IntRBTreeMap<>(query.getSort().getComparator());

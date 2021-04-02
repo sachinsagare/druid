@@ -259,7 +259,8 @@ public class RealtimePlumber implements Plumber
           config.getMaxRowsInMemory(),
           TuningConfigs.getMaxBytesInMemoryOrDefault(config.getMaxBytesInMemory()),
           config.isReportParseExceptions(),
-          config.getDedupColumn()
+          config.getDedupColumn(),
+          config.isEnableInMemoryBitmap()
       );
       addSink(retVal);
 
@@ -722,7 +723,8 @@ public class RealtimePlumber implements Plumber
           TuningConfigs.getMaxBytesInMemoryOrDefault(config.getMaxBytesInMemory()),
           config.isReportParseExceptions(),
           config.getDedupColumn(),
-          hydrants
+          hydrants,
+          config.isEnableInMemoryBitmap()
       );
       addSink(currSink);
     }

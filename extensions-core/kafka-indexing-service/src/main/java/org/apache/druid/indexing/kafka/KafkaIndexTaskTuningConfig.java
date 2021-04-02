@@ -52,7 +52,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
       @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
-      @JsonProperty("ignoreOutOfOrderSequenceNumber") @Nullable Boolean ignoreOutOfOrderSequenceNumber
+      @JsonProperty("ignoreOutOfOrderSequenceNumber") @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @JsonProperty("enableInMemoryBitmap") @Nullable Boolean enableInMemoryBitmap
   )
   {
     super(
@@ -75,7 +76,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        enableInMemoryBitmap
     );
   }
 
@@ -101,7 +103,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         isLogParseExceptions(),
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
-        isIgnoreOutOfOrderSequenceNumber()
+        isIgnoreOutOfOrderSequenceNumber(),
+        isEnableInMemoryBitmap()
     );
   }
 
@@ -128,6 +131,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
            ", maxParseExceptions=" + getMaxParseExceptions() +
            ", maxSavedParseExceptions=" + getMaxSavedParseExceptions() +
            ", ignoreOutOfOrderSequenceNumber=" + isIgnoreOutOfOrderSequenceNumber() +
+           ", enableInMemoryBitmap=" + isEnableInMemoryBitmap() +
            '}';
   }
 

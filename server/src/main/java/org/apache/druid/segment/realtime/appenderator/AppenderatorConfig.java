@@ -30,6 +30,8 @@ public interface AppenderatorConfig
 {
   boolean isReportParseExceptions();
 
+  boolean isEnableInMemoryBitmap();
+
   /**
    * Maximum number of rows in memory before persisting to local storage
    */

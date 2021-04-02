@@ -67,11 +67,12 @@ public final class DimensionHandlerUtils
   public static DimensionHandler getHandlerFromCapabilities(
       String dimensionName,
       ColumnCapabilities capabilities,
-      @Nullable MultiValueHandling multiValueHandling
+      @Nullable MultiValueHandling multiValueHandling,
+      boolean enableInMemoryBitmap
   )
   {
     if (capabilities == null) {
-      return new StringDimensionHandler(dimensionName, multiValueHandling, true);
+      return new StringDimensionHandler(dimensionName, multiValueHandling, true, enableInMemoryBitmap);
     }
 
     multiValueHandling = multiValueHandling == null ? MultiValueHandling.ofDefault() : multiValueHandling;
@@ -80,7 +81,7 @@ public final class DimensionHandlerUtils
       if (!capabilities.isDictionaryEncoded()) {
         throw new IAE("String column must have dictionary encoding.");
       }
-      return new StringDimensionHandler(dimensionName, multiValueHandling, capabilities.hasBitmapIndexes());
+      return new StringDimensionHandler(dimensionName, multiValueHandling, capabilities.hasBitmapIndexes(), enableInMemoryBitmap);
     }
 
     if (capabilities.getType() == ValueType.LONG) {
@@ -96,7 +97,7 @@ public final class DimensionHandlerUtils
     }
 
     // Return a StringDimensionHandler by default (null columns will be treated as String typed)
-    return new StringDimensionHandler(dimensionName, multiValueHandling, true);
+    return new StringDimensionHandler(dimensionName, multiValueHandling, true, enableInMemoryBitmap);
   }
 
   public static List<ValueType> getValueTypesFromDimensionSpecs(List<DimensionSpec> dimSpecs)

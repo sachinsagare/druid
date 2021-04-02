@@ -76,6 +76,8 @@ public class TopNQueryEngine
         queryIntervals.size() == 1, "Can only handle a single interval, got[%s]", queryIntervals
     );
 
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+
     return Sequences.filter(
         Sequences.map(
             adapter.makeCursors(
@@ -84,7 +86,8 @@ public class TopNQueryEngine
                 query.getVirtualColumns(),
                 granularity,
                 query.isDescending(),
-                queryMetrics
+                queryMetrics,
+                useInMemoryBitmapInQuery
             ),
             new Function<Cursor, Result<TopNResultValue>>()
             {

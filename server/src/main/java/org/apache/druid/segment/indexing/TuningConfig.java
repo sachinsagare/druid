@@ -40,4 +40,5 @@ public interface TuningConfig
   // we halved default to 1/6(max jvm memory)
   long DEFAULT_MAX_BYTES_IN_MEMORY = JvmUtils.getRuntimeInfo().getMaxHeapSizeBytes() / 6;
   boolean DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER = false;
+  boolean DEFAULT_ENABLE_IN_MEMORY_BITMAP = false;
 }

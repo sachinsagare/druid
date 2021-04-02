@@ -122,6 +122,8 @@ public class ScanQueryEngine
 
     final Filter filter = Filters.convertToCNFFromQueryContext(query, Filters.toFilter(query.getFilter()));
 
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+
     responseContext.add(ResponseContext.Key.NUM_SCANNED_ROWS, 0L);
     final long limit = calculateRemainingScanRowsLimit(query, responseContext);
     return Sequences.concat(
@@ -133,7 +135,8 @@ public class ScanQueryEngine
                     Granularities.ALL,
                     query.getOrder().equals(ScanQuery.Order.DESCENDING) ||
                     (query.getOrder().equals(ScanQuery.Order.NONE) && query.isDescending()),
-                    null
+                    null,
+                    useInMemoryBitmapInQuery
                 )
                 .map(cursor -> new BaseSequence<>(
                     new BaseSequence.IteratorMaker<ScanResultValue, Iterator<ScanResultValue>>()

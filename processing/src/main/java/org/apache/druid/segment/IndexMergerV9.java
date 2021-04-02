@@ -998,7 +998,7 @@ public class IndexMergerV9 implements IndexMerger
     for (int i = 0; i < mergedDimensions.size(); i++) {
       ColumnCapabilities capabilities = dimCapabilities.get(i);
       String dimName = mergedDimensions.get(i);
-      DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(dimName, capabilities, null);
+      DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(dimName, capabilities, null, false);
       handlers.put(dimName, handler);
     }
     return handlers;

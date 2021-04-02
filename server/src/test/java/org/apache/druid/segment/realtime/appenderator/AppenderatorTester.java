@@ -121,6 +121,18 @@ public class AppenderatorTester implements AutoCloseable
       final boolean enablePushFailure
   )
   {
+    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, null, false);
+  }
+
+  public AppenderatorTester(
+      final int maxRowsInMemory,
+      long maxSizeInBytes,
+      final File basePersistDirectory,
+      final boolean enablePushFailure,
+      List<String> dimensionNames,
+      final boolean enableInMemoryBitmap
+  )
+  {
     objectMapper = new DefaultObjectMapper();
     objectMapper.registerSubtypes(LinearShardSpec.class);
 
@@ -128,7 +140,8 @@ public class AppenderatorTester implements AutoCloseable
         new MapInputRowParser(
             new JSONParseSpec(
                 new TimestampSpec("ts", "auto", null),
-                new DimensionsSpec(null, null, null),
+                dimensionNames == null ? new DimensionsSpec(null, null, null) :
+                new DimensionsSpec(DimensionsSpec.getDefaultSchemas(dimensionNames), null, null),
                 null,
                 null
             )
@@ -166,7 +179,8 @@ public class AppenderatorTester implements AutoCloseable
         null,
         null,
         null,
-        null
+        null,
+        enableInMemoryBitmap
     );
 
     metrics = new FireDepartmentMetrics();

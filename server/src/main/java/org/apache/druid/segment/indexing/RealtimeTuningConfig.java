@@ -54,6 +54,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   private static final long DEFAULT_HANDOFF_CONDITION_TIMEOUT = 0;
   private static final long DEFAULT_ALERT_TIMEOUT = 0;
   private static final String DEFAULT_DEDUP_COLUMN = null;
+  private static final boolean DEFAULT_ENABLE_IN_MEMORY_BITMAP = TuningConfig.DEFAULT_ENABLE_IN_MEMORY_BITMAP;
 
   private static File createNewBasePersistDirectory()
   {
@@ -90,7 +91,8 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
         DEFAULT_HANDOFF_CONDITION_TIMEOUT,
         DEFAULT_ALERT_TIMEOUT,
         null,
-        DEFAULT_DEDUP_COLUMN
+        DEFAULT_DEDUP_COLUMN,
+        DEFAULT_ENABLE_IN_MEMORY_BITMAP
     );
   }
 
@@ -108,6 +110,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
   private final int persistThreadPriority;
   private final int mergeThreadPriority;
   private final boolean reportParseExceptions;
+  private final boolean enableInMemoryBitmap;
   private final long handoffConditionTimeout;
   private final long alertTimeout;
   @Nullable
@@ -136,7 +139,8 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
       @JsonProperty("handoffConditionTimeout") Long handoffConditionTimeout,
       @JsonProperty("alertTimeout") Long alertTimeout,
       @JsonProperty("segmentWriteOutMediumFactory") @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
-      @JsonProperty("dedupColumn") @Nullable String dedupColumn
+      @JsonProperty("dedupColumn") @Nullable String dedupColumn,
+      @JsonProperty("enableInMemoryBitmap") Boolean enableInMemoryBitmap
   )
   {
     this.maxRowsInMemory = maxRowsInMemory == null ? DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
@@ -171,6 +175,7 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
     Preconditions.checkArgument(this.alertTimeout >= 0, "alertTimeout must be >= 0");
     this.segmentWriteOutMediumFactory = segmentWriteOutMediumFactory;
     this.dedupColumn = dedupColumn == null ? DEFAULT_DEDUP_COLUMN : dedupColumn;
+    this.enableInMemoryBitmap = enableInMemoryBitmap == null ? DEFAULT_ENABLE_IN_MEMORY_BITMAP : enableInMemoryBitmap;
   }
 
   @Override
@@ -274,6 +279,13 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
     return reportParseExceptions;
   }
 
+  @Override
+  @JsonProperty
+  public boolean isEnableInMemoryBitmap()
+  {
+    return enableInMemoryBitmap;
+  }
+
   @JsonProperty
   public long getHandoffConditionTimeout()
   {
@@ -322,7 +334,8 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
         handoffConditionTimeout,
         alertTimeout,
         segmentWriteOutMediumFactory,
-        dedupColumn
+        dedupColumn,
+        enableInMemoryBitmap
     );
   }
 
@@ -348,7 +361,8 @@ public class RealtimeTuningConfig implements TuningConfig, AppenderatorConfig
         handoffConditionTimeout,
         alertTimeout,
         segmentWriteOutMediumFactory,
-        dedupColumn
+        dedupColumn,
+        enableInMemoryBitmap
     );
   }
 }

@@ -82,6 +82,7 @@ public class SinkTest
         null,
         null,
         null,
+        null,
         null
     );
     final Sink sink = new Sink(
@@ -92,7 +93,8 @@ public class SinkTest
         tuningConfig.getMaxRowsInMemory(),
         TuningConfigs.getMaxBytesInMemoryOrDefault(tuningConfig.getMaxBytesInMemory()),
         tuningConfig.isReportParseExceptions(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
 
     sink.add(
@@ -237,7 +239,8 @@ public class SinkTest
         null,
         null,
         null,
-        "dedupColumn"
+        "dedupColumn",
+        null
     );
     final Sink sink = new Sink(
         interval,
@@ -247,7 +250,8 @@ public class SinkTest
         tuningConfig.getMaxRowsInMemory(),
         TuningConfigs.getMaxBytesInMemoryOrDefault(tuningConfig.getMaxBytesInMemory()),
         tuningConfig.isReportParseExceptions(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
 
     int rows = sink.add(new MapBasedInputRow(

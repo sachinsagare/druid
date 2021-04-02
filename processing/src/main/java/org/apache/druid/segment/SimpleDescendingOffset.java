@@ -29,7 +29,7 @@ public class SimpleDescendingOffset extends Offset
   private final int initialOffset;
   private int currentOffset;
 
-  SimpleDescendingOffset(int rowCount)
+  public SimpleDescendingOffset(int rowCount)
   {
     this(rowCount - 1, rowCount);
   }

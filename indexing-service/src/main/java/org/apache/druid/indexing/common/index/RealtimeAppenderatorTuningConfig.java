@@ -216,6 +216,12 @@ public class RealtimeAppenderatorTuningConfig implements TuningConfig, Appendera
     return reportParseExceptions;
   }
 
+  @Override
+  public boolean isEnableInMemoryBitmap()
+  {
+    return false;
+  }
+
   @JsonProperty
   public long getPublishAndHandoffTimeout()
   {

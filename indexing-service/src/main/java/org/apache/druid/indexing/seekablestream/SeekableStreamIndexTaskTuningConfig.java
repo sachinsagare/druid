@@ -58,6 +58,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   private final int maxParseExceptions;
   private final int maxSavedParseExceptions;
   private final boolean ignoreOutOfOrderSequenceNumber;
+  private final boolean enableInMemoryBitmap;
 
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable Integer maxRowsInMemory,
@@ -80,7 +81,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
       @Nullable Boolean logParseExceptions,
       @Nullable Integer maxParseExceptions,
       @Nullable Integer maxSavedParseExceptions,
-      @Nullable Boolean ignoreOutOfOrderSequenceNumber
+      @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @Nullable Boolean enableInMemoryBitmap
   )
   {
     // Cannot be a static because default basePersistDirectory is unique per-instance
@@ -132,6 +134,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
                               : logParseExceptions;
     this.ignoreOutOfOrderSequenceNumber = ignoreOutOfOrderSequenceNumber == null ?
         TuningConfig.DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER : ignoreOutOfOrderSequenceNumber;
+    this.enableInMemoryBitmap = enableInMemoryBitmap == null ? TuningConfig.DEFAULT_ENABLE_IN_MEMORY_BITMAP :
+                                enableInMemoryBitmap;
   }
 
   @Override
@@ -278,6 +282,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   }
 
   @Override
+  @JsonProperty
+  public boolean isEnableInMemoryBitmap()
+  {
+    return enableInMemoryBitmap;
+  }
+
+  @Override
   public abstract SeekableStreamIndexTaskTuningConfig withBasePersistDirectory(File dir);
 
   @Override
@@ -297,6 +308,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
            handoffConditionTimeout == that.handoffConditionTimeout &&
            resetOffsetAutomatically == that.resetOffsetAutomatically &&
            skipSequenceNumberAvailabilityCheck == that.skipSequenceNumberAvailabilityCheck &&
+           enableInMemoryBitmap == that.enableInMemoryBitmap &&
            logParseExceptions == that.logParseExceptions &&
            maxParseExceptions == that.maxParseExceptions &&
            maxSavedParseExceptions == that.maxSavedParseExceptions &&
@@ -328,6 +340,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
         segmentWriteOutMediumFactory,
         intermediateHandoffPeriod,
         skipSequenceNumberAvailabilityCheck,
+        enableInMemoryBitmap,
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,

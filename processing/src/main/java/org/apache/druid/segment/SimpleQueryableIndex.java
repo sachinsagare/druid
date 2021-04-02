@@ -174,7 +174,7 @@ public class SimpleQueryableIndex extends AbstractIndex implements QueryableInde
   {
     for (String dim : availableDimensions) {
       ColumnCapabilities capabilities = getColumnHolder(dim).getCapabilities();
-      DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(dim, capabilities, null);
+      DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(dim, capabilities, null, false);
       dimensionHandlers.put(dim, handler);
     }
   }
