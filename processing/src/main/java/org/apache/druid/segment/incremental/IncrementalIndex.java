@@ -1170,6 +1170,8 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
     long getTimestamp(int rowIndex);
 
     IncrementalIndexRow getRow(int rowInex);
+
+    int getNumRows();
   }
 
   static class RollupFactsHolder implements FactsHolder
@@ -1307,6 +1309,12 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
       } else {
         return rowIndexToFacts.get(rowInex);
       }
+    }
+
+    @Override
+    public int getNumRows()
+    {
+      return rowIndexToFacts.size();
     }
   }
 
@@ -1448,6 +1456,12 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
 
     @Override
     public IncrementalIndexRow getRow(int rowInex)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getNumRows()
     {
       throw new UnsupportedOperationException();
     }
