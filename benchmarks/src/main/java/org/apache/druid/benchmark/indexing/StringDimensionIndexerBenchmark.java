@@ -54,7 +54,7 @@ public class StringDimensionIndexerBenchmark
   @Setup
   public void setup()
   {
-    indexer = new StringDimensionIndexer(DimensionSchema.MultiValueHandling.ofDefault(), true);
+    indexer = new StringDimensionIndexer(DimensionSchema.MultiValueHandling.ofDefault(), true, false);
 
     for (int i = 0; i < cardinality; i++) {
       indexer.processRowValsToUnsortedEncodedKeyComponent("abcd-" + i, true);

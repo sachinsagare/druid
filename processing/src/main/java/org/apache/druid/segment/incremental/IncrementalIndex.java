@@ -336,7 +336,9 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
               dimName,
               new SimpleColumnHolder(
                   capabilities,
-                  null,
+                  new IncrementalIndexDictionaryEncodedColumnSupplier(
+                      (StringDimensionIndexer) desc.getIndexer()
+                  ),
                   new IncrementalIndexBitmapIndexSupplier(
                       inMemoryBitmapFactory,
                       (StringDimensionIndexer) desc.getIndexer()
@@ -353,6 +355,19 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
     ColumnCapabilitiesImpl timeCapabilities = new ColumnCapabilitiesImpl().setIsComplete(true);
     timeCapabilities.setType(ValueType.LONG);
     columnCapabilities.put(ColumnHolder.TIME_COLUMN_NAME, timeCapabilities);
+    if (enableInMemoryBitmap) {
+      columns.put(
+          ColumnHolder.TIME_COLUMN_NAME,
+          new SimpleColumnHolder(
+              timeCapabilities,
+              new IncrementalIndexLongNumericColumnSupplier(
+                  () -> getFacts()
+              ),
+              null,
+              null
+          )
+      );
+    }
 
     // This should really be more generic
     List<SpatialDimensionSchema> spatialDimensions = dimensionsSpec.getSpatialDimensions();
@@ -716,7 +731,9 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
                 dimension,
                 new SimpleColumnHolder(
                     capabilities,
-                    null,
+                    new IncrementalIndexDictionaryEncodedColumnSupplier(
+                        (StringDimensionIndexer) desc.getIndexer()
+                    ),
                     new IncrementalIndexBitmapIndexSupplier(
                         inMemoryBitmapFactory,
                         (StringDimensionIndexer) desc.getIndexer()
@@ -1323,6 +1340,8 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
     long getTimestamp(int rowIndex);
 
     IncrementalIndexRow getRow(int rowInex);
+
+    int getNumRows();
   }
 
   static class RollupFactsHolder implements FactsHolder
@@ -1461,6 +1480,12 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
         return rowIndexToFacts.get(rowInex);
       }
     }
+
+    @Override
+    public int getNumRows()
+    {
+      return rowIndexToFacts.size();
+    }
   }
 
   static class PlainFactsHolder implements FactsHolder
@@ -1592,6 +1617,12 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
 
     @Override
     public IncrementalIndexRow getRow(int rowInex)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getNumRows()
     {
       throw new UnsupportedOperationException();
     }
