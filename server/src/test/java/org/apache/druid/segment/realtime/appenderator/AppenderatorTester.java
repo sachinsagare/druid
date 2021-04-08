@@ -124,17 +124,18 @@ public class AppenderatorTester implements AutoCloseable
 
   public AppenderatorTester(
       final int maxRowsInMemory,
-      final Integer masRowsInMemoryPerSegment,
+      final Integer maxRowsInMemoryPerSegment,
       long maxSizeInBytes,
       final File basePersistDirectory,
       final boolean enablePushFailure
   )
   {
-    this(maxRowsInMemory, maxSizeInBytes, basePersistDirectory, enablePushFailure, null, false);
+    this(maxRowsInMemory, maxRowsInMemoryPerSegment, maxSizeInBytes, basePersistDirectory, enablePushFailure, null, false);
   }
 
   public AppenderatorTester(
       final int maxRowsInMemory,
+      final int maxRowsInMemoryPerSegment,
       long maxSizeInBytes,
       final File basePersistDirectory,
       final boolean enablePushFailure,
@@ -171,7 +172,7 @@ public class AppenderatorTester implements AutoCloseable
     maxSizeInBytes = maxSizeInBytes == 0L ? getDefaultMaxBytesInMemory() : maxSizeInBytes;
     tuningConfig = new RealtimeTuningConfig(
         maxRowsInMemory,
-        masRowsInMemoryPerSegment,
+        maxRowsInMemoryPerSegment,
         maxSizeInBytes,
         null,
         null,

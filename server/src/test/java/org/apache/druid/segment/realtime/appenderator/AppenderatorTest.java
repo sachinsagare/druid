@@ -847,7 +847,7 @@ public class AppenderatorTest
     // Use a large enough threshold to make sure persist doesn't trigger
     int maxRowsInMemory = 8;
 
-    try (final AppenderatorTester tester = new AppenderatorTester(maxRowsInMemory, -1, null, true, dimensionNamesInSchema, enableInMemoryBitmapInIngestionSpec)) {
+    try (final AppenderatorTester tester = new AppenderatorTester(maxRowsInMemory, maxRowsInMemory, -1, null, true, dimensionNamesInSchema, enableInMemoryBitmapInIngestionSpec)) {
       final Appenderator appenderator = tester.getAppenderator();
 
       appenderator.startJob();
