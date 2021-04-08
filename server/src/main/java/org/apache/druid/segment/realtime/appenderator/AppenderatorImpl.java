@@ -465,7 +465,7 @@ public class AppenderatorImpl implements Appenderator
   }
 
   @VisibleForTesting
-  int getRowsInMemory()
+  public int getRowsInMemory()
   {
     return rowsCurrentlyInMemory.get();
   }

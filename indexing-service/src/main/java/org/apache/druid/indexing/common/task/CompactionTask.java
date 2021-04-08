@@ -1274,7 +1274,7 @@ public class CompactionTask extends AbstractBatchIndexTask
           maxSavedParseExceptions,
           maxColumnsToMerge,
           awaitSegmentAvailabilityTimeoutMillis,
-         null
+          null
       );
 
       Preconditions.checkArgument(

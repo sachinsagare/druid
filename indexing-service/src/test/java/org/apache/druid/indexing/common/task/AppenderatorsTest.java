@@ -20,13 +20,21 @@
 package org.apache.druid.indexing.common.task;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import org.apache.druid.data.input.Committer;
+import org.apache.druid.data.input.InputRow;
+import org.apache.druid.data.input.MapBasedInputRow;
 import org.apache.druid.data.input.impl.DimensionsSpec;
 import org.apache.druid.data.input.impl.JSONParseSpec;
 import org.apache.druid.data.input.impl.MapInputRowParser;
 import org.apache.druid.data.input.impl.TimestampSpec;
 import org.apache.druid.indexer.partitions.PartitionsSpec;
 import org.apache.druid.jackson.DefaultObjectMapper;
+import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.FileUtils;
+import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.java.util.common.granularity.Granularities;
 import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.java.util.emitter.core.NoopEmitter;
@@ -47,11 +55,7 @@ import org.apache.druid.segment.indexing.TuningConfig;
 import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
 import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.segment.realtime.FireDepartmentMetrics;
-import org.apache.druid.segment.realtime.appenderator.Appenderator;
-import org.apache.druid.segment.realtime.appenderator.AppenderatorConfig;
-import org.apache.druid.segment.realtime.appenderator.AppenderatorImpl;
-import org.apache.druid.segment.realtime.appenderator.Appenderators;
-import org.apache.druid.segment.realtime.appenderator.BatchAppenderator;
+import org.apache.druid.segment.realtime.appenderator.*;
 import org.apache.druid.segment.writeout.OffHeapMemorySegmentWriteOutMediumFactory;
 import org.apache.druid.segment.writeout.SegmentWriteOutMediumFactory;
 import org.apache.druid.timeline.DataSegment;
@@ -68,10 +72,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class AppenderatorsTest
 {
+
+  private static final List<SegmentIdWithShardSpec> IDENTIFIERS = ImmutableList.of(
+          si("2000/2001", "A", 0),
+          si("2000/2001", "A", 1),
+          si("2001/2002", "A", 0)
+  );
+
   @Test
   public void testOpenSegmentsOfflineAppenderator() throws Exception
   {
@@ -80,6 +92,30 @@ public class AppenderatorsTest
       AppenderatorImpl appenderator = (AppenderatorImpl) tester.appenderator;
       Assert.assertTrue(appenderator.isOpenSegments());
     }
+  }
+
+  private static SegmentIdWithShardSpec si(String interval, String version, int partitionNum)
+  {
+    return new SegmentIdWithShardSpec(
+            StreamAppenderatorTester.DATASOURCE,
+            Intervals.of(interval),
+            version,
+            new LinearShardSpec(partitionNum)
+    );
+  }
+
+  static InputRow ir(String ts, String dim, Object met)
+  {
+    return new MapBasedInputRow(
+            DateTimes.of(ts).getMillis(),
+            ImmutableList.of("dim"),
+            ImmutableMap.of(
+                    "dim",
+                    dim,
+                    "met",
+                    met
+            )
+    );
   }
 
   @Test
@@ -97,6 +133,56 @@ public class AppenderatorsTest
   {
     try (final AppenderatorTester tester = new AppenderatorTester("CLOSED_SEGMENTS_SINKS")) {
       Assert.assertTrue(tester.appenderator instanceof BatchAppenderator);
+    }
+  }
+
+  @Test
+  public void testMaxRowsInMemoryPerSegment() throws Exception
+  {
+    try (final AppenderatorTester tester = new AppenderatorTester("3")) {
+      final Appenderator appenderator = tester.getAppenderator();
+      final AtomicInteger eventCount = new AtomicInteger(0);
+      final Supplier<Committer> committerSupplier = new Supplier<Committer>()
+      {
+        @Override
+        public Committer get()
+        {
+          final Object metadata = ImmutableMap.of("eventCount", eventCount.get());
+
+          return new Committer()
+          {
+            @Override
+            public Object getMetadata()
+            {
+              return metadata;
+            }
+
+            @Override
+            public void run()
+            {
+              // Do nothing
+            }
+          };
+        }
+      };
+
+      StringBuilder b = new StringBuilder();
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.startJob();
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "foo", 1), committerSupplier);
+      Assert.assertEquals(1, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "bar", 1), committerSupplier);
+      // persisted single segment only
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "baz", 1), committerSupplier);
+      Assert.assertEquals(1, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(1), ir("2000", "bar", 1), committerSupplier);
+      Assert.assertEquals(2, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.add(IDENTIFIERS.get(0), ir("2000", "qux", 1), committerSupplier);
+      // persisted all segments
+      Assert.assertEquals(0, ((AppenderatorImpl) appenderator).getRowsInMemory());
+      appenderator.close();
     }
   }
 
@@ -394,6 +480,12 @@ public class AppenderatorsTest
       public int getMaxRowsInMemory()
       {
         return maxRowsInMemory;
+      }
+
+      @Override
+      public int getMaxRowsInMemoryPerSegment()
+      {
+        return 0;
       }
 
       @Override

@@ -750,7 +750,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexTuningConfig(
                 null,
                 null,
-                10000,
+                null,
                 null,
                 10,
                 null,
@@ -835,7 +835,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexTuningConfig(
                 null,
                 null,
-                10000,
+                null,
                 null,
                 10,
                 null,
@@ -1271,7 +1271,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexTuningConfig(
                 null,
                 null,
-                10000,
+                null,
                 null,
                 10,
                 null,
@@ -1383,7 +1383,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexTuningConfig(
                 null,
                 null,
-                10000,
+                null,
                 null,
                 10,
                 null,
@@ -1555,6 +1555,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(
         null,
         1000,
+        null,
         null,
         null,
         new Period("P1Y"),

@@ -71,6 +71,7 @@ public class ParallelIndexTuningConfigTest
         null,
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -118,6 +119,7 @@ public class ParallelIndexTuningConfigTest
         null,
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -162,6 +164,7 @@ public class ParallelIndexTuningConfigTest
   {
     final int maxNumSubTasks = 250;
     final ParallelIndexTuningConfig tuningConfig = new ParallelIndexTuningConfig(
+        null,
         null,
         null,
         null,
@@ -214,6 +217,7 @@ public class ParallelIndexTuningConfigTest
         null,
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -257,6 +261,7 @@ public class ParallelIndexTuningConfigTest
     expectedException.expectMessage("DynamicPartitionsSpec must be used for best-effort rollup");
     final boolean forceGuaranteedRollup = false;
     new ParallelIndexTuningConfig(
+        null,
         null,
         null,
         null,
@@ -306,6 +311,7 @@ public class ParallelIndexTuningConfigTest
         null,
         null,
         null,
+        null,
         10,
         1000L,
         null,
@@ -349,6 +355,7 @@ public class ParallelIndexTuningConfigTest
     expectedException.expectMessage("cannot be used for perfect rollup");
     final boolean forceGuaranteedRollup = true;
     new ParallelIndexTuningConfig(
+        null,
         null,
         null,
         null,

@@ -425,6 +425,12 @@ public class BatchAppenderatorsTest
       }
 
       @Override
+      public int getMaxRowsInMemoryPerSegment()
+      {
+        return 0;
+      }
+
+      @Override
       public long getMaxBytesInMemory()
       {
         return maxBytesInMemory;

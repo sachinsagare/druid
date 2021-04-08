@@ -124,6 +124,7 @@ public class KafkaIndexTaskTuningConfigTest
         1,
         null,
         null,
+        null,
         2,
         10L,
         new Period("PT3S"),
@@ -146,8 +147,7 @@ public class KafkaIndexTaskTuningConfigTest
         null,
         null,
         null,
-        null,
-            null
+        null
     );
     KafkaIndexTaskTuningConfig copy = (KafkaIndexTaskTuningConfig) original.convertToTaskTuningConfig();
 
@@ -170,6 +170,7 @@ public class KafkaIndexTaskTuningConfigTest
     KafkaIndexTaskTuningConfig base = new KafkaIndexTaskTuningConfig(
         null,
         1,
+        null,
         null,
         null,
         2,
@@ -267,34 +268,8 @@ public class KafkaIndexTaskTuningConfigTest
   @Test
   public void testEqualsAndHashCode()
   {
-<<<<<<< HEAD
     EqualsVerifier.forClass(KafkaIndexTaskTuningConfig.class)
         .usingGetClass()
         .verify();
-=======
-    return new KafkaIndexTaskTuningConfig(
-        config.getMaxRowsInMemory(),
-        null,
-        config.getMaxBytesInMemory(),
-        config.getMaxRowsPerSegment(),
-        config.getMaxTotalRows(),
-        config.getIntermediatePersistPeriod(),
-        config.getBasePersistDirectory(),
-        0,
-        config.getIndexSpec(),
-        config.getIndexSpecForIntermediatePersists(),
-        true,
-        config.isReportParseExceptions(),
-        config.getHandoffConditionTimeout(),
-        config.isResetOffsetAutomatically(),
-        config.getSegmentWriteOutMediumFactory(),
-        config.getIntermediateHandoffPeriod(),
-        config.isLogParseExceptions(),
-        config.getMaxParseExceptions(),
-        config.getMaxSavedParseExceptions(),
-        config.isIgnoreOutOfOrderSequenceNumber(),
-        config.isEnableInMemoryBitmap()
-    );
->>>>>>> 656e6dbc8d (Ensure not all segments are persisted when maxRowsInMemory is reached for one segment.)
   }
 }

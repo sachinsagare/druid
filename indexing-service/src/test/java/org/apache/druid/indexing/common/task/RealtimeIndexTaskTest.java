@@ -835,6 +835,7 @@ public class RealtimeIndexTaskTest extends InitializedNullHandlingTest
         1000,
         null,
         null,
+        null,
         new Period("P1Y"),
         new Period("PT10M"),
         null,

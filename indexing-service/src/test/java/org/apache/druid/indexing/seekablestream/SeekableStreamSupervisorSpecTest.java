@@ -516,7 +516,8 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
                 null,
                 null,
                 null,
-                false
+                false,
+                null
         )
         {
           @Override
