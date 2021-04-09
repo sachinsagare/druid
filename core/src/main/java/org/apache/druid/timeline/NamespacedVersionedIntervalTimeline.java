@@ -184,11 +184,7 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
         return null;
       }
 
-      PartitionChunk<ObjectType> ret = timeline.remove(interval, version, chunk);
-      if (timeline.isEmpty()) {
-        timelines.remove(namespace);
-      }
-      return ret;
+      return timeline.remove(interval, version, chunk);
     }
     finally {
       lock.writeLock().unlock();
