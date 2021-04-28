@@ -120,6 +120,9 @@ EOF
     sed -i "s/<DRUID_BROKER_SELECT_TIER>/${TELETRAAN_DRUID_BROKER_SELECT_TIER:-highestPriority}/" $DRUID_CONF_DIR/broker/runtime.properties
     sed -i "s/<DRUID_BROKER_SELECT_TIER_CUSTOM_PRIORITIES>/${TELETRAAN_DRUID_BROKER_SELECT_TIER_CUSTOM_PRIORITIES:-[]}/" $DRUID_CONF_DIR/broker/runtime.properties
     sed -i "s/<DRUID_PROCESSING_EXCEPTION_SKIP_REALTIME_DATA>/${TELETRAAN_DRUID_PROCESSING_EXCEPTION_SKIP_REALTIME_DATA:-false}/" $DRUID_CONF_DIR/broker/runtime.properties
+    sed -i "s/<DRUID_BROKER_CACHE_USE_CACHE>/${TELETRAAN_DRUID_BROKER_CACHE_USE_CACHE:-false}/g" $DRUID_CONF_DIR/broker/runtime.properties
+    sed -i "s/<DRUID_BROKER_CACHE_POPULATE_CACHE>/${TELETRAAN_DRUID_BROKER_CACHE_POPULATE_CACHE:-false}/g" $DRUID_CONF_DIR/broker/runtime.properties
+
 
     if [ ! -z "${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}" ]; then
       if grep -q "druid.broker.select.tier.queryPriorityBased.priorityMap" $DRUID_CONF_DIR/broker/runtime.properties; then
@@ -228,6 +231,8 @@ EOF
     sed -i "s/<MEM_MIN>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<MEM_MAX>/${TELETRAAN_DRUID_MEM:-8}/" $DRUID_CONF_DIR/middleManager/jvm.config
     sed -i "s/<NEW_SIZE>/${TELETRAAN_DRUID_NEW_SIZE:-4}/" $DRUID_CONF_DIR/middleManager/jvm.config
+    sed -i "s/<DRUID_REALTIME_CACHE_USE_CACHE>/${TELETRAAN_DRUID_REALTIME_CACHE_USE_CACHE:-false}/g" $DRUID_CONF_DIR/middleManager/runtime.properties
+    sed -i "s/<DRUID_REALTIME_CACHE_POPULATE_CACHE>/${TELETRAAN_DRUID_REALTIME_CACHE_POPULATE_CACHE:-false}/g" $DRUID_CONF_DIR/middleManager/runtime.properties
 
     if [[ "${TELETRAAN_ENABLE_REMOTE_DEBUGGING}" = "TRUE" ]]; then
       cat << EOF >> $DRUID_CONF_DIR/middleManager/jvm.config
