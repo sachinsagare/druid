@@ -38,6 +38,7 @@ import org.apache.druid.jackson.CommaListJoinDeserializer;
 import org.apache.druid.jackson.CommaListJoinSerializer;
 import org.apache.druid.java.util.common.granularity.Granularities;
 import org.apache.druid.query.SegmentDescriptor;
+import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.joda.time.DateTime;
@@ -164,7 +165,9 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
   )
   {
     this.id = SegmentId.of(dataSource, interval, version, shardSpec);
-    this.loadSpec = pruneLoadSpecHolder.pruneLoadSpec ? PRUNED_LOAD_SPEC : prepareLoadSpec(loadSpec);
+    boolean needsLoadSpecForShardSpec = shardSpec instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec;
+    this.loadSpec = (pruneLoadSpecHolder.pruneLoadSpec && !needsLoadSpecForShardSpec) ? PRUNED_LOAD_SPEC :
+                    prepareLoadSpec(loadSpec);
     // Deduplicating dimensions and metrics lists as a whole because they are very likely the same for the same
     // dataSource
     this.dimensions = prepareDimensionsOrMetrics(dimensions, DIMENSIONS_INTERNER);

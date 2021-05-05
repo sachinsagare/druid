@@ -8,6 +8,9 @@
   "query/node/exception" : { "dimensions" : ["server", "exceptionName"], "type" : "timer" },
   "query/node/count": { "dimensions" : ["dataSource"], "type" : "gauge"},
   "query/segment/count": { "dimensions" : ["dataSource", "type", "priority"], "type" : "count"},
+  "query/segment/filteringTime" : { "dimensions" : ["dataSource", "type"], "type" : "timer"},
+  "query/segment/beforeFilteringCount": { "dimensions" : ["dataSource", "type"], "type" : "timer"},
+  "query/segment/afterFilteringCount": { "dimensions" : ["dataSource", "type"], "type" : "timer"},
   "query/wait/node/http" : { "dimensions" : ["server"], "type" : "timer"},
   "query/intervalChunk/time" : { "dimensions" : [], "type" : "timer"},
 

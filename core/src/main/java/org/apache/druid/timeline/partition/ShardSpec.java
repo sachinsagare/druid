@@ -45,7 +45,8 @@ import java.util.Map;
     @JsonSubTypes.Type(name = "single_even_size", value = SingleDimensionEvenSizeShardSpec.class),
     @JsonSubTypes.Type(name = "single_even_size_named", value = SingleDimensionEvenSizeNamedShardSpec.class),
     @JsonSubTypes.Type(name = "single_even_size_v2", value = SingleDimensionEvenSizeV2ShardSpec.class),
-    @JsonSubTypes.Type(name = "single_even_size_named_v2", value = SingleDimensionEvenSizeNamedV2ShardSpec.class)
+    @JsonSubTypes.Type(name = "single_even_size_named_v2", value = SingleDimensionEvenSizeNamedV2ShardSpec.class),
+    @JsonSubTypes.Type(name = "bloom_filter_stream_fanout_hashed", value = BloomFilterStreamFanOutHashBasedNumberedShardSpec.class)
 })
 public interface ShardSpec
 {

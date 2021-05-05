@@ -36,6 +36,9 @@ public class BrokerSegmentWatcherConfig
   @JsonProperty
   private boolean awaitInitializationOnStart = true;
 
+  @JsonProperty
+  private int numThreadsToLoadSegmentSupplimentalIndexIntoShardSpec = -1;
+
   public Set<String> getWatchedTiers()
   {
     return watchedTiers;
@@ -49,5 +52,11 @@ public class BrokerSegmentWatcherConfig
   public boolean isAwaitInitializationOnStart()
   {
     return awaitInitializationOnStart;
+  }
+
+  public int getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec()
+  {
+    return numThreadsToLoadSegmentSupplimentalIndexIntoShardSpec != -1 ?
+           numThreadsToLoadSegmentSupplimentalIndexIntoShardSpec : 1;
   }
 }

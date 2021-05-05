@@ -403,6 +403,10 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
       final List<String> partitionDimensions = task.getContextValue(SeekableStreamSupervisor.PARTITION_DIMENSIONS_CTX_KEY);
       final Integer streamPartitions = task.getContextValue(SeekableStreamSupervisor.STREAM_PARTITIONS_CTX_KEY);
       final Integer fanOutSize = task.getContextValue(SeekableStreamSupervisor.PARTITION_FAN_OUT_SIZE);
+      final boolean enablePartitionDimensionsBloomFilter = task.getContextValue(
+          SeekableStreamSupervisor.ENABLE_PARTITION_DIMENSIONS_BLOOM_FILTER_CTX_KEY,
+          false
+      );
 
       // Only support single sequence for now
       final Set<PartitionIdType> rawStreamPartitionIds = sequences.size() == 1
@@ -421,7 +425,8 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
           partitionDimensions,
           streamPartitionIds,
           streamPartitions,
-          fanOutSize
+          fanOutSize,
+          enablePartitionDimensionsBloomFilter
       );
 
       // Start up, set up initial sequences.

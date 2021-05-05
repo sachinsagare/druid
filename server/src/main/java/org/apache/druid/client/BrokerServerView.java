@@ -24,7 +24,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import com.google.common.hash.BloomFilter;
+import com.google.common.io.Files;
+import com.google.common.primitives.Ints;
 import com.google.inject.Inject;
+import org.apache.commons.io.FileUtils;
 import org.apache.druid.client.selector.QueryableDruidServer;
 import org.apache.druid.client.selector.ServerSelector;
 import org.apache.druid.client.selector.TierSelectorStrategy;
@@ -42,16 +46,21 @@ import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.QueryRunner;
 import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
+import org.apache.druid.segment.loading.LoadSpec;
+import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
+import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.utils.CollectionUtils;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -91,8 +100,10 @@ public class BrokerServerView implements TimelineServerView
   private final Map<String, List<String>> dataSourceComplementaryMapToQueryOrder;
   private final DruidProcessingConfig processingConfig;
   private final Set<String> lifetimeDataSource;
+  private final ObjectMapper jsonMapper;
 
   private final CountDownLatch initialized = new CountDownLatch(1);
+  private final ExecutorService loadSegmentSupplimentalIndexIntoShardSpecExec;
 
   @Inject
   public BrokerServerView(
@@ -107,7 +118,8 @@ public class BrokerServerView implements TimelineServerView
       final BrokerDataSourceComplementConfig dataSourceComplementConfig,
       final BrokerDataSourceMultiComplementConfig dataSourceMultiComplementConfig,
       final DruidProcessingConfig processingConfig,
-      final BrokerDataSourceLifetimeConfig lifetimeConfig)
+      final BrokerDataSourceLifetimeConfig lifetimeConfig,
+      final ObjectMapper jsonMapper)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -118,6 +130,7 @@ public class BrokerServerView implements TimelineServerView
     this.emitter = emitter;
     this.segmentWatcherConfig = segmentWatcherConfig;
     this.processingConfig = processingConfig;
+    this.jsonMapper = jsonMapper;
 
     // TODO (lucilla) should be removed after we fully migrate to using BrokerDataSourceMultiComplementConfig
     this.dataSourceComplementaryMapToQueryOrder = CollectionUtils.mapValues(dataSourceComplementConfig.getMapping(), Collections::singletonList);
@@ -151,6 +164,11 @@ public class BrokerServerView implements TimelineServerView
       return true;
     };
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
+
+    this.loadSegmentSupplimentalIndexIntoShardSpecExec = Execs.multiThreaded(
+        segmentWatcherConfig.getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec(),
+        "BrokerServerView-Load-Segment-Supplimental-Index-Into-Shard-Spec-Exec-%s");
+
     baseView.registerSegmentCallback(
           exec,
           new ServerView.SegmentCallback() {
@@ -250,6 +268,80 @@ public class BrokerServerView implements TimelineServerView
   protected void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
   {
     SegmentId segmentId = segment.getId();
+
+    // Load bloom filter if the server is a historical. The bloom filter is not finalized until the segment is finalized
+    // and handed off to historicals by real time tasks so we can skip if server is a real time server
+    if (segment.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec &&
+        server.getType().equals(ServerType.HISTORICAL)) {
+      // It's possible multiple replicas in historicals have been assigned for the segment, which means we potentially
+      // have loaded the bloom filter for the segment before when adding a replica for another historical. Because the
+      // bloom filter doesn't change once set, we can avoid downloading from scratch
+      boolean needsDownload = false;
+      synchronized (lock) {
+        ServerSelector selector = selectors.get(segmentId);
+        if (selector != null) {
+          BloomFilter<byte[]> bloomFilter = ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) selector.getSegment()
+                                                                                                        .getShardSpec())
+              .getBloomFilter();
+          if (bloomFilter != null) {
+            ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) segment.getShardSpec()).setBloomFilter(bloomFilter);
+            log.info("Reused existing bloom filter for segment[%s] for server[%s]", segment, server);
+          } else {
+            needsDownload = true;
+          }
+        } else {
+          needsDownload = true;
+        }
+      }
+
+      if (needsDownload) {
+        // Download and load bloom filter into shard spec asyncly in a thread pool
+        loadSegmentSupplimentalIndexIntoShardSpecExec.submit(() -> {
+          log.info("Adding bloom filter for segment[%s] for server[%s]", segment, server);
+          final LoadSpec loadSpec = jsonMapper.convertValue(segment.getLoadSpec(), LoadSpec.class);
+          File tmpDir = Files.createTempDir();
+          try {
+            loadSpec.loadSupplimentalIndexFile(
+                tmpDir,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_DIR + ".zip"
+            );
+
+            File versionFile = new File(
+                tmpDir,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_VERSION_FILE
+            );
+            byte version = (byte) (versionFile.exists() ? Ints.fromByteArray(Files.toByteArray(versionFile)) :
+                                   BloomFilterStreamFanOutHashBasedNumberedShardSpec.CURRENT_VERSION_ID);
+            byte[] bloomFilter = Files.toByteArray(new File(
+                tmpDir,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_BIN_FILE
+            ));
+            ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) segment.getShardSpec()).deserializeBloomFilter(
+                version,
+                bloomFilter
+            );
+            log.info(
+                "Loaded bloom filter of [%d] bytes for segment[%s] for server[%s]",
+                bloomFilter.length,
+                segment,
+                server
+            );
+          }
+          catch (SegmentLoadingException | IOException e) {
+            log.error(e.getMessage());
+          }
+          finally {
+            try {
+              FileUtils.deleteDirectory(tmpDir);
+            }
+            catch (IOException e) {
+              log.error(e.getMessage());
+            }
+          }
+        });
+      }
+    }
+
     synchronized (lock) {
       log.debug("Adding segment[%s] for server[%s]", segment, server);
 

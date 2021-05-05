@@ -438,13 +438,22 @@ public class CachingClusteredClient implements QuerySegmentWalker
       final Set<ServerToSegment> segments = new LinkedHashSet<>();
       final Map<String, Optional<RangeSet<String>>> dimensionRangeCache = new HashMap<>();
       // Filter unneeded chunks based on partition dimension
+      int numSegmentsBeforeFiltering = 0;
       for (TimelineObjectHolder<String, ServerSelector> holder : serversLookup) {
+        numSegmentsBeforeFiltering += holder.getObject()
+                                            .stream()
+                                            .count();
+
+        final long startNs = System.nanoTime();
         final Set<PartitionChunk<ServerSelector>> filteredChunks = DimFilterUtils.filterShards(
             query.getFilter(),
             holder.getObject(),
             partitionChunk -> partitionChunk.getObject().getSegment().getShardSpec(),
             dimensionRangeCache
         );
+        final long segmentFilteringTime = System.nanoTime() - startNs;
+        queryMetrics.reportSegmentFilteringTime(segmentFilteringTime);
+
         for (PartitionChunk<ServerSelector> chunk : filteredChunks) {
           ServerSelector server = chunk.getObject();
           final SegmentDescriptor segment = new SegmentDescriptor(
@@ -456,6 +465,10 @@ public class CachingClusteredClient implements QuerySegmentWalker
           segments.add(new ServerToSegment(server, segment));
         }
       }
+
+      queryMetrics.reportSegmentBeforeFilteringCount(numSegmentsBeforeFiltering);
+      queryMetrics.reportSegmentAfterFilteringCount(segments.size());
+
       return segments;
     }
 

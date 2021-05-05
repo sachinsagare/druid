@@ -35,6 +35,7 @@ import java.io.File;
 @JsonTypeName(S3StorageDruidModule.SCHEME)
 public class S3LoadSpec implements LoadSpec
 {
+  public static final String SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX = "supplimental_index";
   private final String bucket;
   private final String key;
 
@@ -58,6 +59,14 @@ public class S3LoadSpec implements LoadSpec
   public LoadSpecResult loadSegment(File outDir) throws SegmentLoadingException
   {
     return new LoadSpecResult(puller.getSegmentFiles(new S3DataSegmentPuller.S3Coords(bucket, key), outDir).size());
+  }
+
+  @Override
+  public LoadSpecResult loadSupplimentalIndexFile(File outDir, String supplimentalIndexFileName) throws SegmentLoadingException
+  {
+    String supplimentalIndexKey = String.join("/", key.substring(0, key.lastIndexOf('/')),
+                                              SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX, supplimentalIndexFileName);
+    return new LoadSpecResult(puller.getSegmentFiles(new S3DataSegmentPuller.S3Coords(bucket, supplimentalIndexKey), outDir).size());
   }
 
   @JsonProperty(S3DataSegmentPuller.BUCKET)

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -75,6 +76,7 @@ import org.apache.druid.segment.realtime.plumber.Sink;
 import org.apache.druid.server.coordination.DataSegmentAnnouncer;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
+import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
@@ -318,6 +320,10 @@ public class AppenderatorImpl implements Appenderator
     metrics.setRowsInMemory(rowsCurrentlyInMemory.addAndGet(numAddedRows));
     metrics.setBytesInMemory(bytesCurrentlyInMemory.addAndGet(bytesInMemoryAfterAdd - bytesInMemoryBeforeAdd));
     totalRows.addAndGet(numAddedRows);
+
+    if (identifier.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec && numAddedRows > 0) {
+      ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) identifier.getShardSpec()).updateBloomFilter(row);
+    }
 
     PersistType persistType = PersistType.NONE;
     List<String> persistReasons = new ArrayList<>();
@@ -806,6 +812,7 @@ public class AppenderatorImpl implements Appenderator
     // Use a descriptor file to indicate that pushing has completed.
     final File persistDir = computePersistDir(identifier);
     final File mergedTarget = new File(persistDir, "merged");
+    final File mergedSupplimentalIndexTarget = new File(persistDir, "merged_supplimental_index");
     final File descriptorFile = computeDescriptorFile(identifier);
 
     // Sanity checks
@@ -838,9 +845,15 @@ public class AppenderatorImpl implements Appenderator
       log.info("Pushing merged index for segment[%s].", identifier);
 
       removeDirectory(mergedTarget);
+      removeDirectory(mergedSupplimentalIndexTarget);
 
       if (mergedTarget.exists()) {
         throw new ISE("Merged target[%s] exists after removing?!", mergedTarget);
+      }
+
+      if (mergedSupplimentalIndexTarget.exists()) {
+        throw new ISE("Merged supplimental index target[%s] exists after removing?!",
+                      mergedSupplimentalIndexTarget);
       }
 
       final File mergedFile;
@@ -863,6 +876,36 @@ public class AppenderatorImpl implements Appenderator
             tuningConfig.getIndexSpec(),
             tuningConfig.getSegmentWriteOutMediumFactory()
         );
+
+        // Upload supplimental indexes
+        if (identifier.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec) {
+          BloomFilterStreamFanOutHashBasedNumberedShardSpec s =
+              ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) identifier.getShardSpec());
+          FileUtils.forceMkdir(mergedSupplimentalIndexTarget);
+
+          s.completeBloomFilter();
+          byte[] serializedBloomFilter = s.serializeBloomFilter();
+          if (serializedBloomFilter != null) {
+            final File partitionDimensionsBloomFilterDir = new File(
+                mergedSupplimentalIndexTarget,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_DIR
+            );
+            FileUtils.forceMkdir(partitionDimensionsBloomFilterDir);
+            // Write version
+            Files.asByteSink(new File(
+                partitionDimensionsBloomFilterDir,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_VERSION_FILE
+            )).write(
+                Ints.toByteArray(BloomFilterStreamFanOutHashBasedNumberedShardSpec.CURRENT_VERSION_ID));
+            // Write serialized bloom filter
+            Files.asByteSink(new File(
+                partitionDimensionsBloomFilterDir,
+                BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_BIN_FILE
+            )).write(serializedBloomFilter);
+          } else {
+            log.warn("Empty serialized bytes for bloom filter for segment[%s], skip uploading", identifier);
+          }
+        }
       }
       catch (Throwable t) {
         throw closer.rethrow(t);
@@ -878,6 +921,7 @@ public class AppenderatorImpl implements Appenderator
           // semantics.
           () -> dataSegmentPusher.push(
               mergedFile,
+              mergedSupplimentalIndexTarget,
               sink.getSegment()
                   .withDimensions(IndexMerger.getMergedDimensionsFromQueryableIndexes(indexes)),
               useUniquePath
