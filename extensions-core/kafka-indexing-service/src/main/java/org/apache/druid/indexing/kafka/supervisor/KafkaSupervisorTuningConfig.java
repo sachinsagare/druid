@@ -101,7 +101,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
       @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
-      @JsonProperty("ignoreOutOfOrderSequenceNumber") Boolean ignoreOutOfOrderSequenceNumber
+      @JsonProperty("ignoreOutOfOrderSequenceNumber") Boolean ignoreOutOfOrderSequenceNumber,
+      @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType
   )
   {
     super(
@@ -124,7 +125,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        allowMixedShardSpecType
     );
     this.workerThreads = workerThreads;
     this.chatThreads = chatThreads;
@@ -247,7 +249,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         isLogParseExceptions(),
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
-        isIgnoreOutOfOrderSequenceNumber()
+        isIgnoreOutOfOrderSequenceNumber(),
+        isAllowMixedShardSpecType()
     );
   }
 }

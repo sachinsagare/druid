@@ -61,6 +61,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   private final int maxParseExceptions;
   private final int maxSavedParseExceptions;
   private final boolean ignoreOutOfOrderSequenceNumber;
+  private final boolean allowMixedShardSpecType;
 
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable AppendableIndexSpec appendableIndexSpec,
@@ -83,7 +84,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
       @Nullable Boolean logParseExceptions,
       @Nullable Integer maxParseExceptions,
       @Nullable Integer maxSavedParseExceptions,
-      @Nullable Boolean ignoreOutOfOrderSequenceNumber
+      @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @Nullable Boolean allowMixedShardSpecType
   )
   {
     // Cannot be a static because default basePersistDirectory is unique per-instance
@@ -138,6 +140,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
                               : logParseExceptions;
     this.ignoreOutOfOrderSequenceNumber = ignoreOutOfOrderSequenceNumber == null ?
         TuningConfig.DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER : ignoreOutOfOrderSequenceNumber;
+    this.allowMixedShardSpecType = allowMixedShardSpecType == null ? TuningConfig.DEFAULT_ALLOW_MIXED_SHARD_SPEC_TYPE :
+                                   allowMixedShardSpecType;
   }
 
   @Override
@@ -298,6 +302,12 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     return skipSequenceNumberAvailabilityCheck;
   }
 
+  @JsonProperty
+  public boolean isAllowMixedShardSpecType()
+  {
+    return allowMixedShardSpecType;
+  }
+
   @Override
   public abstract SeekableStreamIndexTaskTuningConfig withBasePersistDirectory(File dir);
 
@@ -330,7 +340,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
            Objects.equals(indexSpec, that.indexSpec) &&
            Objects.equals(indexSpecForIntermediatePersists, that.indexSpecForIntermediatePersists) &&
            Objects.equals(segmentWriteOutMediumFactory, that.segmentWriteOutMediumFactory) &&
-           Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod);
+           Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod) &&
+           allowMixedShardSpecType == that.allowMixedShardSpecType;
   }
 
   @Override
@@ -356,7 +367,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        allowMixedShardSpecType
     );
   }
 

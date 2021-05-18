@@ -53,7 +53,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
       @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
-      @JsonProperty("ignoreOutOfOrderSequenceNumber") @Nullable Boolean ignoreOutOfOrderSequenceNumber
+      @JsonProperty("ignoreOutOfOrderSequenceNumber") @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType
   )
   {
     super(
@@ -77,7 +78,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        allowMixedShardSpecType
     );
   }
 
@@ -104,7 +106,8 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         isLogParseExceptions(),
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
-        isIgnoreOutOfOrderSequenceNumber()
+        isIgnoreOutOfOrderSequenceNumber(),
+        isAllowMixedShardSpecType()
     );
   }
 
