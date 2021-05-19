@@ -874,8 +874,8 @@ public class SegmentAllocateActionTest
         true,
         new HashBasedNumberedPartialShardSpec(ImmutableList.of("dim1"), 1, 2, null),
         lockGranularity,
-        null
-    );
+        null,
+        false);
     final SegmentIdWithShardSpec segmentIdentifier = action.perform(task, taskActionTestKit.getTaskActionToolbox());
     Assert.assertNotNull(segmentIdentifier);
 
@@ -988,8 +988,8 @@ public class SegmentAllocateActionTest
         false,
         partialShardSpec,
         lockGranularity,
-        null
-    );
+        null,
+        false);
     return action.perform(task, taskActionTestKit.getTaskActionToolbox());
   }
 

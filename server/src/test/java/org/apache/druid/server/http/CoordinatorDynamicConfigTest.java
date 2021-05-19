@@ -59,7 +59,7 @@ public class CoordinatorDynamicConfigTest
                      + "  \"decommissioningMaxPercentOfMaxSegmentsToMove\": 9,\n"
                      + "  \"pauseCoordination\": false,\n"
                      + "  \"replicateAfterLoadTimeout\": false,\n"
-                     + "  \"maxNonPrimaryReplicantsToLoad\": 2147483647\n"
+                     + "  \"maxNonPrimaryReplicantsToLoad\": 2147483647,\n"
                      + "  \"skipCoordinatorRunOnTier\": \"data\"\n"
                      + "}\n";
 

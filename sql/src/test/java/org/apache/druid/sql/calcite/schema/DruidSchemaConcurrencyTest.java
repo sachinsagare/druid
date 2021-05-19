@@ -19,6 +19,7 @@
 
 package org.apache.druid.sql.calcite.schema;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -367,7 +368,8 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
             return null;
           }
         },
-        new BrokerDataSourceLifetimeConfig()
+        new BrokerDataSourceLifetimeConfig(),
+        new ObjectMapper()
     );
   }
 
