@@ -59,7 +59,7 @@ class LocalSegmentAllocator implements IndexTaskSegmentAllocator
                                                            .stream()
                                                            .collect(Collectors.toMap(TaskLock::getInterval, TaskLock::getVersion));
 
-    internalAllocator = (row, sequenceName, previousSegmentId, skipSegmentLineageCheck) -> {
+    internalAllocator = (row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType) -> {
       final DateTime timestamp = row.getTimestamp();
       Optional<Interval> maybeInterval = granularitySpec.bucketInterval(timestamp);
       if (!maybeInterval.isPresent()) {
@@ -96,9 +96,11 @@ class LocalSegmentAllocator implements IndexTaskSegmentAllocator
       InputRow row,
       String sequenceName,
       String previousSegmentId,
-      boolean skipSegmentLineageCheck
+      boolean skipSegmentLineageCheck,
+      boolean allowMixedShardSpecType
   ) throws IOException
   {
-    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck);
+    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck,
+                                      allowMixedShardSpecType);
   }
 }

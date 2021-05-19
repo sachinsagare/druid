@@ -662,7 +662,8 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
                         true,
                         // do not allow incremental persists to happen until all the rows from this batch
                         // of rows are indexed
-                        false
+                        false,
+                        tuningConfig.isAllowMixedShardSpecType()
                     );
 
                     if (addResult.isOk()) {
@@ -691,7 +692,7 @@ public abstract class SeekableStreamIndexTaskRunner<PartitionIdType, SequenceOff
 
                     if (isPersistRequired && AppenderatorImpl.PersistType.SINGLE_PERSIST == addResult.getPersistType()) {
                       Futures.addCallback(
-                          driver.persistSingleAsync(committerSupplier.get(), driver.getSegment(row, sequenceToUse.getSequenceName(), true)),
+                          driver.persistSingleAsync(committerSupplier.get(), driver.getSegment(row, sequenceToUse.getSequenceName(), true, tuningConfig.isAllowMixedShardSpecType())),
                           new FutureCallback<Object>()
                           {
                             @Override

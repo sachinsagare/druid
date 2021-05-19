@@ -67,6 +67,7 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
 
   // Prevent spinning forever in situations where the segment list just won't stop changing.
   private static final int MAX_ATTEMPTS = 90;
+  private static final boolean DEFAULT_ALLOW_MIXED_SHARD_SPEC_TYPE = false;
 
   private final String dataSource;
   private final DateTime timestamp;
@@ -77,6 +78,7 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
   private final boolean skipSegmentLineageCheck;
   private final ShardSpecFactory shardSpecFactory;
   private final LockGranularity lockGranularity;
+  private final boolean allowMixedShardSpecType;
 
   @JsonCreator
   public SegmentAllocateAction(
@@ -88,7 +90,8 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
       @JsonProperty("previousSegmentId") String previousSegmentId,
       @JsonProperty("skipSegmentLineageCheck") boolean skipSegmentLineageCheck,
       @JsonProperty("shardSpecFactory") @Nullable ShardSpecFactory shardSpecFactory, // nullable for backward compatibility
-      @JsonProperty("lockGranularity") @Nullable LockGranularity lockGranularity // nullable for backward compatibility
+      @JsonProperty("lockGranularity") @Nullable LockGranularity lockGranularity, // nullable for backward compatibility
+      @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType // nullable for backward compatibility
   )
   {
     this.dataSource = Preconditions.checkNotNull(dataSource, "dataSource");
@@ -103,6 +106,7 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
     this.skipSegmentLineageCheck = skipSegmentLineageCheck;
     this.shardSpecFactory = shardSpecFactory == null ? NumberedShardSpecFactory.instance() : shardSpecFactory;
     this.lockGranularity = lockGranularity == null ? LockGranularity.TIME_CHUNK : lockGranularity;
+    this.allowMixedShardSpecType = allowMixedShardSpecType == null ? DEFAULT_ALLOW_MIXED_SHARD_SPEC_TYPE : allowMixedShardSpecType;
   }
 
   @JsonProperty
@@ -145,6 +149,12 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
   public boolean isSkipSegmentLineageCheck()
   {
     return skipSegmentLineageCheck;
+  }
+
+  @JsonProperty
+  public boolean isAllowMixedShardSpecType()
+  {
+    return allowMixedShardSpecType;
   }
 
   @JsonProperty
@@ -298,7 +308,8 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
             sequenceName,
             previousSegmentId,
             skipSegmentLineageCheck,
-            task.getContextValue("nameSpace")
+            task.getContextValue("nameSpace"),
+            allowMixedShardSpecType
         )
     );
 
@@ -358,6 +369,7 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
            ", skipSegmentLineageCheck=" + skipSegmentLineageCheck +
            ", shardSpecFactory=" + shardSpecFactory +
            ", lockGranularity=" + lockGranularity +
+           ", allowMixedShardSpecType=" + allowMixedShardSpecType +
            '}';
   }
 }

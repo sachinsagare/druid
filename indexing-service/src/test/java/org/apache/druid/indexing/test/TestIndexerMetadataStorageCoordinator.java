@@ -138,7 +138,8 @@ public class TestIndexerMetadataStorageCoordinator implements IndexerMetadataSto
       ShardSpecFactory shardSpecFactory,
       String maxVersion,
       boolean skipSegmentLineageCheck,
-      @Nullable String nameSpace)
+      @Nullable String nameSpace,
+      boolean allowMixedShardSpecType)
   {
     return new SegmentIdWithShardSpec(
         dataSource,

@@ -109,6 +109,7 @@ public interface IndexerMetadataStorageCoordinator
    *                                Should be set to false if replica tasks would index events in same order
    *
    * @param nameSpace               Namespace of allocated segment, or null if we do not use namespaced ingestion.
+   * @param allowMixedShardSpecType Whether to allow mixed shard spec types
    * @return the pending segment identifier, or null if it was impossible to allocate a new segment
    */
   SegmentIdWithShardSpec allocatePendingSegment(
@@ -119,7 +120,8 @@ public interface IndexerMetadataStorageCoordinator
       ShardSpecFactory shardSpecFactory,
       String maxVersion,
       boolean skipSegmentLineageCheck,
-      @Nullable String nameSpace);
+      @Nullable String nameSpace,
+      boolean allowMixedShardSpecType);
 
   /**
    * Delete pending segments created in the given interval for the given dataSource from the pending segments table.

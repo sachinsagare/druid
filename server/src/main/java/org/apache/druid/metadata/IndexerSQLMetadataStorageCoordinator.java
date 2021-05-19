@@ -46,6 +46,7 @@ import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.OverwriteShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
@@ -374,7 +375,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       final ShardSpecFactory shardSpecFactory,
       final String maxVersion,
       final boolean skipSegmentLineageCheck,
-      @Nullable final String nameSpace
+      @Nullable final String nameSpace,
+      final boolean allowMixedShardSpecType
   )
   {
     Preconditions.checkNotNull(dataSource, "dataSource");
@@ -392,7 +394,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
                 interval,
                 shardSpecFactory,
                 maxVersion,
-                nameSpace
+                nameSpace,
+                allowMixedShardSpecType
             );
           } else {
             return allocatePendingSegmentWithSegmentLineageCheck(
@@ -403,7 +406,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
                 interval,
                 shardSpecFactory,
                 maxVersion,
-                nameSpace
+                nameSpace,
+                allowMixedShardSpecType
             );
           }
         }
@@ -419,7 +423,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       final Interval interval,
       final ShardSpecFactory shardSpecFactory,
       final String maxVersion,
-      @Nullable final String nameSpace
+      @Nullable final String nameSpace,
+      final boolean allowMixedShardSpecType
   ) throws IOException
   {
     final String previousSegmentIdNotNull = previousSegmentId == null ? "" : previousSegmentId;
@@ -460,7 +465,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         interval,
         shardSpecFactory,
         maxVersion,
-        nameSpace
+        nameSpace,
+        allowMixedShardSpecType
     );
     if (newIdentifier == null) {
       return null;
@@ -503,7 +509,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       final Interval interval,
       final ShardSpecFactory shardSpecFactory,
       final String maxVersion,
-      @Nullable final String nameSpace
+      @Nullable final String nameSpace,
+      final boolean allowMixedShardSpecType
   ) throws IOException
   {
     final StringBuilder querySb = new StringBuilder();
@@ -543,7 +550,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         interval,
         shardSpecFactory,
         maxVersion,
-        nameSpace
+        nameSpace,
+        allowMixedShardSpecType
     );
     if (newIdentifier == null) {
       return null;
@@ -685,7 +693,8 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       final Interval interval,
       final ShardSpecFactory shardSpecFactory,
       final String maxVersion,
-      @Nullable final String nameSpace
+      @Nullable final String nameSpace,
+      final boolean allowMixedShardSpecType
   ) throws IOException
   {
     final List<TimelineObjectHolder<String, DataSegment>> existingChunks = getTimelineForIntervalsWithHandle(
@@ -721,10 +730,19 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         TimelineObjectHolder<String, DataSegment> existingHolder = Iterables.getOnlyElement(existingChunks);
 
         maxId = StreamSupport.stream(existingHolder.getObject().spliterator(), false)
+                             // If mixed shard spec type is not allowed (default behavior):
                              // Here we check only the segments of the same shardSpec to find out the max partitionId.
                              // Note that OverwriteShardSpec has the higher range for partitionId than others.
                              // See PartitionIds.
-                             .filter(chunk -> chunk.getObject().getShardSpec().getClass() == shardSpecFactory.getShardSpecClass())
+                             // On the other hand, it's optional to allow mixed shard spec type when switching shard
+                             // spec type for existing data source, we just check every shardSpec regardless of their
+                             // types as long as they are not OverwriteShardSpec.
+                             .filter(chunk -> {
+                               ShardSpec s = chunk.getObject().getShardSpec();
+                               return allowMixedShardSpecType ?
+                                      !OverwriteShardSpec.class.isAssignableFrom(s.getClass()) :
+                                      s.getClass() == shardSpecFactory.getShardSpecClass();
+                             })
                              .max(Comparator.comparing(chunk -> chunk.getObject().getShardSpec().getPartitionNum()))
                              .map(chunk -> SegmentIdWithShardSpec.fromDataSegment(chunk.getObject()))
                              .orElse(null);
@@ -742,7 +760,9 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       }
 
       maxId = pendings.stream()
-                      .filter(id -> id.getShardSpec().getClass() == shardSpecFactory.getShardSpecClass())
+                      .filter(id -> allowMixedShardSpecType ?
+                                    !OverwriteShardSpec.class.isAssignableFrom(id.getShardSpec().getClass()) :
+                                    id.getShardSpec().getClass() == shardSpecFactory.getShardSpecClass())
                       .max((id1, id2) -> {
                         final int versionCompare = id1.getVersion().compareTo(id2.getVersion());
                         if (versionCompare != 0) {

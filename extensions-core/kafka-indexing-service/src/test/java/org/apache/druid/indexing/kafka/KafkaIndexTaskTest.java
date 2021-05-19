@@ -234,6 +234,7 @@ public class KafkaIndexTaskTest
   private Period intermediateHandoffPeriod = null;
   private boolean ignoreOutOfOrderSequenceNumber = false;
   private boolean enableInMemoryBitmap = false;
+  private boolean allowMixedShardSpecType = false;
 
   private AppenderatorsManager appenderatorsManager;
   private TaskToolboxFactory toolboxFactory;
@@ -2576,7 +2577,8 @@ public class KafkaIndexTaskTest
         maxParseExceptions,
         maxSavedParseExceptions,
         ignoreOutOfOrderSequenceNumber,
-        enableInMemoryBitmap
+        enableInMemoryBitmap,
+        allowMixedShardSpecType
     );
     if (!context.containsKey(SeekableStreamSupervisor.CHECKPOINTS_CTX_KEY)) {
       final TreeMap<Integer, Map<Integer, Long>> checkpoints = new TreeMap<>();

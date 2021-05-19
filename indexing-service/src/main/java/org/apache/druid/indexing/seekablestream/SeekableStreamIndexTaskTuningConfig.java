@@ -60,6 +60,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   private final int maxSavedParseExceptions;
   private final boolean ignoreOutOfOrderSequenceNumber;
   private final boolean enableInMemoryBitmap;
+  private final boolean allowMixedShardSpecType;
 
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable Integer maxRowsInMemory,
@@ -84,7 +85,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
       @Nullable Integer maxParseExceptions,
       @Nullable Integer maxSavedParseExceptions,
       @Nullable Boolean ignoreOutOfOrderSequenceNumber,
-      @Nullable Boolean enableInMemoryBitmap
+      @Nullable Boolean enableInMemoryBitmap,
+      @Nullable Boolean allowMixedShardSpecType
   )
   {
     // Cannot be a static because default basePersistDirectory is unique per-instance
@@ -139,6 +141,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
         TuningConfig.DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER : ignoreOutOfOrderSequenceNumber;
     this.enableInMemoryBitmap = enableInMemoryBitmap == null ? TuningConfig.DEFAULT_ENABLE_IN_MEMORY_BITMAP :
                                 enableInMemoryBitmap;
+    this.allowMixedShardSpecType = allowMixedShardSpecType == null ? TuningConfig.DEFAULT_ALLOW_MIXED_SHARD_SPEC_TYPE :
+                                   allowMixedShardSpecType;
   }
 
   @Override
@@ -298,6 +302,12 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
     return enableInMemoryBitmap;
   }
 
+  @JsonProperty
+  public boolean isAllowMixedShardSpecType()
+  {
+    return allowMixedShardSpecType;
+  }
+
   @Override
   public abstract SeekableStreamIndexTaskTuningConfig withBasePersistDirectory(File dir);
 
@@ -330,7 +340,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
            Objects.equals(indexSpec, that.indexSpec) &&
            Objects.equals(indexSpecForIntermediatePersists, that.indexSpecForIntermediatePersists) &&
            Objects.equals(segmentWriteOutMediumFactory, that.segmentWriteOutMediumFactory) &&
-           Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod);
+           Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod) &&
+           allowMixedShardSpecType == that.allowMixedShardSpecType;
   }
 
   @Override
@@ -356,7 +367,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        allowMixedShardSpecType
     );
   }
 

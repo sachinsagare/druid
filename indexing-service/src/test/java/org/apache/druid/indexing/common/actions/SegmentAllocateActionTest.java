@@ -901,7 +901,8 @@ public class SegmentAllocateActionTest
         "prev",
         false,
         NumberedShardSpecFactory.instance(),
-        lockGranularity
+        lockGranularity,
+        false
     );
 
     final SegmentAllocateAction action2 = (SegmentAllocateAction) objectMapper.readValue(
@@ -952,7 +953,8 @@ public class SegmentAllocateActionTest
         null,
         true,
         new HashBasedNumberedShardSpecFactory(ImmutableList.of("dim1"), 2),
-        lockGranularity
+        lockGranularity,
+        false
     );
     final SegmentIdWithShardSpec segmentIdentifier = action.perform(task, taskActionTestKit.getTaskActionToolbox());
     Assert.assertNotNull(segmentIdentifier);
@@ -1005,7 +1007,8 @@ public class SegmentAllocateActionTest
         sequencePreviousId,
         false,
         shardSpecFactory,
-        lockGranularity
+        lockGranularity,
+        false
     );
     return action.perform(task, taskActionTestKit.getTaskActionToolbox());
   }

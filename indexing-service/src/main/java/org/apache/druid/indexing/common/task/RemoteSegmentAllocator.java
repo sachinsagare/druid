@@ -57,7 +57,7 @@ public class RemoteSegmentAllocator implements IndexTaskSegmentAllocator
     this.internalAllocator = new ActionBasedSegmentAllocator(
         toolbox.getTaskActionClient(),
         dataSchema,
-        (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck) -> {
+        (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType) -> {
           final GranularitySpec granularitySpec = schema.getGranularitySpec();
           final Interval interval = granularitySpec
               .bucketInterval(row.getTimestamp())
@@ -72,7 +72,8 @@ public class RemoteSegmentAllocator implements IndexTaskSegmentAllocator
                 previousSegmentId,
                 skipSegmentLineageCheck,
                 NumberedShardSpecFactory.instance(),
-                lockGranularity
+                lockGranularity,
+                allowMixedShardSpecType
             );
           } else {
             final ShardSpecFactory shardSpecFactory;
@@ -99,7 +100,8 @@ public class RemoteSegmentAllocator implements IndexTaskSegmentAllocator
                 previousSegmentId,
                 skipSegmentLineageCheck,
                 shardSpecFactory,
-                lockGranularity
+                lockGranularity,
+                allowMixedShardSpecType
             );
           }
         }
@@ -111,10 +113,12 @@ public class RemoteSegmentAllocator implements IndexTaskSegmentAllocator
       InputRow row,
       String sequenceName,
       String previousSegmentId,
-      boolean skipSegmentLineageCheck
+      boolean skipSegmentLineageCheck,
+      boolean allowMixedShardSpecType
   ) throws IOException
   {
-    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck);
+    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck,
+                                      allowMixedShardSpecType);
   }
 
   @Override

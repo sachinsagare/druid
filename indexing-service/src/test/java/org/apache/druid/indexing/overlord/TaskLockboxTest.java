@@ -992,7 +992,8 @@ public class TaskLockboxTest
           StringUtils.format("%s_%d", baseSequenceName, i),
           null,
           true,
-          null
+          null,
+          false
       );
       assertAllocatedSegments(request, lockbox.tryLock(task, request));
     }

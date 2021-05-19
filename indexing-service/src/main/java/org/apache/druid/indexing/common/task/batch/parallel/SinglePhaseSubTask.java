@@ -302,13 +302,15 @@ public class SinglePhaseSubTask extends AbstractBatchIndexTask
         InputRow row,
         String sequenceName,
         String previousSegmentId,
-        boolean skipSegmentLineageCheck
+        boolean skipSegmentLineageCheck,
+        boolean allowMixedShardSpecType
     ) throws IOException
     {
       if (internalAllocator == null) {
         internalAllocator = createSegmentAllocator();
       }
-      return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck);
+      return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck,
+                                        allowMixedShardSpecType);
     }
 
     private SegmentAllocator createSegmentAllocator()
@@ -319,7 +321,7 @@ public class SinglePhaseSubTask extends AbstractBatchIndexTask
         return new ActionBasedSegmentAllocator(
             toolbox.getTaskActionClient(),
             ingestionSchema.getDataSchema(),
-            (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck) -> {
+            (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType) -> {
               final Interval interval = granularitySpec
                   .bucketInterval(row.getTimestamp())
                   .or(granularitySpec.getSegmentGranularity().bucket(row.getTimestamp()));
@@ -351,15 +353,17 @@ public class SinglePhaseSubTask extends AbstractBatchIndexTask
                       previousSegmentId,
                       skipSegmentLineageCheck,
                       shardSpecFactory,
-                      isUseSegmentLock() ? LockGranularity.SEGMENT : LockGranularity.TIME_CHUNK
+                      isUseSegmentLock() ? LockGranularity.SEGMENT : LockGranularity.TIME_CHUNK,
+                      allowMixedShardSpecType
                   )
               );
             }
         );
       } else {
-        return (row, sequenceName, previousSegmentId, skipSegmentLineageCheck) -> taskClient.allocateSegment(
-            supervisorTaskId,
-            row.getTimestamp()
+        return (row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType) ->
+            taskClient.allocateSegment(
+                supervisorTaskId,
+                row.getTimestamp()
         );
       }
     }

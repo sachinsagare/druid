@@ -41,4 +41,5 @@ public interface TuningConfig
   long DEFAULT_MAX_BYTES_IN_MEMORY = JvmUtils.getRuntimeInfo().getMaxHeapSizeBytes() / 6;
   boolean DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER = false;
   boolean DEFAULT_ENABLE_IN_MEMORY_BITMAP = false;
+  boolean DEFAULT_ALLOW_MIXED_SHARD_SPEC_TYPE = false;
 }

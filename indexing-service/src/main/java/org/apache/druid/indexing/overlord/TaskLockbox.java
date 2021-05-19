@@ -537,7 +537,8 @@ public class TaskLockbox
         request.getShardSpecFactory(),
         version,
         request.isSkipSegmentLineageCheck(),
-        request.getNameSpace()
+        request.getNameSpace(),
+        request.isAllowMixedShardSpecType()
     );
   }
 

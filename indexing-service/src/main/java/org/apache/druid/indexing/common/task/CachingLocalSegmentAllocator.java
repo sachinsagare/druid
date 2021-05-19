@@ -154,7 +154,8 @@ public class CachingLocalSegmentAllocator implements IndexTaskSegmentAllocator
       InputRow row,
       String sequenceName,
       String previousSegmentId,
-      boolean skipSegmentLineageCheck
+      boolean skipSegmentLineageCheck,
+      boolean IndexTaskSegmentAllocator
   )
   {
     return sequenceNameToSegmentId.get(sequenceName);

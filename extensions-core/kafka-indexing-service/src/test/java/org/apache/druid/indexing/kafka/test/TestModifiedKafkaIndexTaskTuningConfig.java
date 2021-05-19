@@ -80,6 +80,7 @@ public class TestModifiedKafkaIndexTaskTuningConfig extends KafkaIndexTaskTuning
         maxParseExceptions,
         maxSavedParseExceptions,
         null,
+        null,
         null
     );
     this.extra = extra;

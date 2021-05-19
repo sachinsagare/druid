@@ -71,7 +71,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
       @JsonProperty("ignoreOutOfOrderSequenceNumber") Boolean ignoreOutOfOrderSequenceNumber,
-      @JsonProperty("enableInMemoryBitmap") @Nullable Boolean enableInMemoryBitmap
+      @JsonProperty("enableInMemoryBitmap") @Nullable Boolean enableInMemoryBitmap,
+      @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType
   )
   {
     super(
@@ -95,7 +96,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         maxParseExceptions,
         maxSavedParseExceptions,
         ignoreOutOfOrderSequenceNumber,
-        enableInMemoryBitmap
+        enableInMemoryBitmap,
+        allowMixedShardSpecType
     );
     this.workerThreads = workerThreads;
     this.chatThreads = chatThreads;
@@ -208,7 +210,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
         isIgnoreOutOfOrderSequenceNumber(),
-        isEnableInMemoryBitmap()
+        isEnableInMemoryBitmap(),
+        isAllowMixedShardSpecType()
     );
   }
 }

@@ -142,6 +142,7 @@ public class KafkaIndexTaskTuningConfigTest
         null,
         null,
         null,
+        null,
         null
     );
     KafkaIndexTaskTuningConfig copy = (KafkaIndexTaskTuningConfig) original.convertToTaskTuningConfig();
@@ -181,6 +182,7 @@ public class KafkaIndexTaskTuningConfigTest
         true,
         42,
         42,
+        null,
         null,
         null
     );
@@ -280,7 +282,8 @@ public class KafkaIndexTaskTuningConfigTest
         config.getMaxParseExceptions(),
         config.getMaxSavedParseExceptions(),
         config.isIgnoreOutOfOrderSequenceNumber(),
-        config.isEnableInMemoryBitmap()
+        config.isEnableInMemoryBitmap(),
+        config.isAllowMixedShardSpecType()
     );
   }
 }
