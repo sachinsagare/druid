@@ -189,8 +189,11 @@ public class NumberedOverwriteShardSpec implements OverwriteShardSpec
   @Override
   public boolean isCompatible(Class<? extends ShardSpec> other)
   {
-    return other == NumberedOverwriteShardSpec.class || other == NumberedShardSpec.class ||
-           other == StreamHashBasedNumberedShardSpec.class;
+    return other == NumberedShardSpec.class ||
+           other == NumberedOverwriteShardSpec.class ||
+           other == StreamHashBasedNumberedShardSpec.class ||
+           other == StreamFanOutHashBasedNumberedShardSpec.class ||
+           other == BloomFilterStreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @Override

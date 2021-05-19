@@ -86,8 +86,11 @@ public class NumberedShardSpec implements ShardSpec
   @Override
   public boolean isCompatible(Class<? extends ShardSpec> other)
   {
-    return other == NumberedShardSpec.class || other == NumberedOverwriteShardSpec.class ||
-           other == StreamHashBasedNumberedShardSpec.class;
+    return other == NumberedShardSpec.class ||
+           other == NumberedOverwriteShardSpec.class ||
+           other == StreamHashBasedNumberedShardSpec.class ||
+           other == StreamFanOutHashBasedNumberedShardSpec.class ||
+           other == BloomFilterStreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @JsonProperty("partitions")
