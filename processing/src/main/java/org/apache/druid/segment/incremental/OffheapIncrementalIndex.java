@@ -90,7 +90,7 @@ public class OffheapIncrementalIndex extends IncrementalIndex<BufferAggregator>
 
     this.facts = incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts, dimsComparator(), getDimensions(),
                                                                            false)
-                                                   : new PlainFactsHolder(sortFacts, dimsComparator());
+                                                   : new PlainFactsHolder(sortFacts, dimsComparator(), false);
 
     //check that stupid pool gives buffers that can hold at least one row's aggregators
     ResourceHolder<ByteBuffer> bb = bufferPool.take();

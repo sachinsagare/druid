@@ -1492,10 +1492,13 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
   {
     private final boolean sortFacts;
     private final ConcurrentMap<Long, Deque<IncrementalIndexRow>> facts;
+    private final ConcurrentHashMap<Integer, IncrementalIndexRow> rowIndexToFacts;
+    private final boolean enableInMemoryBitmap;
 
     private final Comparator<IncrementalIndexRow> incrementalIndexRowComparator;
 
-    public PlainFactsHolder(boolean sortFacts, Comparator<IncrementalIndexRow> incrementalIndexRowComparator)
+    public PlainFactsHolder(boolean sortFacts, Comparator<IncrementalIndexRow> incrementalIndexRowComparator,
+                            boolean enableInMemoryBitmap)
     {
       this.sortFacts = sortFacts;
       if (sortFacts) {
@@ -1504,6 +1507,12 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
         this.facts = new ConcurrentHashMap<>();
       }
       this.incrementalIndexRowComparator = incrementalIndexRowComparator;
+      this.enableInMemoryBitmap = enableInMemoryBitmap;
+      if (this.enableInMemoryBitmap) {
+        this.rowIndexToFacts = new ConcurrentHashMap<>();
+      } else {
+        this.rowIndexToFacts = null;
+      }
     }
 
     @Override
@@ -1599,6 +1608,9 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
       // setRowIndex() must be called before rows.add() for visibility of rowIndex from concurrent readers.
       key.setRowIndex(rowIndex);
       rows.add(key);
+      if (enableInMemoryBitmap) {
+        rowIndexToFacts.put(rowIndex, key);
+      }
       // always return EMPTY_ROW_INDEX to indicate that we always add new row
       return IncrementalIndexRow.EMPTY_ROW_INDEX;
     }
@@ -1612,19 +1624,27 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
     @Override
     public long getTimestamp(int rowIndex)
     {
-      throw new UnsupportedOperationException();
+      if (!enableInMemoryBitmap) {
+        throw new UnsupportedOperationException();
+      } else {
+        return rowIndexToFacts.get(rowIndex).getTimestamp();
+      }
     }
 
     @Override
     public IncrementalIndexRow getRow(int rowInex)
     {
-      throw new UnsupportedOperationException();
+      if (!enableInMemoryBitmap) {
+        throw new UnsupportedOperationException();
+      } else {
+        return rowIndexToFacts.get(rowInex);
+      }
     }
 
     @Override
     public int getNumRows()
     {
-      throw new UnsupportedOperationException();
+      return rowIndexToFacts.size();
     }
   }
 

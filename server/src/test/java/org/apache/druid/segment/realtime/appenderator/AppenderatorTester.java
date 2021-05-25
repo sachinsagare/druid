@@ -130,7 +130,7 @@ public class AppenderatorTester implements AutoCloseable
       final boolean enablePushFailure
   )
   {
-    this(maxRowsInMemory, maxRowsInMemoryPerSegment, maxSizeInBytes, basePersistDirectory, enablePushFailure, null, false);
+    this(maxRowsInMemory, maxRowsInMemoryPerSegment, maxSizeInBytes, basePersistDirectory, enablePushFailure, null, false, true);
   }
 
   public AppenderatorTester(
@@ -140,7 +140,8 @@ public class AppenderatorTester implements AutoCloseable
       final File basePersistDirectory,
       final boolean enablePushFailure,
       List<String> dimensionNames,
-      final boolean enableInMemoryBitmap
+      final boolean enableInMemoryBitmap,
+      final boolean rollup
   )
   {
     objectMapper = new DefaultObjectMapper();
@@ -165,7 +166,7 @@ public class AppenderatorTester implements AutoCloseable
             new CountAggregatorFactory("count"),
             new LongSumAggregatorFactory("met", "met")
         },
-        new UniformGranularitySpec(Granularities.MINUTE, Granularities.NONE, null),
+        new UniformGranularitySpec(Granularities.MINUTE, Granularities.NONE, rollup, null),
         null,
         objectMapper
     );

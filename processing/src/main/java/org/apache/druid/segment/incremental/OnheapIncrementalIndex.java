@@ -84,7 +84,8 @@ public class OnheapIncrementalIndex extends IncrementalIndex<Aggregator>
     this.maxBytesInMemory = maxBytesInMemory == 0 ? Long.MAX_VALUE : maxBytesInMemory;
     this.facts = incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts, dimsComparator(), getDimensions(),
                                                                            enableInMemoryBitmap)
-                                                   : new PlainFactsHolder(sortFacts, dimsComparator());
+                                                   : new PlainFactsHolder(sortFacts, dimsComparator(),
+                                                                          enableInMemoryBitmap);
     maxBytesPerRowForAggregators = getMaxBytesPerRowForAggregators(incrementalIndexSchema);
   }
 
