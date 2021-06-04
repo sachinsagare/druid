@@ -1653,7 +1653,6 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       IndexTuningConfig that = (IndexTuningConfig) o;
       return Objects.equals(appendableIndexSpec, that.appendableIndexSpec) &&
              maxRowsInMemory == that.maxRowsInMemory &&
-            maxRowsInMemoryPerSegment == that.maxRowsInMemoryPerSegment &&
              maxBytesInMemory == that.maxBytesInMemory &&
              skipBytesInMemoryOverheadCheck == that.skipBytesInMemoryOverheadCheck &&
              maxColumnsToMerge == that.maxColumnsToMerge &&
@@ -1678,7 +1677,6 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       return Objects.hash(
           appendableIndexSpec,
           maxRowsInMemory,
-          maxRowsInMemoryPerSegment,
           maxBytesInMemory,
           skipBytesInMemoryOverheadCheck,
           maxColumnsToMerge,

@@ -109,6 +109,7 @@ public class TaskRealtimeMetricsMonitor extends AbstractMonitor
     emitter.emit(builder.build("ingest/rows/maxInMemoryPerSegment", metrics.maxRowsInMemoryPerSegment()));
     emitter.emit(builder.build("ingest/bytes/inMemory", metrics.bytesInMemory()));
     emitter.emit(builder.build("ingest/bytes/maxInMemory", metrics.maxBytesInMemory()));
+    emitter.emit(builder.build("ingest/persists/pendingSubmissions", metrics.pendingPersistSubmissions()));
     emitter.emit(builder.build("ingest/persists/count", metrics.numPersists() - previousFireDepartmentMetrics.numPersists()));
     emitter.emit(builder.build("ingest/persists/time", metrics.persistTimeMillis() - previousFireDepartmentMetrics.persistTimeMillis()));
     emitter.emit(builder.build("ingest/persists/cpu", metrics.persistCpuTime() - previousFireDepartmentMetrics.persistCpuTime()));
@@ -126,6 +127,7 @@ public class TaskRealtimeMetricsMonitor extends AbstractMonitor
     emitter.emit(builder.build("ingest/merge/cpu", metrics.mergeCpuTime() - previousFireDepartmentMetrics.mergeCpuTime()));
     emitter.emit(builder.build("ingest/handoff/count", metrics.handOffCount() - previousFireDepartmentMetrics.handOffCount()));
     emitter.emit(builder.build("ingest/sink/count", metrics.sinkCount()));
+    emitter.emit(builder.build("ingest/rows/updateBloomFilterMillis", metrics.updateBloomFilterMillis()));
     emitter.emit(builder.build("ingest/events/messageGap", metrics.messageGap()));
 
     previousRowIngestionMetersTotals = rowIngestionMetersTotals;
