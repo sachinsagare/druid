@@ -125,6 +125,14 @@ EOF
     sed -i "s/<DRUID_BROKER_CACHE_POPULATE_CACHE>/${TELETRAAN_DRUID_BROKER_CACHE_POPULATE_CACHE:-false}/g" $DRUID_CONF_DIR/broker/runtime.properties
     sed -i "s/<DRUID_BROKER_SEGMENT_NUM_THREADS_TO_LOAD_SEGMENT_SUPPLIMENTAL_INDEX_INTO_SHARD_SPEC>/${TELETRAAN_DRUID_BROKER_SEGMENT_NUM_THREADS_TO_LOAD_SEGMENT_SUPPLIMENTAL_INDEX_INTO_SHARD_SPEC:--1}/" $DRUID_CONF_DIR/broker/runtime.properties
 
+    if [ ! -z "${TELETRAAN_DRUID_BROKER_SEGMENT_WATCHED_DATA_SOURCES}" ]; then
+      if grep -q "druid.broker.segment.watchedDataSources" $DRUID_CONF_DIR/broker/runtime.properties; then
+        sed -i "s/^druid.broker.segment.watchedDataSources=.*$/druid.broker.segment.watchedDataSources=${TELETRAAN_DRUID_BROKER_SEGMENT_WATCHED_DATA_SOURCES}/" $DRUID_CONF_DIR/broker/runtime.properties
+      else
+        sed -i "\$adruid.broker.segment.watchedDataSources=${TELETRAAN_DRUID_BROKER_SEGMENT_WATCHED_DATA_SOURCES}" $DRUID_CONF_DIR/broker/runtime.properties
+      fi
+    fi
+
     if [ ! -z "${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}" ]; then
       if grep -q "druid.broker.select.tier.queryPriorityBased.priorityMap" $DRUID_CONF_DIR/broker/runtime.properties; then
         sed -i "s/^druid.broker.select.tier.queryPriorityBased.priorityMap=.*$/druid.broker.select.tier.queryPriorityBased.priorityMap=${TELETRAAN_DRUID_BROKER_SELECT_TIER_QUERY_BASED_PRIORITY_MAP}/" $DRUID_CONF_DIR/broker/runtime.properties

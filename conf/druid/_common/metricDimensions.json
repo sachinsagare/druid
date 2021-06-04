@@ -72,6 +72,7 @@
   "ingest/rows/maxInMemoryPerSegment" : { "dimensions" : ["dataSource"], "type" : "gauge" },
   "ingest/bytes/inMemory" : { "dimensions" : ["dataSource"], "type" : "gauge" },
   "ingest/bytes/maxInMemory" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "ingest/persists/pendingSubmissions" : { "dimensions" : ["dataSource"], "type" : "gauge" },
   "ingest/persists/count" : { "dimensions" : ["dataSource"], "type" : "count" },
   "ingest/persists/segment" : { "dimensions" : ["dataSource"], "type" : "count" },
   "ingest/persists/all" : { "dimensions" : ["dataSource"], "type" : "count" },
@@ -84,6 +85,7 @@
   "ingest/merge/cpu" : { "dimensions" : ["dataSource"], "type" : "timer" },
   "ingest/handoff/count" : { "dimensions" :  ["dataSource"], "type" :  "count"},
   "ingest/sink/count" : { "dimensions" :  ["dataSource"], "type" :  "count"},
+  "ingest/rows/updateBloomFilterMillis" : { "dimensions" :  ["dataSource"], "type" :  "gauge"},
   "ingest/events/messageGap" : { "dimensions" : ["dataSource"], "type" : "gauge" },
 
   "task/run/time" : { "dimensions" : ["dataSource", "taskType"], "type" : "timer" },

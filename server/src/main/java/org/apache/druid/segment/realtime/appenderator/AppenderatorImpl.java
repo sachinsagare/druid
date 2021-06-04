@@ -322,7 +322,9 @@ public class AppenderatorImpl implements Appenderator
     totalRows.addAndGet(numAddedRows);
 
     if (identifier.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec && numAddedRows > 0) {
+      final long start = System.currentTimeMillis();
       ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) identifier.getShardSpec()).updateBloomFilter(row);
+      metrics.setUpdateBloomFilterMillis(System.currentTimeMillis() - start);
     }
 
     PersistType persistType = PersistType.NONE;
@@ -618,6 +620,10 @@ public class AppenderatorImpl implements Appenderator
     final Object commitMetadata = committer == null ? null : committer.getMetadata();
     final Stopwatch runExecStopwatch = Stopwatch.createStarted();
     final Stopwatch persistStopwatch = Stopwatch.createStarted();
+
+    // Persist thread pool submission may block if full, record pending persist submission
+    metrics.incrementPendingPersistSubmissions();
+
     final ListenableFuture<Object> future = persistExecutor.submit(
         new ThreadRenamingCallable<Object>(threadName)
         {
@@ -676,6 +682,7 @@ public class AppenderatorImpl implements Appenderator
           }
         }
     );
+    metrics.decrementPendingPersistSubmissions();
 
     final long startDelay = runExecStopwatch.elapsed(TimeUnit.MILLISECONDS);
     metrics.incrementPersistBackPressureMillis(startDelay);

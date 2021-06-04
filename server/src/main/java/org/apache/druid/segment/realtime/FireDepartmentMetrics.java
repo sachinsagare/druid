@@ -36,6 +36,7 @@ public class FireDepartmentMetrics
   private final AtomicLong numPersists = new AtomicLong(0);
   private final AtomicLong numPersistSegment = new AtomicLong(0);
   private final AtomicLong numPersistAll = new AtomicLong(0);
+  private final AtomicLong pendingPersistSubmissions = new AtomicLong(0);
   private final AtomicLong persistTimeMillis = new AtomicLong(0);
   private final AtomicLong persistBackPressureMillis = new AtomicLong(0);
   private final AtomicLong failedPersists = new AtomicLong(0);
@@ -45,6 +46,7 @@ public class FireDepartmentMetrics
   private final AtomicLong persistCpuTime = new AtomicLong(0);
   private final AtomicLong handOffCount = new AtomicLong(0);
   private final AtomicLong sinkCount = new AtomicLong(0);
+  private final AtomicLong updateBloomFilterMillis = new AtomicLong(0);
   private final AtomicLong messageMaxTimestamp = new AtomicLong(0);
   private final AtomicLong messageGap = new AtomicLong(0);
   private final AtomicLong rowsInMemory = new AtomicLong(0);
@@ -86,6 +88,16 @@ public class FireDepartmentMetrics
   public void incrementNumPersists()
   {
     numPersists.incrementAndGet();
+  }
+
+  public void incrementPendingPersistSubmissions()
+  {
+    pendingPersistSubmissions.incrementAndGet();
+  }
+
+  public void decrementPendingPersistSubmissions()
+  {
+    pendingPersistSubmissions.decrementAndGet();
   }
 
   public void incrementPersistSegment()
@@ -141,6 +153,11 @@ public class FireDepartmentMetrics
   public void setSinkCount(long sinkCount)
   {
     this.sinkCount.set(sinkCount);
+  }
+
+  public void setUpdateBloomFilterMillis(long updateBloomFilterMillis)
+  {
+    this.updateBloomFilterMillis.set(updateBloomFilterMillis);
   }
 
   public void reportMessageMaxTimestamp(long messageMaxTimestamp)
@@ -223,6 +240,11 @@ public class FireDepartmentMetrics
     return persistTimeMillis.get();
   }
 
+  public long pendingPersistSubmissions()
+  {
+    return pendingPersistSubmissions.get();
+  }
+
   public long persistBackPressureMillis()
   {
     return persistBackPressureMillis.get();
@@ -261,6 +283,11 @@ public class FireDepartmentMetrics
   public long sinkCount()
   {
     return sinkCount.get();
+  }
+
+  public long updateBloomFilterMillis()
+  {
+    return updateBloomFilterMillis.get();
   }
 
   public long rowsInMemory()
@@ -326,6 +353,7 @@ public class FireDepartmentMetrics
     retVal.maxRowsInMemory.set(maxRowsInMemory.get());
     retVal.maxRowsInMemoryPerSegment.set(maxRowsInMemoryPerSegment.get());
     retVal.maxBytesInMemory.set(maxBytesInMemory.get());
+    retVal.updateBloomFilterMillis.set(updateBloomFilterMillis.get());
     return retVal;
   }
 
@@ -356,6 +384,7 @@ public class FireDepartmentMetrics
     persistCpuTime.addAndGet(otherSnapshot.persistCpuTime());
     handOffCount.addAndGet(otherSnapshot.handOffCount());
     sinkCount.addAndGet(otherSnapshot.sinkCount());
+    updateBloomFilterMillis.addAndGet(otherSnapshot.updateBloomFilterMillis());
     messageMaxTimestamp.set(Math.max(messageMaxTimestamp(), otherSnapshot.messageMaxTimestamp()));
     messageGap.set(Math.max(messageGap(), otherSnapshot.messageGap()));
     rowsInMemory.addAndGet(otherSnapshot.rowsInMemory());
