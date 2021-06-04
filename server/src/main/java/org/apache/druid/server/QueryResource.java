@@ -178,7 +178,7 @@ public class QueryResource implements QueryCountStatsProvider
       acceptHeader = req.getContentType();
     }
 
-    final ResourceIOReaderWriter ioReaderWriter = createResourceIOReaderWriter(acceptHeader, pretty != null);
+    ResourceIOReaderWriter ioReaderWriter = createResourceIOReaderWriter(req.getContentType(), pretty != null);
 
     final String currThreadName = Thread.currentThread().getName();
     try {
@@ -217,6 +217,10 @@ public class QueryResource implements QueryCountStatsProvider
       }
 
       final Yielder<?> yielder = Yielders.each(results);
+
+      if (!acceptHeader.equals(req.getContentType())) {
+        ioReaderWriter = createResourceIOReaderWriter(acceptHeader, pretty != null);
+      }
 
       try {
         boolean shouldFinalize = QueryContexts.isFinalize(query, true);
