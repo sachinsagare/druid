@@ -38,6 +38,7 @@
             "filterColumns",
             "filterOperators",
             "filterValues",
+            "requestLevel",
             "customColumnIds",
             {
               "type": "long",
