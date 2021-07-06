@@ -56,7 +56,6 @@ import org.apache.druid.segment.realtime.appenderator.StreamAppenderatorDriver;
 import org.apache.druid.segment.realtime.firehose.ChatHandler;
 import org.apache.druid.segment.realtime.firehose.ChatHandlerProvider;
 import org.apache.druid.server.security.AuthorizerMapper;
-import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
@@ -239,8 +238,7 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
       final List<String> partitionDimensions,
       final Set<Integer> streamPartitionIds,
       final Integer streamPartitions,
-      final Integer fanOutSize,
-      final boolean enablePartitionDimensionsBloomFilter
+      final Integer fanOutSize
   )
   {
     final String nameSpace = this.getContextValue("nameSpace");
@@ -261,28 +259,16 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
             streamPartitions
         );
 
-        if (enablePartitionDimensionsBloomFilter) {
-          effectiveShardSpecFactory = new BloomFilterStreamFanOutHashBasedNumberedShardSpecFactory(
-              partitionDimensions,
-              streamPartitionIds,
-              streamPartitions,
-              fanOutSize != null ? fanOutSize : 1
-          );
-        } else {
-          // TODO: deprecate StreamHashBasedNumberedShardSpecFactory when all clusters are upgraded because
-          //  StreamHashBasedNumberedShardSpecFactory is just a special case of
-          //  StreamFanOutHashBasedNumberedShardSpecFactory
-          effectiveShardSpecFactory = fanOutSize != null ? new StreamFanOutHashBasedNumberedShardSpecFactory(
-              partitionDimensions,
-              streamPartitionIds,
-              streamPartitions,
-              fanOutSize
-          ) : new StreamHashBasedNumberedShardSpecFactory(
-              partitionDimensions,
-              streamPartitionIds,
-              streamPartitions
-          );
-        }
+        effectiveShardSpecFactory = fanOutSize != null ? new StreamFanOutHashBasedNumberedShardSpecFactory(
+            partitionDimensions,
+            streamPartitionIds,
+            streamPartitions,
+            fanOutSize
+        ) : new StreamHashBasedNumberedShardSpecFactory(
+            partitionDimensions,
+            streamPartitionIds,
+            streamPartitions
+        );
       } else {
         effectiveShardSpecFactory = NumberedShardSpecFactory.instance();
       }

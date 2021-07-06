@@ -33,6 +33,7 @@ import org.apache.druid.client.cache.CachePopulatorStats;
 import org.apache.druid.guice.annotations.Processing;
 import org.apache.druid.indexing.worker.config.WorkerConfig;
 import org.apache.druid.java.util.common.IAE;
+import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.UOE;
 import org.apache.druid.java.util.common.concurrent.Execs;
 import org.apache.druid.java.util.common.logger.Logger;
@@ -476,27 +477,29 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
-    public File mergeQueryableIndex(
+    public Pair<File, File> mergeQueryableIndex(
         List<QueryableIndex> indexes,
         boolean rollup,
         AggregatorFactory[] metricAggs,
-        File outDir,
+        File indexOutDir,
+        @Nullable File supplimentalIndexDir,
         IndexSpec indexSpec,
         @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
     ) throws IOException
     {
-      ListenableFuture<File> mergeFuture = mergeExecutor.submit(
-          new Callable<File>()
+      ListenableFuture<Pair<File, File>> mergeFuture = mergeExecutor.submit(
+          new Callable<Pair<File, File>>()
           {
             @Override
-            public File call()
+            public Pair<File, File> call()
             {
               try {
                 return baseMerger.mergeQueryableIndex(
                     indexes,
                     rollup,
                     metricAggs,
-                    outDir,
+                    indexOutDir,
+                    supplimentalIndexDir,
                     indexSpec,
                     segmentWriteOutMediumFactory
                 );
@@ -517,25 +520,87 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
-    public File persist(
-        IncrementalIndex index,
-        Interval dataInterval,
-        File outDir,
+    public File mergeQueryableIndex(
+        List<QueryableIndex> indexes,
+        boolean rollup,
+        AggregatorFactory[] metricAggs,
+        File indexOutDir,
         IndexSpec indexSpec,
         @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
     ) throws IOException
     {
-      ListenableFuture<File> mergeFuture = mergeExecutor.submit(
-          new Callable<File>()
+      return mergeQueryableIndex(
+          indexes,
+          rollup,
+          metricAggs,
+          indexOutDir,
+          null,
+          indexSpec,
+          segmentWriteOutMediumFactory
+      ).lhs;
+    }
+
+    @Override
+    public File mergeQueryableIndex(
+        List<QueryableIndex> indexes,
+        boolean rollup,
+        AggregatorFactory[] metricAggs,
+        File indexOutDir,
+        IndexSpec indexSpec,
+        ProgressIndicator progress,
+        @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      return mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, null, indexSpec, progress,
+                                 segmentWriteOutMediumFactory).lhs;
+    }
+
+    @Override
+    public File persist(
+        IncrementalIndex index,
+        Interval dataInterval,
+        File indexOutDir,
+        IndexSpec indexSpec,
+        @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      return persist(index, dataInterval, indexOutDir, null, indexSpec, segmentWriteOutMediumFactory).lhs;
+    }
+
+    @Override
+    public Pair<File, File> persist(
+        IncrementalIndex index,
+        File indexOutDir,
+        @Nullable File supplimentalIndexOutDir,
+        IndexSpec indexSpec,
+        @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> persist(
+        IncrementalIndex index,
+        Interval dataInterval,
+        File indexOutDir,
+        @Nullable File supplimentalIndexOutDir,
+        IndexSpec indexSpec,
+        @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      ListenableFuture<Pair<File, File>> mergeFuture = mergeExecutor.submit(
+          new Callable<Pair<File, File>>()
           {
             @Override
-            public File call()
+            public Pair<File, File> call()
             {
               try {
                 return baseMerger.persist(
                     index,
                     dataInterval,
-                    outDir,
+                    indexOutDir,
+                    supplimentalIndexOutDir,
                     indexSpec,
                     segmentWriteOutMediumFactory
                 );
@@ -592,7 +657,7 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     @Override
     public File persist(
         IncrementalIndex index,
-        File outDir,
+        File indexOutDir,
         IndexSpec indexSpec,
         @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
     ) throws IOException
@@ -614,11 +679,26 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
-    public File mergeQueryableIndex(
+    public Pair<File, File> persist(
+        IncrementalIndex index,
+        Interval dataInterval,
+        File indexOutDir,
+        @Nullable File supplimentalIndexOutDir,
+        IndexSpec indexSpec,
+        ProgressIndicator progress,
+        @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> mergeQueryableIndex(
         List<QueryableIndex> indexes,
         boolean rollup,
         AggregatorFactory[] metricAggs,
-        File outDir,
+        File indexOutDir,
+        @Nullable File supplimentalIndexOutDir,
         IndexSpec indexSpec,
         ProgressIndicator progress,
         @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory

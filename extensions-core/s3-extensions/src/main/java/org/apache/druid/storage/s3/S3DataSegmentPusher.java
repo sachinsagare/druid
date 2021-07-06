@@ -36,6 +36,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class S3DataSegmentPusher implements DataSegmentPusher
 {
@@ -94,7 +96,8 @@ public class S3DataSegmentPusher implements DataSegmentPusher
                                             .withLoadSpec(makeLoadSpec(config.getBucket(), s3Path))
                                             .withBinaryVersion(SegmentUtils.getVersionFromDir(indexFilesDir));
 
-    List<File> zipOutSupplimentalIndexFiles = new ArrayList<>();
+    final List<File> zipOutSupplimentalIndexFiles = new ArrayList<>();
+    final Set<String> sortedAvailableSupplimentalIndexes = new TreeSet<>();
     try {
       return S3Utils.retryS3Operation(
           () -> {
@@ -102,7 +105,8 @@ public class S3DataSegmentPusher implements DataSegmentPusher
 
             // Upload supplimental indexes
             if (supplimentalIndexFilesDir != null && supplimentalIndexFilesDir.exists()) {
-              String supplimentalIndexS3PathBase = String.join("/", s3Path.substring(0, s3Path.lastIndexOf('/')), S3LoadSpec.SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX);
+              String supplimentalIndexS3PathBase = String.join("/", s3Path.substring(0, s3Path.lastIndexOf('/')),
+                                                               S3LoadSpec.SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX);
               // Upload each supplimental index individually
               for (File dir : supplimentalIndexFilesDir.listFiles()) {
                 final File zipOutSupplimentalIndexFile = File.createTempFile(
@@ -120,10 +124,12 @@ public class S3DataSegmentPusher implements DataSegmentPusher
                 S3Utils.uploadFileIfPossible(s3Client, config.getDisableAcl(), config.getBucket(),
                                              supplimentalIndexFileS3Path, zipOutSupplimentalIndexFile
                 );
+
+                sortedAvailableSupplimentalIndexes.add(dir.getName());
               }
             }
 
-            return outSegment;
+            return outSegment.withAvailableSupplimentalIndexes(new ArrayList<>(sortedAvailableSupplimentalIndexes));
           }
       );
     }

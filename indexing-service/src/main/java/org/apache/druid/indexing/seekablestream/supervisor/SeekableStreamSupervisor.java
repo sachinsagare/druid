@@ -129,7 +129,6 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
   public static final String PARTITION_DIMENSIONS_CTX_KEY = "partitionDimensions";
   public static final String STREAM_PARTITIONS_CTX_KEY = "streamPartitions";
   public static final String PARTITION_FAN_OUT_SIZE = "partitionFanOutSize";
-  public static final String ENABLE_PARTITION_DIMENSIONS_BLOOM_FILTER_CTX_KEY = "enablePartitionDimensionsBloomFilter";
 
   private static final long MAX_RUN_FREQUENCY_MILLIS = 1000;
   private static final long MINIMUM_FUTURE_TIMEOUT_IN_SECONDS = 120;

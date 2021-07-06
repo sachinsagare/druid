@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.druid.TestObjectMapper;
 import org.apache.druid.jackson.CommaListJoinDeserializer;
@@ -69,7 +70,8 @@ public class SegmentWithOvershadowedStatusTest
         Arrays.asList("met1", "met2"),
         NoneShardSpec.instance(),
         TEST_VERSION,
-        1
+        1,
+        ImmutableList.of("supplimental_index1", "supplimental_index2")
     );
 
     final SegmentWithOvershadowedStatus segment = new SegmentWithOvershadowedStatus(dataSegment, false);
@@ -79,7 +81,7 @@ public class SegmentWithOvershadowedStatusTest
         JacksonUtils.TYPE_REFERENCE_MAP_STRING_OBJECT
     );
 
-    Assert.assertEquals(11, objectMap.size());
+    Assert.assertEquals(12, objectMap.size());
     Assert.assertEquals("something", objectMap.get("dataSource"));
     Assert.assertEquals(interval.toString(), objectMap.get("interval"));
     Assert.assertEquals("1", objectMap.get("version"));
@@ -90,6 +92,8 @@ public class SegmentWithOvershadowedStatusTest
     Assert.assertEquals(TEST_VERSION, objectMap.get("binaryVersion"));
     Assert.assertEquals(1, objectMap.get("size"));
     Assert.assertEquals(false, objectMap.get("overshadowed"));
+    Assert.assertEquals("supplimental_index1,supplimental_index2",
+                        objectMap.get("availableSupplimentalIndexes"));
 
     final String json = MAPPER.writeValueAsString(segment);
 
@@ -107,7 +111,8 @@ public class SegmentWithOvershadowedStatusTest
     Assert.assertEquals(segment.getDataSegment().getShardSpec(), deserializedSegment.getShardSpec());
     Assert.assertEquals(segment.getDataSegment().getSize(), deserializedSegment.getSize());
     Assert.assertEquals(segment.getDataSegment().getId(), deserializedSegment.getId());
-
+    Assert.assertEquals(segment.getDataSegment().getAvailableSupplimentalIndexes(),
+                        deserializedSegment.getAvailableSupplimentalIndexes());
   }
 }
 
@@ -135,7 +140,11 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
       @JsonProperty("shardSpec") @Nullable ShardSpec shardSpec,
       @JsonProperty("binaryVersion") Integer binaryVersion,
       @JsonProperty("size") long size,
-      @JsonProperty("overshadowed") boolean overshadowed
+      @JsonProperty("overshadowed") boolean overshadowed,
+      @JsonProperty("availableSupplimentalIndexes")
+      @JsonDeserialize(using = CommaListJoinDeserializer.class)
+      @Nullable
+          List<String> availableSupplimentalIndexes
   )
   {
     super(
@@ -147,7 +156,8 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
         metrics,
         shardSpec,
         binaryVersion,
-        size
+        size,
+        availableSupplimentalIndexes
     );
     this.overshadowed = overshadowed;
   }

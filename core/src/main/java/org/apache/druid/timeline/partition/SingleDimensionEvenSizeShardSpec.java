@@ -132,6 +132,10 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+    if (!possibleInBloomFilter(domain)) {
+      return false;
+    }
+
     RangeSet<String> rangeSet = domain.get(getDimension());
     if (rangeSet == null) {
       return true;

@@ -21,6 +21,7 @@ package org.apache.druid.segment.realtime.appenderator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import junitparams.converters.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.druid.client.cache.CacheConfig;
 import org.apache.druid.client.cache.CachePopulatorStats;
@@ -236,7 +237,12 @@ public class AppenderatorTester implements AutoCloseable
       }
 
       @Override
-      public DataSegment push(File file, DataSegment segment, boolean useUniquePath) throws IOException
+      public DataSegment push(
+          File indexFilesDir,
+          @Nullable File supplimentalIndexFilesDir,
+          DataSegment segment,
+          boolean useUniquePath
+      ) throws IOException
       {
         if (enablePushFailure && mustFail) {
           mustFail = false;
@@ -246,6 +252,12 @@ public class AppenderatorTester implements AutoCloseable
         }
         pushedSegments.add(segment);
         return segment;
+      }
+
+      @Override
+      public DataSegment push(File file, DataSegment segment, boolean useUniquePath) throws IOException
+      {
+        return push(file, null, segment, useUniquePath);
       }
 
       @Override

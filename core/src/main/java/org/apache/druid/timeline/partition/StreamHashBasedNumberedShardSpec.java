@@ -79,8 +79,7 @@ public class StreamHashBasedNumberedShardSpec extends HashBasedNumberedShardSpec
     return other == NumberedShardSpec.class ||
            other == NumberedOverwriteShardSpec.class ||
            other == StreamHashBasedNumberedShardSpec.class ||
-           other == StreamFanOutHashBasedNumberedShardSpec.class ||
-           other == BloomFilterStreamFanOutHashBasedNumberedShardSpec.class;
+           other == StreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @Override

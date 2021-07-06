@@ -35,8 +35,7 @@ import javax.annotation.Nullable;
     @JsonSubTypes.Type(name = "numbered_overwrite", value = NumberedOverwritingShardSpecFactory.class),
     @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpecFactory.class),
     @JsonSubTypes.Type(name = "stream_hashed", value = StreamHashBasedNumberedShardSpecFactory.class),
-    @JsonSubTypes.Type(name = "stream_fanout_hashed", value = StreamFanOutHashBasedNumberedShardSpecFactory.class),
-    @JsonSubTypes.Type(name = "bloom_filter_stream_fanout_hashed", value = BloomFilterStreamFanOutHashBasedNumberedShardSpecFactory.class)
+    @JsonSubTypes.Type(name = "stream_fanout_hashed", value = StreamFanOutHashBasedNumberedShardSpecFactory.class)
 })
 public interface ShardSpecFactory
 {

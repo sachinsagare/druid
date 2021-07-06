@@ -192,8 +192,7 @@ public class NumberedOverwriteShardSpec implements OverwriteShardSpec
     return other == NumberedShardSpec.class ||
            other == NumberedOverwriteShardSpec.class ||
            other == StreamHashBasedNumberedShardSpec.class ||
-           other == StreamFanOutHashBasedNumberedShardSpec.class ||
-           other == BloomFilterStreamFanOutHashBasedNumberedShardSpec.class;
+           other == StreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @Override

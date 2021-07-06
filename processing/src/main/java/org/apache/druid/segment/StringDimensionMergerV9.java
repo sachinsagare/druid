@@ -22,6 +22,8 @@ package org.apache.druid.segment;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import org.apache.druid.collections.bitmap.BitmapFactory;
@@ -66,6 +68,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -106,7 +109,8 @@ public class StringDimensionMergerV9 implements DimensionMergerV9
   private GenericIndexedWriter<String> dictionaryWriter;
   @Nullable
   private String firstDictionaryValue;
-
+  @Nullable
+  private BloomFilter<CharSequence> bloomFilter;
 
   public StringDimensionMergerV9(
       String dimensionName,
@@ -201,6 +205,28 @@ public class StringDimensionMergerV9 implements DimensionMergerV9
         System.currentTimeMillis() - dimStartTime
     );
 
+    if (hasBloomFilterIndexes()) {
+      // At this point, cardinality is finalized. We need to wait for cardinality to finalize before constructing the
+      // bloom filter because the accuracy of the bloom filter relies deeply on the heuristic of expected number of
+      // elements in the bloom filter
+      dimStartTime = System.currentTimeMillis();
+      bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), cardinality);
+      for (int i = 0; i < cardinality; i++) {
+        String v = dictionaryWriter.get(i);
+        // Bloom filter will throw NPE if attempting to write null, skip null value here
+        // During query time, if checking if bloom filter contains null value, return false positive true directly
+        if (v != null) {
+          bloomFilter.put(v);
+        }
+      }
+      log.info(
+          "Inserted dim[%s] into a bloom filter with cardinality[%,d] in %,d millis.",
+          dimensionName,
+          cardinality,
+          System.currentTimeMillis() - dimStartTime
+      );
+    }
+
     setupEncodedValueWriter();
   }
 
@@ -245,6 +271,27 @@ public class StringDimensionMergerV9 implements DimensionMergerV9
       }
     }
     encodedValueSerializer.open();
+  }
+
+  public BloomFilter<CharSequence> getBloomFilter()
+  {
+    if (!hasBloomFilterIndexes()) {
+      throw new ISE("Dimension[%s] doesn't have bloom filter index", dimensionName);
+    } else if (bloomFilter == null) {
+      throw new ISE("Dimension[%s] has bloom filter index but it has not been initialized");
+    }
+
+    return bloomFilter;
+  }
+
+  public String getDimensionName()
+  {
+    return dimensionName;
+  }
+
+  public boolean hasBloomFilterIndexes()
+  {
+    return capabilities.hasBloomFilterIndexes();
   }
 
   @Override

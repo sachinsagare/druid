@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * {@link ShardSpec} for range partitioning based on a single dimension
  */
-public class SingleDimensionShardSpec implements ShardSpec
+public class SingleDimensionShardSpec extends BloomFilterShardSpec
 {
   private final String dimension;
   @Nullable
@@ -129,6 +129,10 @@ public class SingleDimensionShardSpec implements ShardSpec
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+    if (!possibleInBloomFilter(domain)) {
+      return false;
+    }
+
     RangeSet<String> rangeSet = domain.get(dimension);
     if (rangeSet == null) {
       return true;

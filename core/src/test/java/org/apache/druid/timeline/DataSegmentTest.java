@@ -126,7 +126,8 @@ public class DataSegmentTest
         Arrays.asList("met1", "met2"),
         new NumberedShardSpec(3, 0),
         TEST_VERSION,
-        1
+        1,
+        Arrays.asList("supplimental_index_1", "supplimental_index_2")
     );
 
     final Map<String, Object> objectMap = MAPPER.readValue(
@@ -134,7 +135,7 @@ public class DataSegmentTest
         JacksonUtils.TYPE_REFERENCE_MAP_STRING_OBJECT
     );
 
-    Assert.assertEquals(10, objectMap.size());
+    Assert.assertEquals(11, objectMap.size());
     Assert.assertEquals("something", objectMap.get("dataSource"));
     Assert.assertEquals(interval.toString(), objectMap.get("interval"));
     Assert.assertEquals("1", objectMap.get("version"));
@@ -144,6 +145,8 @@ public class DataSegmentTest
     Assert.assertEquals(ImmutableMap.of("type", "numbered", "partitionNum", 3, "partitions", 0), objectMap.get("shardSpec"));
     Assert.assertEquals(TEST_VERSION, objectMap.get("binaryVersion"));
     Assert.assertEquals(1, objectMap.get("size"));
+    Assert.assertEquals("supplimental_index_1,supplimental_index_2",
+                        objectMap.get("availableSupplimentalIndexes"));
 
     DataSegment deserializedSegment = MAPPER.readValue(MAPPER.writeValueAsString(segment), DataSegment.class);
 
@@ -156,6 +159,8 @@ public class DataSegmentTest
     Assert.assertEquals(segment.getShardSpec(), deserializedSegment.getShardSpec());
     Assert.assertEquals(segment.getSize(), deserializedSegment.getSize());
     Assert.assertEquals(segment.getId(), deserializedSegment.getId());
+    Assert.assertEquals(segment.getAvailableSupplimentalIndexes(),
+                        deserializedSegment.getAvailableSupplimentalIndexes());
 
     deserializedSegment = MAPPER.readValue(MAPPER.writeValueAsString(segment), DataSegment.class);
     Assert.assertEquals(0, segment.compareTo(deserializedSegment));
@@ -227,6 +232,8 @@ public class DataSegmentTest
     final DataSegment segment2 = MAPPER.readValue(MAPPER.writeValueAsString(segment), DataSegment.class);
     Assert.assertEquals("empty dimensions", ImmutableList.of(), segment2.getDimensions());
     Assert.assertEquals("empty metrics", ImmutableList.of(), segment2.getMetrics());
+    Assert.assertEquals("empty availableSupplimentalIndexes", ImmutableList.of(),
+                        segment2.getAvailableSupplimentalIndexes());
   }
 
   @Test

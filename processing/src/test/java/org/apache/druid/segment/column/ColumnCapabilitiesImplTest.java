@@ -37,7 +37,8 @@ public class ColumnCapabilitiesImplTest
                                                 .setHasMultipleValues(true)
                                                 .setHasSpatialIndexes(true)
                                                 .setType(ValueType.COMPLEX)
-                                                .setFilterable(true));
+                                                .setFilterable(true)
+                                                .setHasBloomFilterIndexes(true));
 
     Assert.assertFalse(json.contains("filterable"));
     
@@ -50,6 +51,7 @@ public class ColumnCapabilitiesImplTest
     Assert.assertTrue(cc.hasMultipleValues());
     Assert.assertTrue(cc.hasBitmapIndexes());
     Assert.assertFalse(cc.isFilterable());
+    Assert.assertTrue(cc.hasBloomFilterIndexes());
   }
 
   @Test
@@ -62,7 +64,8 @@ public class ColumnCapabilitiesImplTest
                   + "  \"hasSpatialIndexes\":true,\n"
                   + "  \"hasMultipleValues\":true,\n"
                   + "  \"hasBitmapIndexes\":true,\n"
-                  + "  \"filterable\":true\n"
+                  + "  \"filterable\":true,\n"
+                  + "  \"hasBloomFilterIndexes\":true\n"
                   + "}";
 
 
@@ -75,5 +78,6 @@ public class ColumnCapabilitiesImplTest
     Assert.assertTrue(cc.hasMultipleValues());
     Assert.assertTrue(cc.hasBitmapIndexes());
     Assert.assertFalse(cc.isFilterable());
+    Assert.assertTrue(cc.hasBloomFilterIndexes());
   }
 }

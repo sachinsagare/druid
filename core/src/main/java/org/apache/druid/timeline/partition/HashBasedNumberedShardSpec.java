@@ -139,6 +139,10 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+    if (!possibleInBloomFilter(domain)) {
+      return false;
+    }
+
     // If no partitionDimensions are specified during ingestion, hash is based on all dimensions
     // plus the truncated input timestamp according to QueryGranularity instead of just
     // partitionDimensions. Since we don't record the timetamp here, bypass this case.

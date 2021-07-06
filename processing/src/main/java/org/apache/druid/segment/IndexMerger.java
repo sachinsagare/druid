@@ -28,6 +28,8 @@ import com.google.common.collect.PeekingIterator;
 import com.google.inject.ImplementedBy;
 import org.apache.druid.common.config.NullHandling;
 import org.apache.druid.common.utils.SerializerUtils;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.DimensionsSpec;
 import org.apache.druid.java.util.common.ByteBufferUtils;
 import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.Pair;
@@ -35,6 +37,8 @@ import org.apache.druid.java.util.common.guava.Comparators;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.java.util.common.parsers.CloseableIterator;
 import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.segment.column.ColumnCapabilities;
+import org.apache.druid.segment.column.ColumnCapabilitiesImpl;
 import org.apache.druid.segment.data.Indexed;
 import org.apache.druid.segment.incremental.IncrementalIndex;
 import org.apache.druid.segment.writeout.SegmentWriteOutMediumFactory;
@@ -46,6 +50,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -154,12 +159,92 @@ public interface IndexMerger
     return Lists.newArrayList(retVal);
   }
 
-  File persist(
+  /**
+   * @return True if at least one dimension in the schema has supplimental index (for now, supplimental index only
+   * consists of bloom filter index); false otherwise
+   */
+  static boolean hasSupplimentalIndex(@Nullable DimensionsSpec dimensionsSpec)
+  {
+    if (dimensionsSpec == null) {
+      return false;
+    }
+    return hasBloomFilterIndexes(dimensionsSpec);
+  }
+
+  static boolean hasBloomFilterIndexes(@Nullable DimensionsSpec dimensionsSpec)
+  {
+    if (dimensionsSpec == null) {
+      return false;
+    }
+    return !getDimensionNamesHasBloomFilterIndexes(dimensionsSpec).isEmpty();
+  }
+
+  static List<String> getDimensionNamesHasBloomFilterIndexes(@Nullable DimensionsSpec dimensionsSpec)
+  {
+    if (dimensionsSpec == null) {
+      return Collections.emptyList();
+    }
+    return dimensionsSpec.getDimensions()
+                         .stream()
+                         .filter(DimensionSchema::hasBloomFilterIndexes)
+                         .map(DimensionSchema::getName)
+                         .collect(Collectors.toList());
+  }
+
+  /**
+   * Set hasBloomFilterIndexes in ColumnCapabilities for all provided dimension names
+   */
+  static void setHasBloomFilterIndexesInColumnCapabilities(List<String> dimensionNamesHasBloomFilterIndexes,
+                                                           Function<String, ColumnCapabilities> getColumnCapabilities)
+  {
+    for (String d : dimensionNamesHasBloomFilterIndexes) {
+      ColumnCapabilities columnCapabilities = getColumnCapabilities.apply(d);
+      if (columnCapabilities == null) {
+        continue;
+      }
+      if (columnCapabilities instanceof ColumnCapabilitiesImpl) {
+        ((ColumnCapabilitiesImpl) columnCapabilities).setHasBloomFilterIndexes(true);
+      } else {
+        throw new ISE("Unsupported ColumnCapabilities implementation");
+      }
+    }
+  }
+
+  default File persist(
       IncrementalIndex index,
-      File outDir,
+      File indexOutDir,
+      IndexSpec indexSpec,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    return Objects.requireNonNull(persist(index, indexOutDir, null, indexSpec, segmentWriteOutMediumFactory).lhs);
+  }
+
+  Pair<File, File> persist(
+      IncrementalIndex index,
+      File indexOutDir,
+      @Nullable File supplimentalIndexOutDir,
       IndexSpec indexSpec,
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException;
+
+  default File persist(
+      IncrementalIndex index,
+      Interval dataInterval,
+      File indexOutDir,
+      IndexSpec indexSpec,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    return Objects.requireNonNull(persist(
+        index,
+        dataInterval,
+        indexOutDir,
+        null,
+        indexSpec,
+        segmentWriteOutMediumFactory
+    ).lhs);
+  }
 
   /**
    * This is *not* thread-safe and havok will ensue if this is called and writes are still occurring
@@ -167,47 +252,115 @@ public interface IndexMerger
    *
    * @param index        the IncrementalIndex to persist
    * @param dataInterval the Interval that the data represents
-   * @param outDir       the directory to persist the data to
+   * @param indexOutDir  the directory to persist the index data to
+   * @param supplimentalIndexOutDir the directory to persist the supplimental index data to
    *
-   * @return the index output directory
+   * @return A pair with the left being the index output directory and the right being the supplimental index output
+   * directory
    *
    * @throws IOException if an IO error occurs persisting the index
    */
-  File persist(
+  Pair<File, File> persist(
       IncrementalIndex index,
       Interval dataInterval,
-      File outDir,
+      File indexOutDir,
+      @Nullable File supplimentalIndexOutDir,
       IndexSpec indexSpec,
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException;
 
-  File persist(
+  default File persist(
       IncrementalIndex index,
       Interval dataInterval,
-      File outDir,
+      File indexOutDir,
+      IndexSpec indexSpec,
+      ProgressIndicator progress,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    return Objects.requireNonNull(persist(
+        index,
+        dataInterval,
+        indexOutDir,
+        null,
+        indexSpec,
+        progress,
+        segmentWriteOutMediumFactory
+    ).lhs);
+  }
+
+  Pair<File, File> persist(
+      IncrementalIndex index,
+      Interval dataInterval,
+      File indexOutDir,
+      @Nullable File supplimentalIndexOutDir,
       IndexSpec indexSpec,
       ProgressIndicator progress,
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException;
 
-  File mergeQueryableIndex(
+  Pair<File, File> mergeQueryableIndex(
       List<QueryableIndex> indexes,
       boolean rollup,
       AggregatorFactory[] metricAggs,
-      File outDir,
+      File indexOutDir,
+      @Nullable File supplimentalIndexOutDir,
       IndexSpec indexSpec,
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException;
 
-  File mergeQueryableIndex(
+  Pair<File, File> mergeQueryableIndex(
       List<QueryableIndex> indexes,
       boolean rollup,
       AggregatorFactory[] metricAggs,
-      File outDir,
+      File indexOutDir,
+      @Nullable File supplimentalIndexOutDir,
       IndexSpec indexSpec,
       ProgressIndicator progress,
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException;
+
+  default File mergeQueryableIndex(
+      List<QueryableIndex> indexes,
+      boolean rollup,
+      AggregatorFactory[] metricAggs,
+      File indexOutDir,
+      IndexSpec indexSpec,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    return Objects.requireNonNull(mergeQueryableIndex(
+        indexes,
+        rollup,
+        metricAggs,
+        indexOutDir,
+        null,
+        indexSpec,
+        segmentWriteOutMediumFactory
+    ).lhs);
+  }
+
+  default File mergeQueryableIndex(
+      List<QueryableIndex> indexes,
+      boolean rollup,
+      AggregatorFactory[] metricAggs,
+      File indexOutDir,
+      IndexSpec indexSpec,
+      ProgressIndicator progress,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    return Objects.requireNonNull(mergeQueryableIndex(
+        indexes,
+        rollup,
+        metricAggs,
+        indexOutDir,
+        null,
+        indexSpec,
+        progress,
+        segmentWriteOutMediumFactory
+    ).lhs);
+  }
 
   @VisibleForTesting
   File merge(

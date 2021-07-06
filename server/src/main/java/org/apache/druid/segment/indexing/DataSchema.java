@@ -37,6 +37,7 @@ import org.apache.druid.segment.indexing.granularity.GranularitySpec;
 import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
 import org.apache.druid.segment.transform.TransformSpec;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -111,6 +112,7 @@ public class DataSchema
   }
 
   @JsonIgnore
+  @Nullable
   public InputRowParser getParser()
   {
     if (parser == null) {

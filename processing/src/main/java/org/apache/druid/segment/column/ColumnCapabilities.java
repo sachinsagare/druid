@@ -31,6 +31,7 @@ public interface ColumnCapabilities
   boolean hasSpatialIndexes();
   boolean hasMultipleValues();
   boolean isFilterable();
+  boolean hasBloomFilterIndexes();
 
   /**
    * This property indicates that this {@link ColumnCapabilities} is "complete" in that all properties can be expected

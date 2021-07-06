@@ -251,7 +251,9 @@ public abstract class IncrementalIndex<AggregatorType> extends AbstractIndex imp
   // This is modified on add() in a critical section.
   private final ThreadLocal<InputRow> in = new ThreadLocal<>();
   private final Supplier<InputRow> rowSupplier = in::get;
+  @Nullable
   private final Map<String, ColumnHolder> columns;
+  @Nullable
   protected final BitmapFactory inMemoryBitmapFactory;
 
   /**

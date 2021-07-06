@@ -85,7 +85,6 @@
   "ingest/merge/cpu" : { "dimensions" : ["dataSource"], "type" : "timer" },
   "ingest/handoff/count" : { "dimensions" :  ["dataSource"], "type" :  "count"},
   "ingest/sink/count" : { "dimensions" :  ["dataSource"], "type" :  "count"},
-  "ingest/rows/updateBloomFilterMillis" : { "dimensions" :  ["dataSource"], "type" :  "gauge"},
   "ingest/events/messageGap" : { "dimensions" : ["dataSource"], "type" : "gauge" },
 
   "task/run/time" : { "dimensions" : ["dataSource", "taskType"], "type" : "timer" },

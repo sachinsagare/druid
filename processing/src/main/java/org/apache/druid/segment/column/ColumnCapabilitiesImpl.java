@@ -38,6 +38,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
   private boolean hasInvertedIndexes = false;
   private boolean hasSpatialIndexes = false;
   private boolean hasMultipleValues = false;
+  private boolean hasBloomFilterIndexes = false;
 
   // This is a query time concept and not persisted in the segment files.
   @JsonIgnore
@@ -99,6 +100,19 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
   public ColumnCapabilitiesImpl setHasBitmapIndexes(boolean hasInvertedIndexes)
   {
     this.hasInvertedIndexes = hasInvertedIndexes;
+    return this;
+  }
+
+  @Override
+  @JsonProperty("hasBloomFilterIndexes")
+  public boolean hasBloomFilterIndexes()
+  {
+    return hasBloomFilterIndexes;
+  }
+
+  public ColumnCapabilitiesImpl setHasBloomFilterIndexes(boolean hasBloomFilterIndexes)
+  {
+    this.hasBloomFilterIndexes = hasBloomFilterIndexes;
     return this;
   }
 
@@ -175,6 +189,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
     this.hasInvertedIndexes |= other.hasBitmapIndexes();
     this.hasSpatialIndexes |= other.hasSpatialIndexes();
     this.hasMultipleValues |= other.hasMultipleValues();
+    this.hasBloomFilterIndexes |= other.hasBloomFilterIndexes();
     this.complete &= other.isComplete(); // these should always be the same?
     this.filterable &= other.isFilterable();
   }
