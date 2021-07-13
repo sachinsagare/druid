@@ -50,6 +50,9 @@ public class DruidNode
   @NotNull
   private String host;
 
+  @JsonProperty
+  private boolean useNodeIPAddress = false;
+
   /**
    * This property indicates whether the druid node's internal jetty server bind on {@link DruidNode#host}.
    * Default is false, which means binding to all interfaces.
@@ -90,7 +93,7 @@ public class DruidNode
       boolean enableTlsPort
   )
   {
-    this(serviceName, host, bindOnHost, plaintextPort, null, tlsPort, enablePlaintextPort, enableTlsPort);
+    this(serviceName, host, bindOnHost, plaintextPort, null, tlsPort, enablePlaintextPort, enableTlsPort, false);
   }
 
   /**
@@ -118,7 +121,8 @@ public class DruidNode
       @JacksonInject @Named("servicePort") @JsonProperty("port") Integer port,
       @JacksonInject @Named("tlsServicePort") @JsonProperty("tlsPort") Integer tlsPort,
       @JsonProperty("enablePlaintextPort") Boolean enablePlaintextPort,
-      @JsonProperty("enableTlsPort") boolean enableTlsPort
+      @JsonProperty("enableTlsPort") boolean enableTlsPort,
+      @JsonProperty("useNodeIPAddress") Boolean useNodeIPAddress
   )
   {
     init(
@@ -128,19 +132,14 @@ public class DruidNode
         plaintextPort != null ? plaintextPort : port,
         tlsPort,
         enablePlaintextPort == null ? true : enablePlaintextPort.booleanValue(),
-        enableTlsPort
+        enableTlsPort,
+        useNodeIPAddress == null ? false : useNodeIPAddress
     );
   }
 
-  private void init(
-      String serviceName,
-      String host,
-      boolean bindOnHost,
-      Integer plainTextPort,
-      Integer tlsPort,
-      boolean enablePlaintextPort,
-      boolean enableTlsPort
-  )
+  private void init(String serviceName, String host, boolean bindOnHost, Integer plainTextPort,
+                    Integer tlsPort, boolean enablePlaintextPort, boolean enableTlsPort,
+                    boolean useNodeIPAddress)
   {
     Preconditions.checkNotNull(serviceName);
 
@@ -165,7 +164,7 @@ public class DruidNode
         plainTextPort = portFromHostConfig;
       }
     } else {
-      host = getDefaultHost();
+      host = useNodeIPAddress ? getIPAddress() : getDefaultHost();
     }
 
     if (enablePlaintextPort && enableTlsPort && ((plainTextPort == null || tlsPort == null)
@@ -199,6 +198,7 @@ public class DruidNode
     this.serviceName = serviceName;
     this.host = host;
     this.bindOnHost = bindOnHost;
+    this.useNodeIPAddress = useNodeIPAddress;
   }
 
   public String getServiceName()
@@ -297,6 +297,16 @@ public class DruidNode
   {
     try {
       return InetAddress.getLocalHost().getCanonicalHostName();
+    }
+    catch (UnknownHostException e) {
+      throw new ISE(e, "Unable to determine host name");
+    }
+  }
+
+  public static String getIPAddress()
+  {
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
     }
     catch (UnknownHostException e) {
       throw new ISE(e, "Unable to determine host name");
