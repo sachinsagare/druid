@@ -2,6 +2,7 @@
 
 sed -i "s/<DRUID_CLUSTER_NAME>/${TELETRAAN_DRUID_CLUSTER_NAME}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 sed -i "s/<DRUID_ZK_SERVICE_HOST>/${TELETRAAN_DRUID_ZK_SERVICE_HOST}/g" /opt/druid/conf/druid/_common/common.runtime.properties
+sed -i "s/<USE_NODE_IP_ADDRESS>/${TELETRAAN_USE_NODE_IP_ADDRESS:-false}/g" /opt/druid/conf/druid/_common/common.runtime.properties
 
 if [ ! -z "${TELETRAAN_DRUID_OVERSHADOW_CHILDPARENT_MAP}" ]; then
   if grep -q "druid.timeline.overshadow.namespaceChildParentMap" /opt/druid/conf/druid/_common/common.runtime.properties; then
