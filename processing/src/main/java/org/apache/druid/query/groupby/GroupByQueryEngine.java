@@ -99,7 +99,7 @@ public class GroupByQueryEngine
 
     Filter filter = Filters.convertToCNFFromQueryContext(query, Filters.toFilter(query.getDimFilter()));
 
-    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
 
     final Sequence<Cursor> cursors = storageAdapter.makeCursors(
         filter,

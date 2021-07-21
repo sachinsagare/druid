@@ -76,7 +76,7 @@ public class TopNQueryEngine
         queryIntervals.size() == 1, "Can only handle a single interval, got[%s]", queryIntervals
     );
 
-    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
 
     return Sequences.filter(
         Sequences.map(

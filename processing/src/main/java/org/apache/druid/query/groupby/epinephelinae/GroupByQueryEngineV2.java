@@ -177,7 +177,7 @@ public class GroupByQueryEngineV2
       final Interval interval
   )
   {
-    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
 
     final Sequence<Cursor> cursors = storageAdapter.makeCursors(
         filter,

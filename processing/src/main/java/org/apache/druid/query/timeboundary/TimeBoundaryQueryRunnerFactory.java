@@ -111,7 +111,7 @@ public class TimeBoundaryQueryRunnerFactory
 
     private DateTime getTimeBoundary(StorageAdapter adapter, TimeBoundaryQuery legacyQuery, boolean descending)
     {
-      final boolean useInMemoryBitmapInQuery = legacyQuery.getContextBoolean("useInMemoryBitmapInQuery", false);
+      final boolean useInMemoryBitmapInQuery = legacyQuery.getContextBoolean("useInMemoryBitmapInQuery", true);
 
       final Sequence<Result<DateTime>> resultSequence = QueryRunnerHelper.makeCursorBasedQuery(
           adapter,
