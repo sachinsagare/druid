@@ -39,10 +39,8 @@ import org.apache.druid.query.aggregation.AggregatorAdapters;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.filter.Filter;
 import org.apache.druid.query.vector.VectorCursorGranularizer;
-import org.apache.druid.segment.ColumnInspector;
 import org.apache.druid.segment.SegmentMissingException;
 import org.apache.druid.segment.StorageAdapter;
-import org.apache.druid.segment.VirtualColumns;
 import org.apache.druid.segment.filter.Filters;
 import org.apache.druid.segment.vector.VectorColumnSelectorFactory;
 import org.apache.druid.segment.vector.VectorCursor;
@@ -67,13 +65,11 @@ public class TimeseriesQueryEngine
   @VisibleForTesting
   public TimeseriesQueryEngine()
   {
-    this.bufferPool = new StupidPool<>("dummy", () -> ByteBuffer.allocate(10000000));
+    this.bufferPool = new StupidPool<>("dummy", () -> ByteBuffer.allocate(1000000));
   }
 
   @Inject
-  public TimeseriesQueryEngine(
-      final @Global NonBlockingPool<ByteBuffer> bufferPool
-  )
+  public TimeseriesQueryEngine(final @Global NonBlockingPool<ByteBuffer> bufferPool)
   {
     this.bufferPool = bufferPool;
   }
@@ -95,12 +91,9 @@ public class TimeseriesQueryEngine
     final Granularity gran = query.getGranularity();
     final boolean descending = query.isDescending();
 
-    final ColumnInspector inspector = query.getVirtualColumns().wrapInspector(adapter);
-
     final boolean doVectorize = QueryContexts.getVectorize(query).shouldVectorize(
         adapter.canVectorize(filter, query.getVirtualColumns(), descending)
-        && VirtualColumns.shouldVectorize(query, query.getVirtualColumns(), adapter)
-        && query.getAggregatorSpecs().stream().allMatch(aggregatorFactory -> aggregatorFactory.canVectorize(inspector))
+        && query.getAggregatorSpecs().stream().allMatch(AggregatorFactory::canVectorize)
     );
 
     final Sequence<Result<TimeseriesResultValue>> result;
@@ -254,6 +247,7 @@ public class TimeseriesQueryEngine
       final boolean descending
   )
   {
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
     final boolean skipEmptyBuckets = query.isSkipEmptyBuckets();
     final List<AggregatorFactory> aggregatorSpecs = query.getAggregatorSpecs();
 
@@ -299,7 +293,8 @@ public class TimeseriesQueryEngine
               agg.close();
             }
           }
-        }
+        },
+        useInMemoryBitmapInQuery
     );
   }
 }

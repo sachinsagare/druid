@@ -25,14 +25,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.ISE;
-import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.java.util.common.UOE;
 import org.apache.druid.java.util.common.granularity.Granularities;
 import org.apache.druid.java.util.common.guava.BaseSequence;
 import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.java.util.common.guava.Sequences;
 import org.apache.druid.query.QueryContexts;
-import org.apache.druid.query.QueryTimeoutException;
+import org.apache.druid.query.QueryInterruptedException;
 import org.apache.druid.query.context.ResponseContext;
 import org.apache.druid.query.filter.Filter;
 import org.apache.druid.segment.BaseObjectColumnValueSelector;
@@ -53,10 +52,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 public class ScanQueryEngine
 {
-  static final String LEGACY_TIMESTAMP_KEY = "timestamp";
+  private static final String LEGACY_TIMESTAMP_KEY = "timestamp";
 
   public Sequence<ScanResultValue> process(
       final ScanQuery query,
@@ -65,14 +65,17 @@ public class ScanQueryEngine
   )
   {
     // "legacy" should be non-null due to toolChest.mergeResults
-    final boolean legacy = Preconditions.checkNotNull(query.isLegacy(), "Expected non-null 'legacy' parameter");
+    final boolean legacy = Preconditions.checkNotNull(query.isLegacy(), "WTF?! Expected non-null legacy");
 
-    final Long numScannedRows = responseContext.getRowScanCount();
-    if (numScannedRows != null && numScannedRows >= query.getScanRowsLimit() && query.getTimeOrder().equals(ScanQuery.Order.NONE)) {
-      return Sequences.empty();
+    final Object numScannedRows = responseContext.get(ResponseContext.Key.NUM_SCANNED_ROWS);
+    if (numScannedRows != null) {
+      long count = (long) numScannedRows;
+      if (count >= query.getScanRowsLimit() && query.getOrder().equals(ScanQuery.Order.NONE)) {
+        return Sequences.empty();
+      }
     }
     final boolean hasTimeout = QueryContexts.hasTimeout(query);
-    final Long timeoutAt = responseContext.getTimeoutTime();
+    final long timeoutAt = (long) responseContext.get(ResponseContext.Key.TIMEOUT_AT);
     final long start = System.currentTimeMillis();
     final StorageAdapter adapter = segment.asStorageAdapter();
 
@@ -119,8 +122,9 @@ public class ScanQueryEngine
 
     final Filter filter = Filters.convertToCNFFromQueryContext(query, Filters.toFilter(query.getFilter()));
 
-    // If the row count is not set, set it to 0, else do nothing.
-    responseContext.addRowScanCount(0);
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
+
+    responseContext.add(ResponseContext.Key.NUM_SCANNED_ROWS, 0L);
     final long limit = calculateRemainingScanRowsLimit(query, responseContext);
     return Sequences.concat(
             adapter
@@ -129,9 +133,10 @@ public class ScanQueryEngine
                     intervals.get(0),
                     query.getVirtualColumns(),
                     Granularities.ALL,
-                    query.getTimeOrder().equals(ScanQuery.Order.DESCENDING) ||
-                    (query.getTimeOrder().equals(ScanQuery.Order.NONE) && query.isDescending()),
-                    null
+                    query.getOrder().equals(ScanQuery.Order.DESCENDING) ||
+                    (query.getOrder().equals(ScanQuery.Order.NONE) && query.isDescending()),
+                    null,
+                    useInMemoryBitmapInQuery
                 )
                 .map(cursor -> new BaseSequence<>(
                     new BaseSequence.IteratorMaker<ScanResultValue, Iterator<ScanResultValue>>()
@@ -172,7 +177,7 @@ public class ScanQueryEngine
                               throw new NoSuchElementException();
                             }
                             if (hasTimeout && System.currentTimeMillis() >= timeoutAt) {
-                              throw new QueryTimeoutException(StringUtils.nonStrictFormat("Query [%s] timed out", query.getId()));
+                              throw new QueryInterruptedException(new TimeoutException());
                             }
                             final long lastOffset = offset;
                             final Object events;
@@ -184,9 +189,10 @@ public class ScanQueryEngine
                             } else {
                               throw new UOE("resultFormat[%s] is not supported", resultFormat.toString());
                             }
-                            responseContext.addRowScanCount(offset - lastOffset);
+                            responseContext.add(ResponseContext.Key.NUM_SCANNED_ROWS, offset - lastOffset);
                             if (hasTimeout) {
-                              responseContext.putTimeoutTime(
+                              responseContext.put(
+                                  ResponseContext.Key.TIMEOUT_AT,
                                   timeoutAt - (System.currentTimeMillis() - start)
                               );
                             }
@@ -199,9 +205,9 @@ public class ScanQueryEngine
                             throw new UnsupportedOperationException();
                           }
 
-                          private List<List<Object>> rowsToCompactedList()
+                          private List<Object> rowsToCompactedList()
                           {
-                            final List<List<Object>> events = new ArrayList<>(batchSize);
+                            final List<Object> events = new ArrayList<>(batchSize);
                             final long iterLimit = Math.min(limit, offset + batchSize);
                             for (; !cursor.isDone() && offset < iterLimit; cursor.advance(), offset++) {
                               final List<Object> theEvent = new ArrayList<>(allColumns.size());
@@ -258,8 +264,8 @@ public class ScanQueryEngine
    */
   private long calculateRemainingScanRowsLimit(ScanQuery query, ResponseContext responseContext)
   {
-    if (query.getTimeOrder().equals(ScanQuery.Order.NONE)) {
-      return query.getScanRowsLimit() - (Long) responseContext.getRowScanCount();
+    if (query.getOrder().equals(ScanQuery.Order.NONE)) {
+      return query.getScanRowsLimit() - (long) responseContext.get(ResponseContext.Key.NUM_SCANNED_ROWS);
     }
     return query.getScanRowsLimit();
   }
