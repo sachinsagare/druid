@@ -52,7 +52,8 @@ import java.util.Map;
     // See BucketShardSpec for more details.
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_HASH, value = HashBucketShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_SINGLE_DIM, value = SingleDimensionRangeBucketShardSpec.class),
-    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class)
+    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class),
+    @JsonSubTypes.Type(name = "stream_fanout_named_hashed", value = StreamFanOutNamedHashBasedNumberedShardSpec.class)
 })
 public interface ShardSpec
 {
