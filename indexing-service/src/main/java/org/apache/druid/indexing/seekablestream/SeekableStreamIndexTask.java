@@ -60,6 +60,7 @@ import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.ShardSpecFactory;
 import org.apache.druid.timeline.partition.StreamFanOutHashBasedNumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamFanOutNamedHashBasedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.StreamHashBasedNumberedShardSpecFactory;
 import org.apache.druid.utils.CircularBuffer;
 
@@ -244,7 +245,29 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
     final String nameSpace = this.getContextValue("nameSpace");
     final ShardSpecFactory effectiveShardSpecFactory;
     if (nameSpace != null) {
-      effectiveShardSpecFactory = NamedNumberedShardSpecFactory.instance(nameSpace);
+      if (partitionDimensions != null
+          && !partitionDimensions.isEmpty()
+          && streamPartitionIds != null
+          && !streamPartitionIds.isEmpty()
+          && streamPartitions != null
+          && streamPartitions > 0) {
+        log.info(
+            "Include stream partition info in StreamFanOutNamedHashBasedNumberedShardSpecFactory: "
+            + "partitionDimensions [%s], streamPartitionIds [%s], streamPartitions [%d], nameSpace [%s], fanOUtsize [%d]",
+            partitionDimensions,
+            streamPartitionIds,
+            streamPartitions,
+            nameSpace,
+            fanOutSize
+        );
+        effectiveShardSpecFactory = StreamFanOutNamedHashBasedNumberedShardSpecFactory.instance(nameSpace)
+                                                                                      .set(partitionDimensions,
+                                                                                           streamPartitionIds,
+                                                                                           streamPartitions,
+                                                                                           fanOutSize);
+      } else {
+        effectiveShardSpecFactory = NamedNumberedShardSpecFactory.instance(nameSpace);
+      }
     } else {
       if (partitionDimensions != null
           && !partitionDimensions.isEmpty()
