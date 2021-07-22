@@ -386,6 +386,11 @@ public class QueryContexts
     return parseBoolean(query, INCLUDE_REALTIME_SERVERS, DEFAULT_INCLUDE_REALTIME_SERVERS);
   }
 
+  public static <T> boolean isReturnEmptyResults(Query<T> query)
+  {
+    return parseBoolean(query, BROKER_RETURN_EMPTY_RESULTS, DEFAULT_RETURN_EMPTY_RESULTS);
+  }
+
   public static <T> boolean isIgnoreMissingDepPostAgg(Query<T> query)
   {
     return parseBoolean(
