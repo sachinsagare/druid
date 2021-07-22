@@ -42,8 +42,11 @@ public class BloomFilterObjectStrategyTest
     byte[] serialized = BloomFilterObjectStrategy.STRATEGY
         .toBytes(bloomFilter);
 
+    // Simulate read-only byte buffer as from Mmaped files
+    ByteBuffer serializedByteBuffer = ByteBuffer.wrap(serialized).asReadOnlyBuffer();
+
     BloomFilter<CharSequence> deserialized = BloomFilterObjectStrategy.STRATEGY
-        .fromByteBuffer(ByteBuffer.wrap(serialized), serialized.length);
+        .fromByteBuffer(serializedByteBuffer, serialized.length);
 
     Assert.assertEquals(bloomFilter, deserialized);
   }

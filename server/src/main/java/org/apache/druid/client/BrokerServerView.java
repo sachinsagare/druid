@@ -50,7 +50,6 @@ import org.apache.druid.segment.BloomFilterObjectStrategy;
 import org.apache.druid.segment.IndexMergerV9;
 import org.apache.druid.segment.data.GenericIndexed;
 import org.apache.druid.segment.loading.LoadSpec;
-import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
@@ -331,17 +330,21 @@ public class BrokerServerView implements TimelineServerView
             }
             ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);
             log.info(
-                "Loaded bloom filters of [%d] bytes for segment[%s] for server[%s]",
-                bloomFiltersIndexed.size(),
+                "Loaded bloom filters for segment[%s] for server[%s]",
                 segment,
                 server
             );
           }
-          catch (SegmentLoadingException | IOException e) {
+          catch (Exception e) {
             // In the worst case, bloom filter index is not loaded and pruning efficiency is affected but the segment
             // can still function without it so we choose not to further propagate the exception.
             // TODO (jwang): However, adding a metric in the future to get visibility of the failure will be useful.
-            log.error(e.getMessage());
+            log.error(
+                "Failed to load bloom filters for segment[%s] for server[%s]: [%s]",
+                segment,
+                server,
+                e
+            );
           }
           finally {
             try {

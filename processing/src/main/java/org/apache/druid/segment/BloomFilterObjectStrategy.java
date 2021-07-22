@@ -21,10 +21,10 @@ package org.apache.druid.segment;
 
 import com.google.common.hash.BloomFilter;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.druid.io.ByteBufferInputStream;
 import org.apache.druid.segment.data.ObjectStrategy;
 
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -53,8 +53,9 @@ public class BloomFilterObjectStrategy implements ObjectStrategy<BloomFilter>
   @Override
   public BloomFilter fromByteBuffer(final ByteBuffer buffer, final int numBytes)
   {
-    buffer.limit(buffer.position() + numBytes);
-    try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer.array());
+    ByteBuffer readOnlyBuffer = buffer.asReadOnlyBuffer();
+    readOnlyBuffer.limit(buffer.position() + numBytes);
+    try (ByteBufferInputStream byteArrayInputStream = new ByteBufferInputStream(readOnlyBuffer);
          ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
       return (BloomFilter) objectInputStream.readObject();
     }
