@@ -52,14 +52,15 @@ import org.apache.druid.segment.data.GenericIndexed;
 import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.planning.DataSourceAnalysis;
 import org.apache.druid.segment.loading.LoadSpec;
-import org.apache.druid.segment.loading.SegmentLoadingException;
 
+import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
+import org.apache.druid.timeline.partition.BloomFilterShardSpec;
 import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.utils.CollectionUtils;
@@ -335,10 +336,8 @@ public class BrokerServerView implements TimelineServerView
       synchronized (lock) {
         ServerSelector selector = selectors.get(segmentId);
         if (selector != null) {
-           Map<String, BloomFilter<CharSequence>> bloomFilters = ((BloomFilterShardSpec) selector.getSegment()
-                                                                                                .getShardSpec())
-                  .getBloomFilter();
-          if (bloomFilter != null) {
+           Map<String, BloomFilter<CharSequence>> bloomFilters = ((BloomFilterShardSpec) selector.getSegment().getShardSpec()).getBloomFilter();
+          if (bloomFilters != null) {
     	    ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);        
             log.info("Reused existing bloom filter for segment[%s] for server[%s]", segment, server);
           } else {
@@ -392,14 +391,17 @@ public class BrokerServerView implements TimelineServerView
                     server
             );
           }
-          catch (SegmentLoadingException | IOException e) {
+          catch (Exception e) {
             // In the worst case, bloom filter index is not loaded and pruning efficiency is affected but the segment
             // can still function without it so we choose not to further propagate the exception.
             // TODO (jwang): However, adding a metric in the future to get visibility of the failure will be useful.
-
-            log.error(e.getMessage());
-          }
-          finally {
+            log.error(
+                    "Failed to load bloom filters for segment[%s] for server[%s]: [%s]",
+                    segment,
+                    server,
+                    e
+            );
+          } finally {
             try {
               FileUtils.deleteDirectory(tmpDir);
             }

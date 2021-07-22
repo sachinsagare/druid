@@ -404,6 +404,15 @@ public class CachingClusteredClient implements QuerySegmentWalker
       }
 
       final Set<SegmentServerSelector> segmentServers = computeSegmentsToQuery(timeline, specificSegments);
+
+
+      // For debugging purpose only, at this point, we have got the candidate segments to query but we will just return
+      // empty results without sending requests to data nodes. This is mainly used to profile broker side segment
+      // pruning performance.
+      if (QueryContexts.isReturnEmptyResults(query)) {
+        return (ClusterQueryResult<T>) Sequences.empty();
+      }
+
       @Nullable
       final byte[] queryCacheKey = cacheKeyManager.computeSegmentLevelQueryCacheKey();
       if (query.getContext().get(QueryResource.HEADER_IF_NONE_MATCH) != null) {
