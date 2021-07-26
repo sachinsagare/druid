@@ -39,6 +39,7 @@ import java.util.Map;
     @JsonSubTypes.Type(name = "numbered", value = NumberedShardSpec.class),
     @JsonSubTypes.Type(name = "hashed", value = HashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "numbered_overwrite", value = NumberedOverwriteShardSpec.class),
+    @JsonSubTypes.Type(name = "bloomfilter_named_numbered_overwrite", value = BloomFilterNameNumberedOverwriteShardSpec.class),
     @JsonSubTypes.Type(name = "named_numbered", value = NamedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "stream_hashed", value = StreamHashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = "stream_fanout_hashed", value = StreamFanOutHashBasedNumberedShardSpec.class),
