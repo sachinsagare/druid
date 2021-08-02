@@ -357,7 +357,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
       // empty results without sending requests to data nodes. This is mainly used to profile broker side segment
       // pruning performance.
       if (QueryContexts.isReturnEmptyResults(query)) {
-        return Sequences.empty();
+        segments.clear();
       }
 
       @Nullable
