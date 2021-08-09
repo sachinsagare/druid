@@ -100,10 +100,10 @@ public class StreamFanOutNamedHashBasedNumberedShardSpecTest
         ServerTestHelper.MAPPER
     );
 
-    Assert.assertTrue(spec.isCompatible(NumberedShardSpec.class));
-    Assert.assertTrue(spec.isCompatible(NumberedOverwriteShardSpec.class));
-    Assert.assertTrue(spec.isCompatible(StreamFanOutHashBasedNumberedShardSpec.class));
+    Assert.assertTrue(spec.isCompatible(NamedNumberedShardSpec.class));
     Assert.assertTrue(spec.isCompatible(StreamFanOutNamedHashBasedNumberedShardSpec.class));
+    Assert.assertFalse(spec.isCompatible(NumberedOverwriteShardSpec.class));
+    Assert.assertFalse(spec.isCompatible(StreamFanOutHashBasedNumberedShardSpec.class));
   }
 
   @Test

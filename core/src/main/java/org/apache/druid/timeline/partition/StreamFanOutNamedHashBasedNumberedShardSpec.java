@@ -67,10 +67,9 @@ public class StreamFanOutNamedHashBasedNumberedShardSpec extends StreamFanOutHas
   @Override
   public boolean isCompatible(Class<? extends ShardSpec> other)
   {
-    return other == NumberedShardSpec.class ||
-           other == NumberedOverwriteShardSpec.class ||
-           other == StreamHashBasedNumberedShardSpec.class ||
-           other == StreamFanOutHashBasedNumberedShardSpec.class ||
+    // only compatible with other named shardspec. NamedNumberedShardSpec has per-namespace overshadowing mechanism,
+    // it is very hard to reason how overshadow works when there are both named and non-named segments co-exist.
+    return other == NamedNumberedShardSpec.class ||
            other == StreamFanOutNamedHashBasedNumberedShardSpec.class;
   }
 

@@ -44,7 +44,6 @@ import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
 import org.apache.druid.timeline.partition.NoneShardSpec;
 import org.apache.druid.timeline.partition.OverwriteShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
@@ -153,7 +152,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
 
     final StringBuilder querySb = new StringBuilder();
     querySb.append("SELECT payload FROM %1$s WHERE dataSource = :dataSource AND start <= :end and %2$send%2$s >= :start");
-    if (nameSpace != null) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       querySb.append(" AND id like :nameSpace");
     }
 
@@ -212,7 +211,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
       }
     }
 
-    if (nameSpace != null) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       sb.append(" AND id like ?");
     }
 
@@ -230,7 +229,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
           .bind(2 * i + 2, interval.getStart().toString());
     }
 
-    if (nameSpace != null) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       // Use positional binding because it seems mix of position and name bindings is not supported.
       sql = sql.bind(2 * (intervals.size() - 1) + 3, "%_" + nameSpace + "_%");
     }
@@ -435,7 +434,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         .append("sequence_name = :sequence_name AND ")
         .append("sequence_prev_id = :sequence_prev_id");
 
-    if (shardSpecFactory.getClass() == NamedNumberedShardSpecFactory.class) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       querySb.append(" AND id like :nameSpace");
     }
 
@@ -520,7 +519,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
         .append("start = :start AND ")
         .append("%2$send%2$s = :end");
 
-    if (shardSpecFactory.getClass() == NamedNumberedShardSpecFactory.class) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       querySb.append(" AND id like :nameSpace");
     }
 
@@ -1189,7 +1188,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
             querySb.append("SELECT payload FROM %1$s WHERE dataSource = :dataSource and start >= :start ");
             querySb.append("and start <= :end and %2$send%2$s <= :end and used = false");
 
-            if (nameSpace != null) {
+            if (nameSpace != null && !nameSpace.isEmpty()) {
               querySb.append(" AND id like :nameSpace");
             }
             // 2 range conditions are used on different columns, but not all SQL databases properly optimize it.
@@ -1247,7 +1246,7 @@ public class IndexerSQLMetadataStorageCoordinator implements IndexerMetadataStor
     querySb.append("SELECT created_date, payload FROM %1$s WHERE dataSource = :dataSource ");
     querySb.append("AND start >= :start AND %2$send%2$s <= :end AND used = true");
 
-    if (nameSpace != null) {
+    if (nameSpace != null && !nameSpace.isEmpty()) {
       querySb.append(" AND id like :nameSpace");
     }
 
