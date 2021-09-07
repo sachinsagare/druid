@@ -25,6 +25,7 @@ import org.apache.druid.java.util.common.concurrent.ScheduledExecutors;
 import org.apache.druid.java.util.common.guava.CloseQuietly;
 import org.apache.druid.java.util.common.lifecycle.LifecycleStart;
 import org.apache.druid.java.util.common.lifecycle.LifecycleStop;
+import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.server.RequestLogLine;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -46,6 +47,8 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class FileRequestLogger implements RequestLogger
 {
+  private static final Logger log = new Logger(FileRequestLogger.class);
+
   private final ObjectMapper objectMapper;
   private final ScheduledExecutorService exec;
   private final File baseDir;
@@ -72,19 +75,19 @@ public class FileRequestLogger implements RequestLogger
       baseDir.mkdirs();
 
       MutableDateTime mutableDateTime = DateTimes.nowUtc().toMutableDateTime(ISOChronology.getInstanceUTC());
-      mutableDateTime.setMillisOfDay(0);
+      mutableDateTime.setMinuteOfHour(0);
       synchronized (lock) {
         currentDay = mutableDateTime.toDateTime(ISOChronology.getInstanceUTC());
 
         fileWriter = getFileWriter();
       }
-      long nextDay = currentDay.plusDays(1).getMillis();
-      Duration initialDelay = new Duration(nextDay - System.currentTimeMillis());
+      long nextHour = currentDay.plusHours(1).getMillis();
+      Duration initialDelay = new Duration(nextHour - System.currentTimeMillis());
 
       ScheduledExecutors.scheduleWithFixedDelay(
           exec,
           initialDelay,
-          Duration.standardDays(1),
+          Duration.standardHours(1),
           new Callable<ScheduledExecutors.Signal>()
           {
             @Override
@@ -92,7 +95,8 @@ public class FileRequestLogger implements RequestLogger
             {
               try {
                 synchronized (lock) {
-                  currentDay = currentDay.plusDays(1);
+                  currentDay = currentDay.plusHours(1);
+                  DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
                   CloseQuietly.close(fileWriter);
                   fileWriter = getFileWriter();
                 }
