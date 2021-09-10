@@ -12,6 +12,8 @@ sudo chmod 777 -R /var/log/druid/
 sudo mkdir -p /mnt/druid/tmp
 sudo chmod 777 -R /mnt/druid/
 
+sudo sysctl -w vm.max_map_count=262144
+
 DEPLOY_TYPE="${TELETRAAN_DEPLOY_TYPE}"
 
 case "${DEPLOY_TYPE}" in
