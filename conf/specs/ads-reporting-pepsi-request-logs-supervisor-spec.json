@@ -29,7 +29,8 @@
             "engagementWindowDays",
             "viewWindowDays",
             "conversionTagVersion",
-            "conversionReportTimeType",            
+            "conversionReportTimeType",
+            "requestId",
             "traceId",
             "spanId",
             "parentSpanId",
@@ -68,11 +69,7 @@
               "type": "string",
               "name": "userId_str"
             },
-            "isApiV4",
-            {
-              "type": "long",
-              "name": "requestId"
-            }
+            "isApiV4"
           ],
           "dimensionExclusions": [
             "requestReceivedTimestamp"
