@@ -61,6 +61,7 @@ public class CoordinatorDynamicConfig
   private final int replicationThrottleLimit;
   private final int balancerComputeThreads;
   private final boolean skipCoordinatorRun;
+  private final String skipCoordinatorRunOnTier;
   private final boolean emitBalancingStats;
 
   /**
@@ -125,6 +126,7 @@ public class CoordinatorDynamicConfig
       @JsonProperty("replicationThrottleLimit") int replicationThrottleLimit,
       @JsonProperty("balancerComputeThreads") int balancerComputeThreads,
       @JsonProperty("skipCoordinatorRun") boolean skipCoordinatorRun,
+      @JsonProperty("skipCoordinatorRunOnTier") String skipCoordinatorRunOnTier,
       @JsonProperty("emitBalancingStats") boolean emitBalancingStats,
       // Type is Object here so that we can support both string and list as Coordinator console can not send array of
       // strings in the update request. See https://github.com/apache/druid/issues/3055.
@@ -174,6 +176,7 @@ public class CoordinatorDynamicConfig
     this.replicationThrottleLimit = replicationThrottleLimit;
     this.balancerComputeThreads = Math.max(balancerComputeThreads, 1);
     this.skipCoordinatorRun = skipCoordinatorRun;
+    this.skipCoordinatorRunOnTier = parseJsonString(skipCoordinatorRunOnTier);
     this.emitBalancingStats = emitBalancingStats;
     this.killUnusedSegmentsInAllDataSources = killUnusedSegmentsInAllDataSources;
     this.specificDataSourcesToKillUnusedSegmentsIn = parseJsonStringOrArray(specificDataSourcesToKillUnusedSegmentsIn);
@@ -212,6 +215,11 @@ public class CoordinatorDynamicConfig
         "maxNonPrimaryReplicantsToLoad must be greater than or equal to 0."
     );
     this.maxNonPrimaryReplicantsToLoad = maxNonPrimaryReplicantsToLoad;
+  }
+
+  private static String parseJsonString(String jsonString)
+  {
+    return jsonString == null ? "" : jsonString.trim();
   }
 
   private static Set<String> parseJsonStringOrArray(Object jsonStringOrArray)
@@ -315,6 +323,12 @@ public class CoordinatorDynamicConfig
     return skipCoordinatorRun;
   }
 
+  @JsonProperty
+  public String getSkipCoordinatorRunOnTier()
+  {
+    return skipCoordinatorRunOnTier;
+  }
+
   @JsonProperty("killDataSourceWhitelist")
   public Set<String> getSpecificDataSourcesToKillUnusedSegmentsIn()
   {
@@ -407,6 +421,7 @@ public class CoordinatorDynamicConfig
            ", replicationThrottleLimit=" + replicationThrottleLimit +
            ", balancerComputeThreads=" + balancerComputeThreads +
            ", skipCoordinatorRun=" + skipCoordinatorRun +
+           ", skipCoordinatorRunOnTier=" + skipCoordinatorRunOnTier +
            ", emitBalancingStats=" + emitBalancingStats +
            ", killUnusedSegmentsInAllDataSources=" + killUnusedSegmentsInAllDataSources +
            ", specificDataSourcesToKillUnusedSegmentsIn=" + specificDataSourcesToKillUnusedSegmentsIn +
@@ -463,6 +478,9 @@ public class CoordinatorDynamicConfig
     if (skipCoordinatorRun != that.skipCoordinatorRun) {
       return false;
     }
+    if (!skipCoordinatorRunOnTier.equals(that.skipCoordinatorRunOnTier)) {
+      return false;
+    }
     if (emitBalancingStats != that.emitBalancingStats) {
       return false;
     }
@@ -507,6 +525,7 @@ public class CoordinatorDynamicConfig
         replicationThrottleLimit,
         balancerComputeThreads,
         skipCoordinatorRun,
+        skipCoordinatorRunOnTier,
         emitBalancingStats,
         killUnusedSegmentsInAllDataSources,
         maxSegmentsInNodeLoadingQueue,
@@ -536,6 +555,7 @@ public class CoordinatorDynamicConfig
     private static final int DEFAULT_REPLICATION_THROTTLE_LIMIT = 10;
     private static final int DEFAULT_BALANCER_COMPUTE_THREADS = 1;
     private static final boolean DEFAULT_SKIP_COORDINATOR_RUN = false;
+    private static final String DEFAULT_TIER_TO_SKIP_COORDINATOR_RUN = "";
     private static final boolean DEFAULT_EMIT_BALANCING_STATS = false;
     private static final boolean DEFAULT_USE_BATCHED_SEGMENT_SAMPLER = false;
     private static final boolean DEFAULT_KILL_UNUSED_SEGMENTS_IN_ALL_DATA_SOURCES = false;
@@ -558,6 +578,7 @@ public class CoordinatorDynamicConfig
     private Object specificDataSourcesToKillUnusedSegmentsIn;
     private Boolean killUnusedSegmentsInAllDataSources;
     private Boolean skipCoordinatorRun;
+    private String skipCoordinatorRunOnTier;
     private Object dataSourcesToNotKillStalePendingSegmentsIn;
     private Integer maxSegmentsInNodeLoadingQueue;
     private Object decommissioningNodes;
@@ -583,6 +604,7 @@ public class CoordinatorDynamicConfig
         @JsonProperty("replicationThrottleLimit") @Nullable Integer replicationThrottleLimit,
         @JsonProperty("balancerComputeThreads") @Nullable Integer balancerComputeThreads,
         @JsonProperty("skipCoordinatorRun") @Nullable Boolean skipCoordinatorRun,
+        @JsonProperty("skipCoordinatorRunOnTier") @Nullable String skipCoordinatorRunOnTier,
         @JsonProperty("emitBalancingStats") @Nullable Boolean emitBalancingStats,
         @JsonProperty("killDataSourceWhitelist") @Nullable Object specificDataSourcesToKillUnusedSegmentsIn,
         @JsonProperty("killAllDataSources") @Nullable Boolean killUnusedSegmentsInAllDataSources,
@@ -607,6 +629,7 @@ public class CoordinatorDynamicConfig
       this.replicationThrottleLimit = replicationThrottleLimit;
       this.balancerComputeThreads = balancerComputeThreads;
       this.skipCoordinatorRun = skipCoordinatorRun;
+      this.skipCoordinatorRunOnTier = skipCoordinatorRunOnTier;
       this.emitBalancingStats = emitBalancingStats;
       this.specificDataSourcesToKillUnusedSegmentsIn = specificDataSourcesToKillUnusedSegmentsIn;
       this.killUnusedSegmentsInAllDataSources = killUnusedSegmentsInAllDataSources;
@@ -680,6 +703,12 @@ public class CoordinatorDynamicConfig
       return this;
     }
 
+    public Builder withTierToSkipCoordinatorRun(String skipCoordinatorRunOnTier)
+    {
+      this.skipCoordinatorRunOnTier = skipCoordinatorRunOnTier;
+      return this;
+    }
+
     public Builder withEmitBalancingStats(boolean emitBalancingStats)
     {
       this.emitBalancingStats = emitBalancingStats;
@@ -750,6 +779,7 @@ public class CoordinatorDynamicConfig
           replicationThrottleLimit == null ? DEFAULT_REPLICATION_THROTTLE_LIMIT : replicationThrottleLimit,
           balancerComputeThreads == null ? DEFAULT_BALANCER_COMPUTE_THREADS : balancerComputeThreads,
           skipCoordinatorRun == null ? DEFAULT_SKIP_COORDINATOR_RUN : skipCoordinatorRun,
+          skipCoordinatorRunOnTier,
           emitBalancingStats == null ? DEFAULT_EMIT_BALANCING_STATS : emitBalancingStats,
           specificDataSourcesToKillUnusedSegmentsIn,
           killUnusedSegmentsInAllDataSources == null
@@ -787,6 +817,7 @@ public class CoordinatorDynamicConfig
           replicationThrottleLimit == null ? defaults.getReplicationThrottleLimit() : replicationThrottleLimit,
           balancerComputeThreads == null ? defaults.getBalancerComputeThreads() : balancerComputeThreads,
           skipCoordinatorRun == null ? defaults.isSkipCoordinatorRun() : skipCoordinatorRun,
+          skipCoordinatorRunOnTier == null ? defaults.getSkipCoordinatorRunOnTier() : skipCoordinatorRunOnTier,
           emitBalancingStats == null ? defaults.emitBalancingStats() : emitBalancingStats,
           specificDataSourcesToKillUnusedSegmentsIn == null
           ? defaults.getSpecificDataSourcesToKillUnusedSegmentsIn()
