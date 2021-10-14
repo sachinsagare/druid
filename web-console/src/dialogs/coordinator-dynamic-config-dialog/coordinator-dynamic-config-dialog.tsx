@@ -284,6 +284,11 @@ export class CoordinatorDynamicConfigDialog extends React.PureComponent<
                 </>
               ),
             },
+            {
+              name: 'skipCoordinatorRunOnTier',
+              type: 'string',
+              info: <>The name of historical tier to skip coordinator run.</>,
+            },
           ]}
           model={dynamicConfig}
           onChange={m => this.setState({ dynamicConfig: m })}

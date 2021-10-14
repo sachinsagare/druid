@@ -173,6 +173,11 @@ public abstract class LoadRule implements Rule
       }
       final String tier = entry.getKey();
 
+      if (params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier().equals(tier)) {
+        log.info("Skip tier[%s] as user configured", tier);
+        continue;
+      }
+
       String noAvailability = StringUtils.format(
           "No available [%s] servers or node capacity to assign primary segment[%s]! Expected Replicants[%d]",
           tier,
@@ -264,6 +269,12 @@ public abstract class LoadRule implements Rule
     final int numToAssign = targetReplicantsInTier - currentReplicantsInTier;
     // if nothing to assign
     if (numToAssign <= 0) {
+      return 0;
+    }
+
+    if (params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier().equals(tier)) {
+      log.info("Skip assigning segment[%s] to tier [%s] as user configured.",
+          segment.getId(), tier);
       return 0;
     }
 

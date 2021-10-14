@@ -49,7 +49,8 @@ public class DruidCoordinatorCleanupUnneeded implements DruidCoordinatorHelper
     // Unload segments that are no longer marked as used from historical servers, *if* the usedSegments collection has
     // been populated. Used segments must be already populated because otherwise the earlier helper
     // DruidCoordinatorUsedSegmentsLoader would have canceled the Coordinator's run.
-    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTier()) {
+    String tierToSkip = params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier();
+    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTierWithSkip(tierToSkip)) {
       for (ServerHolder serverHolder : serverHolders) {
         ImmutableDruidServer server = serverHolder.getServer();
 

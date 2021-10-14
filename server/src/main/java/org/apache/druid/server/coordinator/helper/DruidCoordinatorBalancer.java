@@ -93,6 +93,10 @@ public class DruidCoordinatorBalancer implements DruidCoordinatorHelper
       CoordinatorStats stats
   )
   {
+    if (params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier().equals(tier)) {
+      log.info("Skip balancing tier [%s] as user configured.", tier);
+      return;
+    }
 
     if (params.getUsedSegments().size() == 0) {
       log.info("Metadata segments are not available. Cannot balance.");

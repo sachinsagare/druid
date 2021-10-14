@@ -21,6 +21,7 @@ package org.apache.druid.server.coordinator.helper;
 
 import org.apache.druid.client.ImmutableDruidDataSource;
 import org.apache.druid.client.ImmutableDruidServer;
+import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.server.coordinator.CoordinatorStats;
 import org.apache.druid.server.coordinator.DruidCluster;
 import org.apache.druid.server.coordinator.DruidCoordinator;
@@ -37,6 +38,8 @@ import java.util.SortedSet;
 public class DruidCoordinatorCleanupOvershadowed implements DruidCoordinatorHelper
 {
   private final DruidCoordinator coordinator;
+  private static final EmittingLogger log = new EmittingLogger(
+      DruidCoordinatorCleanupOvershadowed.class);
 
   public DruidCoordinatorCleanupOvershadowed(DruidCoordinator coordinator)
   {
@@ -56,7 +59,8 @@ public class DruidCoordinatorCleanupOvershadowed implements DruidCoordinatorHelp
     DruidCluster cluster = params.getDruidCluster();
     Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> timelines = new HashMap<>();
 
-    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTier()) {
+    String tierToSkip = params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier();
+    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTierWithSkip(tierToSkip)) {
       for (ServerHolder serverHolder : serverHolders) {
         ImmutableDruidServer server = serverHolder.getServer();
 
