@@ -271,7 +271,9 @@ public class QueryResource implements QueryCountStatsProvider
                 },
                 ioReaderWriter.getContentType()
             )
-            .header("X-Druid-Query-Id", queryId);
+            .header("X-Druid-Query-Id", queryId)
+            .header("X-Segment-Count-By-Tiers",
+                responseContext.get(ResponseContext.Key.SEGMENT_COUNT_BY_TIERS));
 
         Object entityTag = responseContext.remove(ResponseContext.Key.ETAG);
         if (entityTag != null) {
