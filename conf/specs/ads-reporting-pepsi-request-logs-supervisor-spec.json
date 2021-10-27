@@ -69,7 +69,7 @@
               "type": "string",
               "name": "userId_str"
             },
-            "isApiV4"
+            "apiVersion"
           ],
           "dimensionExclusions": [
             "requestReceivedTimestamp"
