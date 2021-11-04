@@ -21,6 +21,7 @@ package org.apache.druid.client;
 
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.SegmentDescriptor;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -33,20 +34,44 @@ import java.util.stream.Collectors;
 public class PerQueryMetricsUtil
 {
   /**
-   * Gets a string to represent the segment count grouped by tiers.
-   * Example format: tier1:10,tier2:20,tier3:30
+   * Gets a string to represent the segment count stats (grouped by namespaces and tiers).
+   * Example format: tier1:namespace1=10,namespace2=20;tier2:namespace1=30
    */
-  public static String getSegmentCountByTiers(
+  public static String getSegmentCountStats(
       SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer,
           List<SegmentDescriptor>>>> segmentsByServer)
   {
-    SortedMap<String, Integer> segmentCountByTiers = new TreeMap<>(
-        segmentsByServer.entrySet().stream().collect(
-            Collectors.groupingBy(entry -> entry.getKey().getTier(),
-                Collectors.summingInt(entry -> entry.getValue().lhs.size()))
-        ));
-    return segmentCountByTiers.entrySet().stream()
-        .map(entry -> entry.getKey() + ":" + entry.getValue())
-        .collect(Collectors.joining(","));
+
+    SortedMap<String, SortedMap<String, Integer>> segmentCountByTiersAndNamespaces =
+        new TreeMap<>();
+
+    segmentsByServer.forEach((server, segments) -> {
+      String tier = server.getTier();
+      segmentCountByTiersAndNamespaces.putIfAbsent(tier, new TreeMap<>());
+      SortedMap<String, Integer> segmentCountByNamespaces =
+          segmentCountByTiersAndNamespaces.get(tier);
+      segments.lhs.forEach(segment -> {
+        String namespace =
+            NamespacedVersionedIntervalTimeline.getNamespace(segment.getPartitionIdentifier());
+        segmentCountByNamespaces.merge(namespace, 1, Integer::sum);
+      });
+    });
+
+    return segmentCountByTiersAndNamespaces.entrySet().stream()
+        .map(entry -> {
+          String tier = entry.getKey();
+          SortedMap<String, Integer> segmentCountByNamespaces = entry.getValue();
+
+          String countByNamespacesStr = segmentCountByNamespaces.entrySet().stream()
+              .map(countEntry -> {
+                String namespace = countEntry.getKey();
+                Integer count = countEntry.getValue();
+                return namespace + "=" + count;
+              })
+              .collect(Collectors.joining(","));
+
+          return tier + ":" + countByNamespacesStr;
+        })
+        .collect(Collectors.joining(";"));
   }
 }

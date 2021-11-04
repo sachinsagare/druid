@@ -102,6 +102,8 @@ public class QueryResource implements QueryCountStatsProvider
   public static final String HEADER_RESPONSE_CONTEXT = "X-Druid-Response-Context";
   public static final String HEADER_IF_NONE_MATCH = "If-None-Match";
   public static final String HEADER_ETAG = "ETag";
+  public static final String HEADER_RETURN_SEGMENT_COUNT_STATS = "X-Return-Segment-Count-Stats";
+  public static final String HEADER_SEGMENT_COUNT_STATS = "X-Segment-Count-Stats";
 
   protected final QueryLifecycleFactory queryLifecycleFactory;
   protected final ObjectMapper jsonMapper;
@@ -275,9 +277,14 @@ public class QueryResource implements QueryCountStatsProvider
                 },
                 ioReaderWriter.getResponseWriter().getResponseType()
             )
-            .header("X-Druid-Query-Id", queryId)
-            .header("X-Segment-Count-By-Tiers",
-                responseContext.get(ResponseContext.Key.SEGMENT_COUNT_BY_TIERS));
+            .header("X-Druid-Query-Id", queryId);
+
+        if (QueryContexts.isReturnSegmentCountStats(query)) {
+          Object segmentCountStats = responseContext.get(ResponseContext.Keys.SEGMENT_COUNT_STATS);
+          responseBuilder.header(
+              HEADER_SEGMENT_COUNT_STATS,
+              segmentCountStats == null ? "" : segmentCountStats.toString());
+        }
 
         transferEntityTag(responseContext, responseBuilder);
 
@@ -397,6 +404,11 @@ public class QueryResource implements QueryCountStatsProvider
           ImmutableMap.of(HEADER_IF_NONE_MATCH, prevEtag)
       );
     }
+    // Set up a context flag on whether to return segment count stats.
+    baseQuery = baseQuery.withOverriddenContext(
+        ImmutableMap.of(
+            QueryContexts.BROKER_RETURN_SEGMENT_COUNT_STATS, isReturnSegmentCountStatsEnabled(req))
+    );
 
     return baseQuery;
   }
@@ -404,6 +416,15 @@ public class QueryResource implements QueryCountStatsProvider
   private static String getPreviousEtag(final HttpServletRequest req)
   {
     return req.getHeader(HEADER_IF_NONE_MATCH);
+  }
+
+  private static boolean isReturnSegmentCountStatsEnabled(final HttpServletRequest req)
+  {
+    String header = req.getHeader(HEADER_RETURN_SEGMENT_COUNT_STATS);
+    if (Strings.isNullOrEmpty(header)) {
+      return false;
+    }
+    return "1".equals(header);
   }
 
   protected ObjectMapper serializeDataTimeAsLong(ObjectMapper mapper)
