@@ -47,6 +47,7 @@ public class QueryContexts
   public static final String BROKER_ALLOWED_SERVER_KEYWORD = "allowedServerKeyword";
   public static final String INCLUDE_REALTIME_SERVERS = "includeRealtimeServers";
   public static final String BROKER_RETURN_EMPTY_RESULTS = "returnEmptyResults";
+  public static final String BROKER_RETURN_SEGMENT_COUNT_STATS = "returnSegmentCountStats";
 
   @Deprecated
   public static final String CHUNK_PERIOD_KEY = "chunkPeriod";
@@ -67,6 +68,7 @@ public class QueryContexts
   public static final int DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED = 2;
   public static final boolean DEFAULT_INCLUDE_REALTIME_SERVERS = true;
   public static final boolean DEFAULT_RETURN_EMPTY_RESULTS = false;
+  public static final boolean DEFAULT_RETURN_SEGMENT_COUNT_STATS = false;
 
   @SuppressWarnings("unused") // Used by Jackson serialization
   public enum Vectorize
@@ -238,6 +240,15 @@ public class QueryContexts
   public static <T> boolean isReturnEmptyResults(Query<T> query)
   {
     return parseBoolean(query, BROKER_RETURN_EMPTY_RESULTS, DEFAULT_RETURN_EMPTY_RESULTS);
+  }
+
+  public static <T> boolean isReturnSegmentCountStats(Query<T> query)
+  {
+    return parseBoolean(
+        query,
+        BROKER_RETURN_SEGMENT_COUNT_STATS,
+        DEFAULT_RETURN_SEGMENT_COUNT_STATS
+    );
   }
 
   @Deprecated

@@ -145,11 +145,11 @@ public abstract class ResponseContext
      */
     TIMEOUT_AT("timeoutAt"),
     /**
-     * The number of scanned segments (grouped by tiers) for running a query. This can be used for
-     * measuring per-query cost at the client side. Example value format:
-     *   "tier1:10,tier2:20,tier3:30"
+     * The number of scanned segments (grouped by tiers and namespaces) for running a query. This
+     * can be used for measuring per-query cost at the client side. Example value format:
+     *   "tier1:namespace1:10,tier2:namespace2:20,tier3:namespace3:30"
      */
-    SEGMENT_COUNT_BY_TIERS("segmentCountByTiers"),
+    SEGMENT_COUNT_STATS("segmentCountStats"),
     /**
      * The number of scanned rows.
      * For backward compatibility the context key name still equals to "count".

@@ -24,7 +24,6 @@ import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.SegmentDescriptor;
 import org.apache.druid.server.coordination.ServerType;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -34,14 +33,8 @@ import java.util.TreeMap;
 
 public class PerQueryMetricsUtilTest
 {
-
-  @Before
-  public void setUp()
-  {
-  }
-
   @Test
-  public void testGetSegmentCountByTiers()
+  public void testGetSegmentCountByTiersAndNamespaces()
   {
     SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer,
         List<SegmentDescriptor>>>> segmentsByServer = new TreeMap<>();
@@ -49,22 +42,24 @@ public class PerQueryMetricsUtilTest
     segmentsByServer.put(
         new DruidServer("server1", "host1:111", "host1:222", 10, ServerType.BRIDGE, "tier1", 0),
         new Pair<>(Arrays.asList(
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 1),
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 2)), null));
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 1, "namespace1_1"),
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 2, "namespace1_2")), null));
 
     segmentsByServer.put(
         new DruidServer("server2", "host2:111", "host2:222", 10, ServerType.BRIDGE, "tier2", 0),
         new Pair<>(Arrays.asList(
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 3),
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 4),
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 5)), null));
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 3, "namespace1_3"),
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 4, "namespace2_4"),
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 5, "namespace2_5")), null));
     segmentsByServer.put(
         new DruidServer("server3", "host3:111", "host3:222", 10, ServerType.BRIDGE, "tier1", 0),
         new Pair<>(Arrays.asList(
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 6),
-            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 7)), null));
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 6, "namespace1_6"),
+            new SegmentDescriptor(Intervals.utc(1L, 2L), "v1", 7, "namespace2_7")), null));
 
-    String segmentsCountByTiers = PerQueryMetricsUtil.getSegmentCountByTiers(segmentsByServer);
-    Assert.assertEquals("tier1:4,tier2:3", segmentsCountByTiers);
+    String segmentsCountByTiersAndNamespaces =
+        PerQueryMetricsUtil.getSegmentCountStats(segmentsByServer);
+    Assert.assertEquals("tier1:namespace1=3,namespace2=1;tier2:namespace1=1,namespace2=2",
+        segmentsCountByTiersAndNamespaces);
   }
 }

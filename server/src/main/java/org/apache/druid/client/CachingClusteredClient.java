@@ -399,8 +399,12 @@ public class CachingClusteredClient implements QuerySegmentWalker
                                                       .map(s -> s.lhs.size())
                                                       .reduce(0, Integer::sum));
       queryMetrics.emit(emitter);
-      responseContext.put(ResponseContext.Key.SEGMENT_COUNT_BY_TIERS,
-          PerQueryMetricsUtil.getSegmentCountByTiers(segmentsByServer));
+
+      if (QueryContexts.isReturnSegmentCountStats(query)) {
+        responseContext.put(ResponseContext.Key.SEGMENT_COUNT_STATS,
+            PerQueryMetricsUtil.getSegmentCountStats(segmentsByServer));
+      }
+
       return new LazySequence<>(() -> {
         List<Sequence<T>> sequencesByInterval = new ArrayList<>(alreadyCachedResults.size() + segmentsByServer.size());
         addSequencesFromCache(sequencesByInterval, alreadyCachedResults);
