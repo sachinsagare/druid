@@ -21,7 +21,7 @@ package org.apache.druid.client;
 
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.SegmentDescriptor;
-import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
+import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -52,7 +52,8 @@ public class PerQueryMetricsUtil
           segmentCountByTiersAndNamespaces.get(tier);
       segments.lhs.forEach(segment -> {
         String namespace =
-            NamespacedVersionedIntervalTimeline.getNamespace(segment.getPartitionIdentifier());
+            ComplementaryNamespacedVersionedIntervalTimeline.getRootNamespace(
+                segment.getPartitionIdentifier().toString());
         segmentCountByNamespaces.merge(namespace, 1, Integer::sum);
       });
     });
