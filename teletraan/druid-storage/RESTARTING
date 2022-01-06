@@ -47,6 +47,9 @@ case "${DEPLOY_TYPE}" in
     experiments)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.experiments.conf
         ;;
+    fgac)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.fgac.conf
+        ;;
     *)
         echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"
         exit 1

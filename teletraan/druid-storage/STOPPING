@@ -38,7 +38,9 @@ else
         experiments)
             configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.experiments.conf
             ;;
-
+        fgac)
+            configure-serviceset stop -c teletraan/${ENV_NAME}/telefig/serviceset.fgac.conf
+            ;;
         *)
             echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"
             exit 1
