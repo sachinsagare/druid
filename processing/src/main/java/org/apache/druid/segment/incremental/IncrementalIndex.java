@@ -74,6 +74,7 @@ import org.apache.druid.segment.column.ColumnCapabilities;
 import org.apache.druid.segment.column.ColumnCapabilitiesImpl;
 import org.apache.druid.segment.column.ColumnHolder;
 import org.apache.druid.segment.column.ColumnType;
+import org.apache.druid.segment.column.RowSignature;
 import org.apache.druid.segment.column.SimpleColumnHolder;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.serde.ComplexMetricExtractor;
@@ -116,17 +117,18 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
    * @return column selector factory
    */
   public static ColumnSelectorFactory makeColumnSelectorFactory(
-      final ColumnInspector columnInspector,
       final VirtualColumns virtualColumns,
       final AggregatorFactory agg,
       final Supplier<InputRow> in,
       final boolean deserializeComplexMetrics
   )
   {
+    // we use RowSignature.empty() because ColumnInspector here should be the InputRow schema, not the
+    // IncrementalIndex schema, because we are reading values from the InputRow
     final RowBasedColumnSelectorFactory<InputRow> baseSelectorFactory = RowBasedColumnSelectorFactory.create(
         RowAdapters.standardRow(),
         in::get,
-        columnInspector,
+        RowSignature.empty(),
         true
     );
 
@@ -1067,7 +1069,7 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
       final boolean deserializeComplexMetrics
   )
   {
-    return makeColumnSelectorFactory(this, virtualColumns, agg, in, deserializeComplexMetrics);
+    return makeColumnSelectorFactory(virtualColumns, agg, in, deserializeComplexMetrics);
   }
 
   protected final Comparator<IncrementalIndexRow> dimsComparator()
