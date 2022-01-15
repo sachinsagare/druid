@@ -204,6 +204,7 @@
         <module>extensions-contrib/bloomfilter-name-numbered-shard-spec</module>
         <module>extensions-contrib/collectset</module>
         <module>extensions-contrib/serverset-password-provider</module>
+        <module>extensions-contrib/opentelemetry-emitter</module>
         <!-- distribution packaging -->
         <module>distribution</module>
     </modules>
@@ -1573,7 +1574,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>3.2.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
