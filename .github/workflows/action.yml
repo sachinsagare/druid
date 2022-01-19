@@ -13,9 +13,9 @@ jobs:
     - name: Display step name on Github
       uses: Druid-private-test/jenkins-action@master
       with:
-        jenkins_url: "{JENKINS_URL}"
-        jenkins_user: "{JENKINS_USER}"
+        jenkins_url: "https://jenkinsmaster-021.pinadmin.com/"
+        jenkins_user: "ssagare"
         jenkins_token: "${{ secrets.jenkins_token }}" # take value from Github secret, for security purposes.
-        job_name: "{JOB_NAME}"
+        job_name: "Druid-private-test"
         jenkins_params: '{"any_build_param_or_none": "value", "branch": "${GITHUB_SHA}"}' # Optional.
         
