@@ -75,7 +75,10 @@
             {
               "type": "long",
               "name": "scheduleOwningUserId"
-            }
+            },
+            "loggingClient",
+            "exceptionName",
+            "exceptionMessage"
           ]
         },
         "metricsSpec": [
