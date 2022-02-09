@@ -48,6 +48,10 @@ public class QueryContexts
   public static final String INCLUDE_REALTIME_SERVERS = "includeRealtimeServers";
   public static final String BROKER_RETURN_EMPTY_RESULTS = "returnEmptyResults";
   public static final String BROKER_RETURN_SEGMENT_COUNT_STATS = "returnSegmentCountStats";
+  // In a table with multiple namesapces, a query could contains many aggregators that would be irrelevant,
+  // e.g. querying a metric that does not exist on the namespace, that could be expensive if the query requires scanning
+  // large number of rows. Turn this option on to skip executing those irrelevant aggregators.
+  public static final String GROUPBY_OPTIMIZE_AGGREGATOR = "groupbyOptimizeAggregator";
 
   @Deprecated
   public static final String CHUNK_PERIOD_KEY = "chunkPeriod";
@@ -69,6 +73,8 @@ public class QueryContexts
   public static final boolean DEFAULT_INCLUDE_REALTIME_SERVERS = true;
   public static final boolean DEFAULT_RETURN_EMPTY_RESULTS = false;
   public static final boolean DEFAULT_RETURN_SEGMENT_COUNT_STATS = false;
+  public static final boolean DEFAULT_GROUPBY_OPTIMIZE_AGGREGATOR = false;
+
 
   @SuppressWarnings("unused") // Used by Jackson serialization
   public enum Vectorize
@@ -248,6 +254,15 @@ public class QueryContexts
         query,
         BROKER_RETURN_SEGMENT_COUNT_STATS,
         DEFAULT_RETURN_SEGMENT_COUNT_STATS
+    );
+  }
+
+  public static <T> boolean isGroupByOptimizeAggregator(Query<T> query)
+  {
+    return parseBoolean(
+        query,
+        GROUPBY_OPTIMIZE_AGGREGATOR,
+        DEFAULT_GROUPBY_OPTIMIZE_AGGREGATOR
     );
   }
 
