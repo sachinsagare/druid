@@ -168,8 +168,9 @@ public class AggregatorAdapters implements Closeable
   public void aggregateBuffered(final ByteBuffer buf, final int position)
   {
     for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
-      final Adapter adapter = adapters.get(nonNoopAdapterPositions.get(i));
-      adapter.asBufferAggregator().aggregate(buf, position + aggregatorPositions[i]);
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asBufferAggregator().aggregate(buf, position + aggregatorPositions[pos]);
     }
   }
 
@@ -186,8 +187,9 @@ public class AggregatorAdapters implements Closeable
   )
   {
     for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
-      final Adapter adapter = adapters.get(nonNoopAdapterPositions.get(i));
-      adapter.asVectorAggregator().aggregate(buf, position + aggregatorPositions[i], start, end);
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asVectorAggregator().aggregate(buf, position + aggregatorPositions[pos], start, end);
     }
   }
 
@@ -204,8 +206,9 @@ public class AggregatorAdapters implements Closeable
   )
   {
     for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
-      final Adapter adapter = adapters.get(nonNoopAdapterPositions.get(i));
-      adapter.asVectorAggregator().aggregate(buf, numRows, positions, rows, aggregatorPositions[i]);
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asVectorAggregator().aggregate(buf, numRows, positions, rows, aggregatorPositions[pos]);
     }
   }
 
