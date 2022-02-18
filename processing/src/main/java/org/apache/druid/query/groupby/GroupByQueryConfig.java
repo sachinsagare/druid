@@ -50,6 +50,8 @@ public class GroupByQueryConfig
   private static final String CTX_KEY_INTERMEDIATE_COMBINE_DEGREE = "intermediateCombineDegree";
   private static final String CTX_KEY_NUM_PARALLEL_COMBINE_THREADS = "numParallelCombineThreads";
   private static final String CTX_KEY_VECTORIZE = "vectorize";
+  // temporary flag to stop returning 0s for aggregators and post-aggregator in broker in non-array format
+  public static final String CTX_KEY_SKIP_ZERO = "skipZero";
 
   @JsonProperty
   private String defaultStrategy = GroupByStrategySelector.STRATEGY_V2;

@@ -56,6 +56,11 @@ import java.util.Map;
  */
 public final class ResultRow
 {
+  public static final Double ZERO_DOUBLE = 0.0d;
+  public static final Float ZERO_FLOAT = 0.0f;
+  public static final Long ZERO_LONG = 0L;
+  public static final Integer ZERO_INTEGER = 0;
+
   private final Object[] row;
 
   private ResultRow(final Object[] row)
@@ -158,13 +163,21 @@ public final class ResultRow
    */
   public Map<String, Object> toMap(final GroupByQuery query)
   {
+    return toMap(query, false);
+  }
+
+  /**
+   * Returns a Map representation of the data in this row. Does not include the timestamp.
+   */
+  public Map<String, Object> toMap(final GroupByQuery query, boolean skipZero)
+  {
     final List<String> resultRowOrder = query.getResultRowOrder();
     final Map<String, Object> map = new HashMap<>();
 
+    int dimensionEnd = query.getResultRowDimensionEnd();
     for (int i = query.getResultRowDimensionStart(); i < row.length; i++) {
       final String columnName = resultRowOrder.get(i);
-
-      if (row[i] != null) {
+      if (row[i] != null && (!skipZero || i < dimensionEnd || !isZero(row[i]))) {
         map.put(columnName, row[i]);
       }
     }
@@ -172,10 +185,26 @@ public final class ResultRow
     return map;
   }
 
+  private static boolean isZero(Object obj)
+  {
+    return (obj instanceof Integer && obj == ZERO_INTEGER)
+           || (obj instanceof Long && obj == ZERO_LONG)
+           || (obj instanceof Float && obj == ZERO_FLOAT)
+           || (obj instanceof Double && obj == ZERO_DOUBLE);
+  }
+
   /**
    * Returns a {@link Row} representation of the data in this row.
    */
   public MapBasedRow toMapBasedRow(final GroupByQuery query)
+  {
+    return toMapBasedRow(query, false);
+  }
+
+  /**
+   * Returns a {@link Row} representation of the data in this row.
+   */
+  public MapBasedRow toMapBasedRow(final GroupByQuery query, boolean skipZero)
   {
     // May be null, if so it'll get replaced later
     final DateTime timestamp;
@@ -186,7 +215,7 @@ public final class ResultRow
       timestamp = query.getUniversalTimestamp();
     }
 
-    return new MapBasedRow(timestamp, toMap(query));
+    return new MapBasedRow(timestamp, toMap(query, skipZero));
   }
 
   @Override

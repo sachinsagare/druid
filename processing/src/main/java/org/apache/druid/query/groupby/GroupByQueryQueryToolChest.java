@@ -421,6 +421,7 @@ public class GroupByQueryQueryToolChest extends QueryToolChest<ResultRow, GroupB
   public ObjectMapper decorateObjectMapper(final ObjectMapper objectMapper, final GroupByQuery query)
   {
     final boolean resultAsArray = query.getContextBoolean(GroupByQueryConfig.CTX_KEY_ARRAY_RESULT_ROWS, false);
+    final boolean skipZero = query.getContextBoolean(GroupByQueryConfig.CTX_KEY_SKIP_ZERO, false);
 
     // Serializer that writes array- or map-based rows as appropriate, based on the "resultAsArray" setting.
     final JsonSerializer<ResultRow> serializer = new JsonSerializer<ResultRow>()
@@ -435,7 +436,11 @@ public class GroupByQueryQueryToolChest extends QueryToolChest<ResultRow, GroupB
         if (resultAsArray) {
           jg.writeObject(resultRow.getArray());
         } else {
-          jg.writeObject(resultRow.toMapBasedRow(query));
+          if (skipZero) {
+            jg.writeObject(resultRow.toMapBasedRow(query, true));
+          } else {
+            jg.writeObject(resultRow.toMapBasedRow(query));
+          }
         }
       }
     };
