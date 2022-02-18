@@ -425,6 +425,14 @@ public class GroupByQuery extends BaseQuery<ResultRow>
   }
 
   /**
+   * Returns the position of the first dimension in ResultRows for this query.
+   */
+  public int getResultRowDimensionEnd()
+  {
+    return getResultRowDimensionStart() + dimensions.size();
+  }
+
+  /**
    * Returns the position of the first aggregator in ResultRows for this query.
    */
   public int getResultRowAggregatorStart()
