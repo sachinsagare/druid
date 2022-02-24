@@ -20,7 +20,6 @@
 package org.apache.druid.timeline;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import org.apache.druid.timeline.partition.PartitionChunk;
