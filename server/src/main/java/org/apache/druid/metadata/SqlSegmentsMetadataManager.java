@@ -849,10 +849,10 @@ public class SqlSegmentsMetadataManager implements SegmentsMetadataManager
     NamespacedVersionedIntervalTimeline<String, DataSegment> usedSegmentsTimeline
         = dataSourcesSnapshot.getUsedSegmentsTimelinesPerDataSource().get(datasource);
 
-    Optional<Iterable<DataSegment>>  iterableOptional = Optional.absent();
+    Optional<Iterable<DataSegment>> iterableOptional = Optional.absent();
 
-    for (VersionedIntervalTimeline<String, DataSegment> timelines :usedSegmentsTimeline.getTimelines().values()) {
-      iterableOptional= Optional.fromNullable(timelines)
+    for (VersionedIntervalTimeline<String, DataSegment> timelines : usedSegmentsTimeline.getTimelines().values()) {
+      iterableOptional = Optional.fromNullable(timelines)
               .transform(timeline -> timeline.findNonOvershadowedObjectsInInterval(interval, Partitions.ONLY_COMPLETE));
       break;
     }
