@@ -17,33 +17,21 @@
  * under the License.
  */
 
-package org.apache.druid.timeline.partition.extension.hash.named.numbered.shard.spec;
+package org.apache.druid.client;
 
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.inject.Binder;
-import org.apache.druid.initialization.DruidModule;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-public class HashBasedNamedNumberedShardSpecModule implements DruidModule
+public class BrokerDataSourceMultiComplementConfig
 {
-  @Override
-  public List<? extends Module> getJacksonModules()
-  {
-    return Collections.singletonList(
-        new SimpleModule()
-            .registerSubtypes(
-                new NamedType(HashBasedNamedNumberedShardSpec.class, "hash_named_numbered")
-            )
-    );
-  }
+  @JsonProperty
+  private Map<String, List<String>> mapping = ImmutableMap.of();
 
-  @Override
-  public void configure(Binder binder)
+  public Map<String, List<String>> getMapping()
   {
-    // Stub
+    return mapping;
   }
 }

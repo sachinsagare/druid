@@ -27,29 +27,20 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-public class HashBasedNumberedPartialShardSpec implements PartialShardSpec
+public class HashBasedNumberedShardSpecFactory implements ShardSpecFactory
 {
-  public static final String TYPE = "hashed";
-
   @Nullable
   private final List<String> partitionDimensions;
-  private final int bucketId;
-  private final int numBuckets;
-  @Nullable
-  private final HashPartitionFunction partitionFunction;
+  private final int numPartitions;
 
   @JsonCreator
-  public HashBasedNumberedPartialShardSpec(
+  public HashBasedNumberedShardSpecFactory(
       @JsonProperty("partitionDimensions") @Nullable List<String> partitionDimensions,
-      @JsonProperty("bucketId") int bucketId,
-      @JsonProperty("numPartitions") int numBuckets,
-      @JsonProperty("partitionFunction") @Nullable HashPartitionFunction partitionFunction // nullable for backward compatibility
+      @JsonProperty("numPartitions") int numPartitions
   )
   {
     this.partitionDimensions = partitionDimensions;
-    this.bucketId = bucketId;
-    this.numBuckets = numBuckets;
-    this.partitionFunction = partitionFunction;
+    this.numPartitions = numPartitions;
   }
 
   @Nullable
@@ -59,34 +50,27 @@ public class HashBasedNumberedPartialShardSpec implements PartialShardSpec
     return partitionDimensions;
   }
 
-  @JsonProperty
-  public int getBucketId()
+  @JsonProperty public int getNumPartitions()
   {
-    return bucketId;
-  }
-
-  @JsonProperty("numPartitions")
-  public int getNumBuckets()
-  {
-    return numBuckets;
-  }
-
-  @JsonProperty
-  @Nullable
-  public HashPartitionFunction getPartitionFunction()
-  {
-    return partitionFunction;
+    return numPartitions;
   }
 
   @Override
-  public ShardSpec complete(ObjectMapper objectMapper, int partitionId, int numCorePartitions)
+  public ShardSpec create(ObjectMapper objectMapper, @Nullable ShardSpec specOfPreviousMaxPartitionId)
   {
+    final HashBasedNumberedShardSpec prevSpec = (HashBasedNumberedShardSpec) specOfPreviousMaxPartitionId;
     return new HashBasedNumberedShardSpec(
-        partitionId,
-        numCorePartitions,
-            partitionDimensions,
-            objectMapper
+        prevSpec == null ? 0 : prevSpec.getPartitionNum() + 1,
+        numPartitions,
+        partitionDimensions,
+        objectMapper
     );
+  }
+
+  @Override
+  public ShardSpec create(ObjectMapper objectMapper, int partitionId)
+  {
+    return new HashBasedNumberedShardSpec(partitionId, numPartitions, partitionDimensions, objectMapper);
   }
 
   @Override
@@ -104,16 +88,14 @@ public class HashBasedNumberedPartialShardSpec implements PartialShardSpec
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    HashBasedNumberedPartialShardSpec that = (HashBasedNumberedPartialShardSpec) o;
-    return bucketId == that.bucketId &&
-           numBuckets == that.numBuckets &&
-           Objects.equals(partitionDimensions, that.partitionDimensions) &&
-           Objects.equals(partitionFunction, that.partitionFunction);
+    HashBasedNumberedShardSpecFactory that = (HashBasedNumberedShardSpecFactory) o;
+    return numPartitions == that.numPartitions &&
+           Objects.equals(partitionDimensions, that.partitionDimensions);
   }
 
   @Override
   public int hashCode()
   {
-    return Objects.hash(partitionDimensions, bucketId, numBuckets, partitionFunction);
+    return Objects.hash(partitionDimensions, numPartitions);
   }
 }
