@@ -129,8 +129,8 @@ public class DruidCoordinatorMirroringTierSegmentCopier implements DruidCoordina
     int m = mirroringServers.length;
     int p = primaryServers.length;
     int numberOfClones = (int) Math.ceil(m * 1.0 / p);
-    Set<Integer> partitionM = new LinkedHashSet<>(m);
-    Set<Integer> partitionP = new LinkedHashSet<>(numberOfClones * p);
+    Set<Integer> partitionM = new LinkedHashSet<>();
+    Set<Integer> partitionP = new LinkedHashSet<>();
     for (int i = 0; i < m; i++) {
       g.addVertex(i);
       partitionM.add(i);
