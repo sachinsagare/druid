@@ -149,7 +149,7 @@ public class DruidCoordinatorMirroringTierSegmentCopierTest
         Stream.of(mirror1, mirror2)
             .collect(Collectors.toCollection(() -> new TreeSet<>(
                 Collections.reverseOrder())))
-    ));
+    ), null);
     params = new DruidCoordinatorRuntimeParams.Builder()
         .withStartTimeNanos(System.nanoTime())
         .withDruidCluster(druidCluster).build();
@@ -172,7 +172,7 @@ public class DruidCoordinatorMirroringTierSegmentCopierTest
         Stream.of(mirror1)
             .collect(Collectors.toCollection(() -> new TreeSet<>(
                 Collections.reverseOrder())))
-    ));
+    ), null);
     params = new DruidCoordinatorRuntimeParams.Builder()
         .withStartTimeNanos(System.nanoTime())
         .withDruidCluster(druidCluster).build();
@@ -199,7 +199,7 @@ public class DruidCoordinatorMirroringTierSegmentCopierTest
         Stream.of(mirror1, mirror2)
             .collect(Collectors.toCollection(() -> new TreeSet<>(
                 Collections.reverseOrder())))
-    ));
+    ), null);
     params = new DruidCoordinatorRuntimeParams.Builder()
         .withStartTimeNanos(System.nanoTime())
         .withDruidCluster(druidCluster).build();
@@ -224,7 +224,7 @@ public class DruidCoordinatorMirroringTierSegmentCopierTest
         Stream.of(mirror1, mirror2)
             .collect(Collectors.toCollection(() -> new TreeSet<>(
                 Collections.reverseOrder())))
-    ));
+    ), null);
     params = new DruidCoordinatorRuntimeParams.Builder()
         .withStartTimeNanos(System.nanoTime())
         .withDruidCluster(druidCluster).build();
@@ -258,7 +258,7 @@ public class DruidCoordinatorMirroringTierSegmentCopierTest
         Stream.of(mirror1, mirror2)
             .collect(Collectors.toCollection(() -> new TreeSet<>(
                 Collections.reverseOrder())))
-    ));
+    ), null);
     params = new DruidCoordinatorRuntimeParams.Builder()
         .withStartTimeNanos(System.nanoTime())
         .withDruidCluster(druidCluster).build();
