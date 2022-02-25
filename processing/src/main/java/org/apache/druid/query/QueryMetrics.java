@@ -27,6 +27,7 @@ import org.apache.druid.query.filter.Filter;
 import org.apache.druid.query.search.SearchQueryMetricsFactory;
 import org.joda.time.Interval;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -231,7 +232,11 @@ public interface QueryMetrics<QueryType extends Query<?>>
 
   void segment(String segmentIdentifier);
 
+  void namespace(@Nullable String namespace);
+
   void chunkInterval(Interval interval);
+
+  void daysAgo(Interval interval);
 
   void preFilters(List<Filter> preFilters);
 
@@ -362,6 +367,11 @@ public interface QueryMetrics<QueryType extends Query<?>>
    * Reports the number of segments to query after filtering based on shard spec in broker
    */
   QueryMetrics<QueryType> reportSegmentAfterFilteringCount(int segmentCount);
+
+  /**
+   * Reports the host that has timeout
+   */
+  QueryMetrics<QueryType> reportTimeout(String host);
 
   /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.

@@ -425,6 +425,10 @@ public class DirectDruidClient<T> implements QueryRunner<T>
           if (timeLeft <= 0) {
             String msg = StringUtils.format("Query[%s] url[%s] timed out.", query.getId(), url);
             setupResponseReadFailure(msg, null);
+            QueryMetrics<? super Query<T>> queryMetrics = toolChest.makeMetrics(query);
+            queryMetrics.daysAgo(query.getIntervals().get(0));
+            queryMetrics.reportTimeout(host);
+            queryMetrics.emit(emitter);
             throw new RE(msg);
           } else {
             return timeLeft;

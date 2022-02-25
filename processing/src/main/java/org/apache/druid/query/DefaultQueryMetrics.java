@@ -20,12 +20,15 @@
 package org.apache.druid.query;
 
 import org.apache.druid.collections.bitmap.BitmapFactory;
+import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceMetricEvent;
 import org.apache.druid.query.filter.Filter;
+import org.joda.time.Days;
 import org.joda.time.Interval;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,9 +168,25 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public void namespace(@Nullable String namespace)
+  {
+    if (namespace != null) {
+      // there is some weirdesss in namespace conversion, thus only extract the root namespace
+      int endIndex = namespace.indexOf('_');
+      setDimension("namespace", namespace.substring(0, endIndex > 0 ? endIndex : namespace.length()));
+    }
+  }
+
+  @Override
   public void chunkInterval(Interval interval)
   {
     setDimension("chunkInterval", interval.toString());
+  }
+
+  @Override
+  public void daysAgo(Interval interval)
+  {
+    setDimension("daysAgo", Days.daysBetween(interval.getStart(), DateTimes.nowUtc()).getDays());
   }
 
   @Override
@@ -341,6 +360,13 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   public QueryMetrics<QueryType> reportSegmentAfterFilteringCount(int segmentCount)
   {
     return reportMetric("query/segment/afterFilteringCount", segmentCount);
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportTimeout(String host)
+  {
+    setDimension("node", host);
+    return reportMetric("query/node/timeout", 1);
   }
 
   @Override

@@ -28,6 +28,7 @@ import org.apache.druid.query.QueryMetrics;
 import org.apache.druid.query.filter.Filter;
 import org.joda.time.Interval;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -143,9 +144,21 @@ public class DefaultSearchQueryMetrics implements SearchQueryMetrics
   }
 
   @Override
+  public void namespace(@Nullable String namespace)
+  {
+    delegateQueryMetrics.namespace(namespace);
+  }
+
+  @Override
   public void chunkInterval(Interval interval)
   {
     delegateQueryMetrics.chunkInterval(interval);
+  }
+
+  @Override
+  public void daysAgo(Interval interval)
+  {
+    delegateQueryMetrics.daysAgo(interval);
   }
 
   @Override
@@ -302,6 +315,12 @@ public class DefaultSearchQueryMetrics implements SearchQueryMetrics
   public QueryMetrics reportSegmentAfterFilteringCount(int segmentCount)
   {
     return delegateQueryMetrics.reportSegmentAfterFilteringCount(segmentCount);
+  }
+
+  @Override
+  public QueryMetrics reportTimeout(String host)
+  {
+    return delegateQueryMetrics.reportTimeout(host);
   }
 
   @Override
