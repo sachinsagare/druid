@@ -305,4 +305,22 @@ public class NamespacedVersionedIntervalTimeline<VersionType, ObjectType extends
   {
     throw new UnsupportedOperationException("Non-namespaced findEntry not supported in a namespaced timeline");
   }
+
+  /**
+   * Returns num objects (including overshadowed, see {@link #findFullyOvershadowed}) in this
+   * NamespacedVersionedIntervalTimeline to be used for iteration or {@link Collection#stream()} transformation.
+   * The order of objects in this collection is unspecified.
+   * <p>
+   * Note: iteration over the returned collection may not be as trivially cheap as, for example, iteration over an
+   * ArrayList. Try (to some reasonable extent) to organize the code so that it iterates the returned collection only
+   * once rather than several times.
+   */
+  public int getNumObjects()
+  {
+    List<ObjectType> allObjects = new ArrayList<>();
+    for (VersionedIntervalTimeline<VersionType, ObjectType> versionedIntervalTimeline : timelines.values()) {
+      allObjects.addAll(versionedIntervalTimeline.iterateAllObjects());
+    }
+    return allObjects.size();
+  }
 }

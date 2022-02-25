@@ -369,7 +369,7 @@ public class DruidCoordinator
   {
     Map<String, List<String>> unloadedStatus = new HashMap<>();
     final Collection<ImmutableDruidDataSource> dataSources =
-        segmentsMetadata.getImmutableDataSourcesWithAllUsedSegments();
+            segmentsMetadataManager.getImmutableDataSourcesWithAllUsedSegments();
 
     for (ImmutableDruidDataSource dataSource : dataSources) {
       final Set<DataSegment> segments = Sets.newHashSet(dataSource.getSegments());
