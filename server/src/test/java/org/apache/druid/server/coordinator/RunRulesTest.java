@@ -82,11 +82,17 @@ public class RunRulesTest
         null,
         null,
         null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
         10,
-        null,
-        false,
-        false,
-        null,
         null
     );
     EasyMock.expect(coordinator.getConfig()).andReturn(config).anyTimes();

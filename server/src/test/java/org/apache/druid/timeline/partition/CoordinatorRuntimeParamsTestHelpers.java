@@ -19,7 +19,6 @@
 
 package org.apache.druid.timeline.partition;
 
-import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.server.coordinator.DruidCluster;
 import org.apache.druid.server.coordinator.DruidCoordinatorRuntimeParams;
 import org.apache.druid.server.coordinator.SegmentReplicantLookup;
@@ -30,15 +29,14 @@ public class CoordinatorRuntimeParamsTestHelpers
   {
     return DruidCoordinatorRuntimeParams
         .newBuilder()
-        .withStartTimeNanos(System.nanoTime())
-        .withBalancerReferenceTimestamp(DateTimes.of("2013-01-01"));
+        .withStartTimeNanos(System.nanoTime());
   }
 
   public static DruidCoordinatorRuntimeParams.Builder newBuilder(DruidCluster druidCluster)
   {
     return newBuilder()
         .withDruidCluster(druidCluster)
-        .withSegmentReplicantLookup(SegmentReplicantLookup.make(druidCluster));
+        .withSegmentReplicantLookup(SegmentReplicantLookup.make(druidCluster, false));
   }
 
   private CoordinatorRuntimeParamsTestHelpers()
