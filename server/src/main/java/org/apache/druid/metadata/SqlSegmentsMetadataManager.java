@@ -847,10 +847,18 @@ public class SqlSegmentsMetadataManager implements SegmentsMetadataManager
     } else {
       useLatestIfWithinDelayOrPerformNewDatabasePoll();
     }
-    VersionedIntervalTimeline<String, DataSegment> usedSegmentsTimeline
+    NamespacedVersionedIntervalTimeline<String, DataSegment> usedSegmentsTimeline
         = dataSourcesSnapshot.getUsedSegmentsTimelinesPerDataSource().get(datasource);
-    return Optional.fromNullable(usedSegmentsTimeline)
-                   .transform(timeline -> timeline.findNonOvershadowedObjectsInInterval(interval, Partitions.ONLY_COMPLETE));
+
+    Optional<Iterable<DataSegment>> iterableOptional = Optional.absent();
+
+    for (VersionedIntervalTimeline<String, DataSegment> timelines : usedSegmentsTimeline.getTimelines().values()) {
+      iterableOptional = Optional.fromNullable(timelines)
+              .transform(timeline -> timeline.findNonOvershadowedObjectsInInterval(interval, Partitions.ONLY_COMPLETE));
+      break;
+    }
+
+    return iterableOptional;
   }
 
   @Override

@@ -80,8 +80,8 @@ import org.apache.druid.server.coordinator.UserCompactionTaskQueryTuningConfig;
 import org.apache.druid.server.coordinator.UserCompactionTaskTransformConfig;
 import org.apache.druid.timeline.CompactionState;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.HashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
@@ -166,7 +166,7 @@ public class CompactSegmentsTest
   private final PartitionsSpec partitionsSpec;
   private final BiFunction<Integer, Integer, ShardSpec> shardSpecFactory;
 
-  private Map<String, VersionedIntervalTimeline<String, DataSegment>> dataSources;
+  private Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> dataSources;
   Map<String, List<DataSegment>> datasourceToSegments = new HashMap<>();
 
   public CompactSegmentsTest(PartitionsSpec partitionsSpec, BiFunction<Integer, Integer, ShardSpec> shardSpecFactory)
@@ -1806,12 +1806,14 @@ public class CompactSegmentsTest
     for (int i = 0; i < 2; i++) {
       DataSegment newSegment = createSegment(dataSource, day, true, i);
       dataSources.get(dataSource).add(
+          NamespacedVersionedIntervalTimeline.getNamespace(newSegment.getShardSpec().getIdentifier()),
           newSegment.getInterval(),
           newSegment.getVersion(),
           newSegment.getShardSpec().createChunk(newSegment)
       );
       newSegment = createSegment(dataSource, day, false, i);
       dataSources.get(dataSource).add(
+          NamespacedVersionedIntervalTimeline.getNamespace(newSegment.getShardSpec().getIdentifier()),
           newSegment.getInterval(),
           newSegment.getVersion(),
           newSegment.getShardSpec().createChunk(newSegment)
@@ -1949,7 +1951,7 @@ public class CompactSegmentsTest
       submittedCompactionTasks.add(compactionTaskQuery);
 
       final Interval intervalToCompact = compactionTaskQuery.getIoConfig().getInputSpec().getInterval();
-      final VersionedIntervalTimeline<String, DataSegment> timeline = dataSources.get(
+      final NamespacedVersionedIntervalTimeline<String, DataSegment> timeline = dataSources.get(
           compactionTaskQuery.getDataSource()
       );
       final List<DataSegment> segments = timeline.lookup(intervalToCompact)
@@ -1971,7 +1973,7 @@ public class CompactSegmentsTest
     }
 
     private void compactSegments(
-        VersionedIntervalTimeline<String, DataSegment> timeline,
+        NamespacedVersionedIntervalTimeline<String, DataSegment> timeline,
         List<DataSegment> segments,
         ClientCompactionTaskQuery clientCompactionTaskQuery
     )
@@ -1989,6 +1991,7 @@ public class CompactSegmentsTest
       Interval compactInterval = new Interval(minStart, maxEnd);
       segments.forEach(
           segment -> timeline.remove(
+              NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
               segment.getInterval(),
               segment.getVersion(),
               segment.getShardSpec().createChunk(segment)
@@ -2056,6 +2059,7 @@ public class CompactSegmentsTest
         );
 
         timeline.add(
+            NamespacedVersionedIntervalTimeline.getNamespace(compactSegment.getShardSpec().getIdentifier()),
             compactInterval,
             compactSegment.getVersion(),
             compactSegment.getShardSpec().createChunk(compactSegment)

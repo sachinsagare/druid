@@ -88,9 +88,9 @@ import org.apache.druid.server.SegmentManager;
 import org.apache.druid.server.initialization.ServerConfig;
 import org.apache.druid.server.metrics.NoopServiceEmitter;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.NoneShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.joda.time.DateTime;
@@ -503,7 +503,7 @@ public class ServerManagerTest
   {
     final Interval interval = Intervals.of("P1d/2011-04-01");
     final SearchQuery query = searchQuery("test", interval, Granularities.ALL);
-    final Optional<VersionedIntervalTimeline<String, ReferenceCountingSegment>> maybeTimeline = segmentManager
+    final Optional<NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment>> maybeTimeline = segmentManager
         .getTimeline(DataSourceAnalysis.forDataSource(query.getDataSource()));
     Assert.assertTrue(maybeTimeline.isPresent());
     final List<TimelineObjectHolder<String, ReferenceCountingSegment>> holders = maybeTimeline.get().lookup(interval);
