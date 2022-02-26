@@ -139,7 +139,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     this.ignoreOutOfOrderSequenceNumber = ignoreOutOfOrderSequenceNumber == null ?
         TuningConfig.DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER : ignoreOutOfOrderSequenceNumber;
   }
-@Override
+
+  @Override
   @JsonProperty
   public AppendableIndexSpec getAppendableIndexSpec()
   {
