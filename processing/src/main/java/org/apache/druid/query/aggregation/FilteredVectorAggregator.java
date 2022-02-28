@@ -20,6 +20,7 @@
 package org.apache.druid.query.aggregation;
 
 import org.apache.druid.java.util.common.ISE;
+import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.query.filter.vector.ReadableVectorMatch;
 import org.apache.druid.query.filter.vector.VectorMatch;
 import org.apache.druid.query.filter.vector.VectorValueMatcher;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 
 public class FilteredVectorAggregator implements VectorAggregator
 {
+  private static final Logger log = new Logger(AggregatorFactory.class);
   private final VectorValueMatcher matcher;
   private final VectorAggregator delegate;
   private final int[] delegatePositions;
@@ -107,7 +109,20 @@ public class FilteredVectorAggregator implements VectorAggregator
 
     if (rows == null) {
       for (int i = 0; i < match.getSelectionSize(); i++) {
-        delegatePositions[i] = positions[selection[i]];
+        try {
+          delegatePositions[i] = positions[selection[i]];
+        }
+        catch (Exception e) {
+          log.error(
+              e,
+              "Unexpected exception i=%d, delegatePositions=%d, positions=%d, selection=%d, selectioni=%d",
+              i,
+              delegatePositions.length,
+              positions.length,
+              selection.length,
+              selection[i]
+          );
+        }
       }
     } else {
       // i iterates over the match; j iterates over the "rows" array
