@@ -83,13 +83,12 @@ public class HashBasedNamedNumberedShardSpec extends NumberedShardSpec
   @Override
   public <T> PartitionChunk<T> createChunk(T obj)
   {
-    return NamedNumberedPartitionChunk.make(getPartitionNum(), getPartitions(), partitionName, obj);
+    return NamedNumberedPartitionChunk.make(getPartitionNum(), getNumCorePartitions(), partitionName, obj);
   }
 
-  @Override
   public boolean isInChunk(long timestamp, InputRow inputRow)
   {
-    return (((long) hash(timestamp, inputRow)) - getPartitionNum()) % getPartitions() == 0;
+    return (((long) hash(timestamp, inputRow)) - getPartitionNum()) % getNumCorePartitions() == 0;
   }
 
   protected int hash(long timestamp, InputRow inputRow)
@@ -124,17 +123,17 @@ public class HashBasedNamedNumberedShardSpec extends NumberedShardSpec
   {
     return "HashBasedNamedNumberedShardSpec{" +
         "partitionNum=" + getPartitionNum() +
-        ", partitions=" + getPartitions() +
+        ", partitions=" + getNumCorePartitions() +
         ", partitionDimensions=" + getPartitionDimensions() +
         ", partitionName=" + getPartitionName() +
         '}';
   }
 
   @Override
-  public ShardSpecLookup getLookup(final List<ShardSpec> shardSpecs)
+  public ShardSpecLookup getLookup(List<? extends ShardSpec> shardSpecs)
   {
     return (long timestamp, InputRow row) -> {
-      int index = Math.abs(hash(timestamp, row) % getPartitions());
+      int index = Math.abs(hash(timestamp, row) % getNumCorePartitions());
       return shardSpecs.get(index);
     };
   }

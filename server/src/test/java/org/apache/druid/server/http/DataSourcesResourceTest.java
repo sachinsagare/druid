@@ -711,6 +711,7 @@ public class DataSourcesResourceTest
         null,
         databaseRuleManager,
         null,
+        null,
         null
     );
 
