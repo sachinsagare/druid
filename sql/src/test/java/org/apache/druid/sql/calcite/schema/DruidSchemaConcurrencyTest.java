@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.apache.druid.client.BrokerDataSourceComplementConfig;
 import org.apache.druid.client.BrokerInternalQueryConfig;
 import org.apache.druid.client.BrokerSegmentWatcherConfig;
 import org.apache.druid.client.BrokerServerView;
@@ -361,7 +362,8 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
         baseView,
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
-        new BrokerSegmentWatcherConfig()
+        new BrokerSegmentWatcherConfig(),
+        new BrokerDataSourceComplementConfig()
     );
   }
 
