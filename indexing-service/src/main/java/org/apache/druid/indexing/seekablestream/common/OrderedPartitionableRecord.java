@@ -41,14 +41,14 @@ public class OrderedPartitionableRecord<PartitionIdType, SequenceOffsetType, Rec
   private final PartitionIdType partitionId;
   private final SequenceOffsetType sequenceNumber;
   private final long sequenceTimestamp;
-  private final List<byte[]> data;
+  private final List<RecordType> data;
 
   public OrderedPartitionableRecord(
       String stream,
       PartitionIdType partitionId,
       SequenceOffsetType sequenceNumber,
       long sequenceTimestamp,
-      List<byte[]> data
+      List<RecordType> data
   )
   {
     Preconditions.checkNotNull(stream, "stream");
@@ -66,7 +66,7 @@ public class OrderedPartitionableRecord<PartitionIdType, SequenceOffsetType, Rec
       String stream,
       PartitionIdType partitionId,
       SequenceOffsetType sequenceNumber,
-      List<byte[]> data
+      List<RecordType> data
   )
   {
     this(stream, partitionId, sequenceNumber, 0, data);
@@ -142,8 +142,7 @@ public class OrderedPartitionableRecord<PartitionIdType, SequenceOffsetType, Rec
   @Override
   public int hashCode()
   {
-    final int hashOfData = data.stream().map(Arrays::hashCode).collect(Collectors.toList()).hashCode();
-    // sequenceTimestamp is intentionally not included in the hashCode calculation
+    final int hashOfData = data.stream().map(e -> e.getBuffer().hashCode()).collect(Collectors.toList()).hashCode();
     return Objects.hash(stream, partitionId, sequenceNumber, hashOfData);
   }
 }
