@@ -265,6 +265,12 @@ public class KafkaSupervisor extends SeekableStreamSupervisor<Integer, Long, Kaf
   }
 
   @Override
+  protected void updateLatestSequenceFromStream()
+  {
+
+  }
+
+  @Override
   // suppress use of CollectionUtils.mapValues() since the valueMapper function is dependent on map key here
   @SuppressWarnings("SSBasedInspection")
   protected Map<Integer, Long> getRecordLagPerPartition(Map<Integer, Long> currentOffsets)

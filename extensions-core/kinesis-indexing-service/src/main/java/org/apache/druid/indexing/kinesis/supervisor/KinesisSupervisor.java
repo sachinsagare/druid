@@ -344,6 +344,12 @@ public class KinesisSupervisor extends SeekableStreamSupervisor<String, String, 
   }
 
   @Override
+  protected void updateLatestSequenceFromStream()
+  {
+
+  }
+
+  @Override
   protected String baseTaskName()
   {
     return "index_kinesis";
