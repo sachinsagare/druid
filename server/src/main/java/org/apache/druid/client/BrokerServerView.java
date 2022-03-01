@@ -21,10 +21,8 @@ package org.apache.druid.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
-import org.apache.druid.client.selector.HighestPriorityTierSelectorStrategy;
 import org.apache.druid.client.selector.QueryableDruidServer;
 import org.apache.druid.client.selector.ServerSelector;
 import org.apache.druid.client.selector.TierSelectorStrategy;
@@ -38,19 +36,25 @@ import org.apache.druid.java.util.common.lifecycle.LifecycleStart;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.http.client.HttpClient;
-import org.apache.druid.query.*;
+import org.apache.druid.query.QueryRunner;
+import org.apache.druid.query.QueryToolChestWarehouse;
+import org.apache.druid.query.QueryWatcher;
+import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.planning.DataSourceAnalysis;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
-import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
+import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.utils.CollectionUtils;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -71,7 +75,7 @@ public class BrokerServerView implements TimelineServerView
 
   private final ConcurrentMap<String, QueryableDruidServer> clients;
   private final Map<SegmentId, ServerSelector> selectors;
-  private final Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> timelines;
+  private final Map<String, VersionedIntervalTimeline<String, ServerSelector>> timelines;
   private final ConcurrentMap<TimelineCallback, Executor> timelineCallbacks = new ConcurrentHashMap<>();
 
   private final QueryToolChestWarehouse warehouse;
@@ -109,7 +113,9 @@ public class BrokerServerView implements TimelineServerView
     this.baseView = baseView;
     this.tierSelectorStrategy = tierSelectorStrategy;
     this.emitter = emitter;
-   // TODO (lucilla) should be removed after we fully migrate to using BrokerDataSourceMultiComplementConfig
+    this.segmentWatcherConfig = segmentWatcherConfig;
+
+    // TODO (lucilla) should be removed after we fully migrate to using BrokerDataSourceMultiComplementConfig
     this.dataSourceComplementaryMapToQueryOrder = CollectionUtils.mapValues(dataSourceComplementConfig.getMapping(), Collections::singletonList);
     Map<String, List<String>> dataSourceMultiComplementConfigMapping = dataSourceMultiComplementConfig.getMapping();
     dataSourceMultiComplementConfigMapping.keySet().forEach(key ->
@@ -133,31 +139,31 @@ public class BrokerServerView implements TimelineServerView
 
     // Validate and set the segment watcher config
     validateSegmentWatcherConfig(segmentWatcherConfig);
-    this.segmentWatcherConfig = segmentWatcherConfig;
+    //this.segmentWatcherConfig = segmentWatcherConfig;
 
     this.segmentFilter = (Pair<DruidServerMetadata, DataSegment> metadataAndSegment) -> {
 
       // Include only watched tiers if specified
       if (segmentWatcherConfig.getWatchedTiers() != null
-          && !segmentWatcherConfig.getWatchedTiers().contains(metadataAndSegment.lhs.getTier())) {
+              && !segmentWatcherConfig.getWatchedTiers().contains(metadataAndSegment.lhs.getTier())) {
         return false;
       }
 
       // Exclude ignored tiers if specified
       if (segmentWatcherConfig.getIgnoredTiers() != null
-          && segmentWatcherConfig.getIgnoredTiers().contains(metadataAndSegment.lhs.getTier())) {
+              && segmentWatcherConfig.getIgnoredTiers().contains(metadataAndSegment.lhs.getTier())) {
         return false;
       }
 
       // Include only watched datasources if specified
       if (segmentWatcherConfig.getWatchedDataSources() != null
-          && !segmentWatcherConfig.getWatchedDataSources().contains(metadataAndSegment.rhs.getDataSource())) {
+              && !segmentWatcherConfig.getWatchedDataSources().contains(metadataAndSegment.rhs.getDataSource())) {
         return false;
       }
 
       // Include realtime tasks only if they are watched
       return metadataAndSegment.lhs.getType() != ServerType.INDEXER_EXECUTOR
-             || segmentWatcherConfig.isWatchRealtimeTasks();
+              || segmentWatcherConfig.isWatchRealtimeTasks();
     };
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
     baseView.registerSegmentCallback(
@@ -190,10 +196,10 @@ public class BrokerServerView implements TimelineServerView
     );
 
     baseView.registerServerRemovedCallback(
-        exec,
+            exec,
         server -> {
-          removeServer(server);
-          return CallbackAction.CONTINUE;
+        removeServer(server);
+        return CallbackAction.CONTINUE;
         }
     );
   }
@@ -230,20 +236,20 @@ public class BrokerServerView implements TimelineServerView
   private void validateSegmentWatcherConfig(BrokerSegmentWatcherConfig watcherConfig)
   {
     if (watcherConfig.getWatchedTiers() != null
-        && watcherConfig.getIgnoredTiers() != null) {
+            && watcherConfig.getIgnoredTiers() != null) {
       throw new ISE(
-          "At most one of 'druid.broker.segment.watchedTiers' "
-          + "and 'druid.broker.segment.ignoredTiers' can be configured."
+              "At most one of 'druid.broker.segment.watchedTiers' "
+                      + "and 'druid.broker.segment.ignoredTiers' can be configured."
       );
     }
 
     if (watcherConfig.getWatchedTiers() != null
-        && watcherConfig.getWatchedTiers().isEmpty()) {
+            && watcherConfig.getWatchedTiers().isEmpty()) {
       throw new ISE("If configured, 'druid.broker.segment.watchedTiers' must be non-empty");
     }
 
     if (watcherConfig.getIgnoredTiers() != null
-        && watcherConfig.getIgnoredTiers().isEmpty()) {
+            && watcherConfig.getIgnoredTiers().isEmpty()) {
       throw new ISE("If configured, 'druid.broker.segment.ignoredTiers' must be non-empty");
     }
   }
@@ -262,13 +268,13 @@ public class BrokerServerView implements TimelineServerView
   private DirectDruidClient makeDirectClient(DruidServer server)
   {
     return new DirectDruidClient(
-        warehouse,
-        queryWatcher,
-        smileMapper,
-        httpClient,
-        server.getScheme(),
-        server.getHost(),
-        emitter
+            warehouse,
+            queryWatcher,
+            smileMapper,
+            httpClient,
+            server.getScheme(),
+            server.getHost(),
+            emitter
     );
   }
 
@@ -284,86 +290,30 @@ public class BrokerServerView implements TimelineServerView
   {
     SegmentId segmentId = segment.getId();
     synchronized (lock) {
-      log.debug("Adding segment[%s] for server[%s]", segment, server);
+      // in theory we could probably just filter this to ensure we don't put ourselves in here, to make broker tree
+      // query topologies, but for now just skip all brokers, so we don't create some sort of wild infinite query
+      // loop...
+      if (!server.getType().equals(ServerType.BROKER)) {
+        log.debug("Adding segment[%s] for server[%s]", segment, server);
+        ServerSelector selector = selectors.get(segmentId);
+        if (selector == null) {
+          selector = new ServerSelector(segment, tierSelectorStrategy);
 
-      ServerSelector selector = selectors.get(segmentId);
-      if (selector == null) {
-        selector = new ServerSelector(segment, tierSelectorStrategy);
-
-        String dataSource = segment.getDataSource();
-        NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline = timelines
-                .get(dataSource);
-        if (timeline == null) {
-          if (dataSourceComplementaryMapToQueryOrder.containsKey(dataSource)) {
-            Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
-            for (String supportDataSource : dataSourceComplementaryMapToQueryOrder.get(dataSource)) {
-              NamespacedVersionedIntervalTimeline<String, ServerSelector> supportTimeline = timelines.get(supportDataSource);
-              if (supportTimeline == null) {
-                supportTimeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
-                timelines.put(supportDataSource, supportTimeline);
-              }
-              supportTimelinesByDataSource.put(supportDataSource, supportTimeline);
-            }
-            timeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                    dataSource,
-                    supportTimelinesByDataSource,
-                    dataSourceComplementaryMapToQueryOrder.get(dataSource));
-
-          } else {
-            timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
-            if (dataSourceComplementaryReverseMapToQueryOrder.containsKey(dataSource)) {
-              for (String dependentDataSource : dataSourceComplementaryReverseMapToQueryOrder.get(dataSource)) {
-                NamespacedVersionedIntervalTimeline<String, ServerSelector> complementaryTimeline = timelines.get(dependentDataSource);
-                if (complementaryTimeline == null) {
-                  Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
-                  supportTimelinesByDataSource.put(dataSource, timeline);
-                  complementaryTimeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                          dependentDataSource,
-                          supportTimelinesByDataSource,
-                          dataSourceComplementaryMapToQueryOrder.get(dependentDataSource));
-                }
-                timelines.put(dependentDataSource, complementaryTimeline);
-              }
-            }
-            timeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                    dataSource,
-                    supportTimelinesByDataSource,
-                    dataSourceComplementaryMapToQueryOrder.get(dataSource));
-
-          } else {
-            timeline = new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
-            if (dataSourceComplementaryReverseMapToQueryOrder.containsKey(dataSource)) {
-              for (String dependentDataSource : dataSourceComplementaryReverseMapToQueryOrder.get(dataSource)) {
-                NamespacedVersionedIntervalTimeline<String, ServerSelector> complementaryTimeline = timelines.get(dependentDataSource);
-                if (complementaryTimeline == null) {
-                  Map<String, NamespacedVersionedIntervalTimeline<String, ServerSelector>> supportTimelinesByDataSource = new HashMap<>();
-                  supportTimelinesByDataSource.put(dataSource, timeline);
-                  complementaryTimeline = new ComplementaryNamespacedVersionedIntervalTimeline(
-                          dependentDataSource,
-                          supportTimelinesByDataSource,
-                          dataSourceComplementaryMapToQueryOrder.get(dependentDataSource));
-                }
-                timelines.put(dependentDataSource, complementaryTimeline);
-              }
-            }
+          VersionedIntervalTimeline<String, ServerSelector> timeline = timelines.get(segment.getDataSource());
+          if (timeline == null) {
+            timeline = new VersionedIntervalTimeline<>(Ordering.natural());
+            timelines.put(segment.getDataSource(), timeline);
           }
 
-          timeline.add(
-                  NamespacedVersionedIntervalTimeline.getNamespace(
-                          segment.getShardSpec().getIdentifier()),
-                  segment.getInterval(),
-                  segment.getVersion(),
-                  segment.getShardSpec().createChunk(selector));
+          timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(selector));
           selectors.put(segmentId, selector);
         }
 
-        timeline.add(
-                NamespacedVersionedIntervalTimeline.getNamespace(
-                        segment.getShardSpec().getIdentifier()),
-                segment.getInterval(),
-                segment.getVersion(),
-                segment.getShardSpec().createChunk(selector));
-        selectors.put(segmentId, selector);
+        QueryableDruidServer queryableDruidServer = clients.get(server.getName());
+        if (queryableDruidServer == null) {
+          queryableDruidServer = addServer(baseView.getInventoryValue(server.getName()));
+        }
+        selector.addServerAndUpdateSegment(queryableDruidServer, segment);
       }
       // run the callbacks, even if the segment came from a broker, lets downstream watchers decide what to do with it
       runTimelineCallbacks(callback -> callback.segmentAdded(server, segment));
@@ -395,28 +345,27 @@ public class BrokerServerView implements TimelineServerView
       QueryableDruidServer queryableDruidServer = clients.get(server.getName());
       if (!selector.removeServer(queryableDruidServer)) {
         log.warn(
-            "Asked to disassociate non-existant association between server[%s] and segment[%s]",
-            server,
-            segmentId
+                "Asked to disassociate non-existant association between server[%s] and segment[%s]",
+                server,
+                segmentId
         );
       } else {
         runTimelineCallbacks(callback -> callback.serverSegmentRemoved(server, segment));
       }
 
       if (selector.isEmpty()) {
-        NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline = timelines.get(segment.getDataSource());
+        VersionedIntervalTimeline<String, ServerSelector> timeline = timelines.get(segment.getDataSource());
         selectors.remove(segmentId);
 
         final PartitionChunk<ServerSelector> removedPartition = timeline.remove(
-            NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
-            segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(selector)
+                segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(selector)
         );
 
         if (removedPartition == null) {
           log.warn(
-              "Asked to remove timeline entry[interval: %s, version: %s] that doesn't exist",
-              segment.getInterval(),
-              segment.getVersion()
+                  "Asked to remove timeline entry[interval: %s, version: %s] that doesn't exist",
+                  segment.getInterval(),
+                  segment.getVersion()
           );
         } else {
           runTimelineCallbacks(callback -> callback.segmentRemoved(segment));
@@ -426,22 +375,14 @@ public class BrokerServerView implements TimelineServerView
   }
 
   @Override
-  public Optional<NamespacedVersionedIntervalTimeline<String, ServerSelector>> getTimeline(final DataSourceAnalysis analysis)
+  public Optional<VersionedIntervalTimeline<String, ServerSelector>> getTimeline(final DataSourceAnalysis analysis)
   {
     final TableDataSource table =
-        analysis.getBaseTableDataSource()
-                .orElseThrow(() -> new ISE("Cannot handle datasource: %s", analysis.getDataSource()));
+            analysis.getBaseTableDataSource()
+                    .orElseThrow(() -> new ISE("Cannot handle datasource: %s", analysis.getDataSource()));
 
     synchronized (lock) {
       return Optional.ofNullable(timelines.get(table.getName()));
-    }
-  }
-
-  public NamespacedVersionedIntervalTimeline<String, ServerSelector> getTimeline(DataSource dataSource)
-  {
-    String table = Iterables.getOnlyElement(dataSource.getTableNames());
-    synchronized (lock) {
-      return timelines.get(table);
     }
   }
 
@@ -481,10 +422,10 @@ public class BrokerServerView implements TimelineServerView
     for (Map.Entry<TimelineCallback, Executor> entry : timelineCallbacks.entrySet()) {
       entry.getValue().execute(
           () -> {
-            if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
-              timelineCallbacks.remove(entry.getKey());
-            }
+          if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
+            timelineCallbacks.remove(entry.getKey());
           }
+        }
       );
     }
   }
@@ -493,7 +434,7 @@ public class BrokerServerView implements TimelineServerView
   public List<ImmutableDruidServer> getDruidServers()
   {
     return clients.values().stream()
-                  .map(queryableDruidServer -> queryableDruidServer.getServer().toImmutableDruidServer())
-                  .collect(Collectors.toList());
+            .map(queryableDruidServer -> queryableDruidServer.getServer().toImmutableDruidServer())
+            .collect(Collectors.toList());
   }
 }

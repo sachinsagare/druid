@@ -354,6 +354,12 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
     {
       return partitionNumbers;
     }
+
+    @Override
+    protected void updateLatestSequenceFromStream()
+    {
+
+    }
   }
 
 
@@ -501,7 +507,8 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
                 null,
                 null,
                 null,
-                null
+                null,
+               null
         )
         {
           @Override
