@@ -109,20 +109,7 @@ public class FilteredVectorAggregator implements VectorAggregator
 
     if (rows == null) {
       for (int i = 0; i < match.getSelectionSize(); i++) {
-        try {
-          delegatePositions[i] = positions[selection[i]];
-        }
-        catch (Exception e) {
-          log.error(
-              e,
-              "Unexpected exception i=%d, delegatePositions=%d, positions=%d, selection=%d, selectioni=%d",
-              i,
-              delegatePositions.length,
-              positions.length,
-              selection.length,
-              selection[i]
-          );
-        }
+        delegatePositions[i] = positions[selection[i]];
       }
     } else {
       // i iterates over the match; j iterates over the "rows" array
