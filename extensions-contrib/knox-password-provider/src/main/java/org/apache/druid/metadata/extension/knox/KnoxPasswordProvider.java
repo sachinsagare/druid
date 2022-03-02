@@ -21,6 +21,7 @@ package org.apache.druid.metadata.extension.knox;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import org.apache.druid.java.util.common.ISE;
@@ -42,30 +43,20 @@ import java.util.Objects;
  * as a String. If a username is provided, it will be checked against the username for the primary
  * key returned by Knox and a warning will be emitted if the two do not match.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KnoxPasswordProvider implements PasswordProvider
 {
   private final String knoxKey;
-  private final String knoxUser;
   private final String hostname;
   private final Runtime runtime;
   private static final Logger log = new Logger(KnoxPasswordProvider.class);
 
-  public KnoxPasswordProvider(String knoxKey)
-  {
-    this(knoxKey, "");
-  }
-
   @JsonCreator
   public KnoxPasswordProvider(
-      @JsonProperty("knoxKey") String knoxKey,
-      @JsonProperty("knoxUser") String knoxUser)
+      @JsonProperty("knoxKey") String knoxKey
+  )
   {
     this.knoxKey = Preconditions.checkNotNull(knoxKey);
-    if (knoxUser == null) {
-      this.knoxUser = "";
-    } else {
-      this.knoxUser = knoxUser;
-    }
     this.runtime = Runtime.getRuntime();
     try {
       this.hostname = InetAddress.getLocalHost().getHostName();
@@ -79,12 +70,6 @@ public class KnoxPasswordProvider implements PasswordProvider
   public String getKnoxKey()
   {
     return this.knoxKey;
-  }
-
-  @JsonProperty("knoxUser")
-  public String getKnoxUser()
-  {
-    return this.knoxUser;
   }
 
   @JsonIgnore
@@ -102,9 +87,6 @@ public class KnoxPasswordProvider implements PasswordProvider
       )
           .readLine()
           .split("\\|");
-      if (knoxUser != null && !this.knoxUser.equals(primaryKey[0])) {
-        log.warn("User for Knox key %s did not match expected user %s!", primaryKey[0], this.knoxUser);
-      }
       return primaryKey[1];
     }
     catch (IOException e) {
@@ -118,7 +100,6 @@ public class KnoxPasswordProvider implements PasswordProvider
   {
     return "KnoxPasswordProvider{" +
            "knoxKey='" + this.knoxKey + "\'" +
-           ", knoxUser='" + this.knoxUser + "\'" +
            "}";
   }
 
@@ -133,15 +114,12 @@ public class KnoxPasswordProvider implements PasswordProvider
     }
 
     KnoxPasswordProvider that = (KnoxPasswordProvider) o;
-    if (!this.knoxKey.equals(that.knoxKey)) {
-      return false;
-    }
-    return this.knoxUser != null ? this.knoxUser.equals(that.getKnoxUser()) : that.getKnoxUser() == null;
+    return this.knoxKey.equals(that.knoxKey);
   }
 
   @Override
   public int hashCode()
   {
-    return Objects.hash(knoxKey, knoxUser);
+    return Objects.hash(knoxKey);
   }
 }
