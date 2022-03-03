@@ -129,7 +129,7 @@ public class StatsDEmitter implements Emitter
     if (!config.getIncludeHost()) {
       host = null;
     }
-    StatsDMetric statsDMetric = converter.addFilteredUserDims(service, host, metric, userDims, dimsBuilder);
+    StatsDMetric statsDMetric = converter.addFilteredUserDims(service, host, metric, value, userDims, dimsBuilder);
 
     if (statsDMetric != null) {
       List<String> fullNameList;

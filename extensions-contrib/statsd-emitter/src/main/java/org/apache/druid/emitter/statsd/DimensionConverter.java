@@ -55,6 +55,7 @@ public class DimensionConverter
       String service,
       String host,
       String metric,
+      Number value,
       Map<String, Object> userDims,
       ImmutableMap.Builder<String, String> builder
   )
@@ -74,7 +75,9 @@ public class DimensionConverter
         builder.put("host", getTag(METRICS_AGENT_TAG_HOST, host));
       }
       for (String dim : statsDMetric.dimensions) {
-        if (userDims.containsKey(dim)) {
+        if (userDims.containsKey(dim) && (statsDMetric.dimensionThresholdMap == null
+                                          || !statsDMetric.dimensionThresholdMap.containsKey(dim)
+                                          || statsDMetric.dimensionThresholdMap.get(dim) <= value.longValue())) {
           builder.put(dim, getTag(dim, userDims.get(dim).toString()));
         }
       }

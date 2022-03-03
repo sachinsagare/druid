@@ -51,6 +51,7 @@ public class DimensionConverterTest
         event.getService(),
         event.getHost(),
         event.getMetric(),
+        event.getValue(),
         event.getUserDims(),
         actual
     );
