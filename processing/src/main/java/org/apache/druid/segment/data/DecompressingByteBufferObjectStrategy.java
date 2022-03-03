@@ -30,7 +30,7 @@ public class DecompressingByteBufferObjectStrategy implements ObjectStrategy<Res
   private final ByteOrder order;
   private final CompressionStrategy.Decompressor decompressor;
 
-  DecompressingByteBufferObjectStrategy(ByteOrder order, CompressionStrategy compression)
+  public DecompressingByteBufferObjectStrategy(ByteOrder order, CompressionStrategy compression)
   {
     this.order = order;
     this.decompressor = compression.getDecompressor();

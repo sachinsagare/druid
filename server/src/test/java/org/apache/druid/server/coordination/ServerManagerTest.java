@@ -81,6 +81,7 @@ import org.apache.druid.segment.StorageAdapter;
 import org.apache.druid.segment.VirtualColumns;
 import org.apache.druid.segment.column.ColumnCapabilities;
 import org.apache.druid.segment.data.Indexed;
+import org.apache.druid.segment.data.ListIndexed;
 import org.apache.druid.segment.join.NoopJoinableFactory;
 import org.apache.druid.segment.loading.SegmentLoader;
 import org.apache.druid.segment.loading.SegmentLoadingException;
@@ -93,6 +94,7 @@ import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.partition.NoneShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
+import org.easymock.EasyMock;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Assert;
@@ -124,6 +126,7 @@ public class ServerManagerTest
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
+  private StorageAdapter storageAdapter;
   private ServerManager serverManager;
   private MyQueryRunnerFactory factory;
   private CountDownLatch queryWaitLatch;
@@ -137,6 +140,10 @@ public class ServerManagerTest
   {
     EmittingLogger.registerEmitter(new NoopServiceEmitter());
 
+    storageAdapter = EasyMock.createMock(StorageAdapter.class);
+    EasyMock.expect(storageAdapter.getAvailableMetrics()).andReturn(ImmutableList.of("metric")).anyTimes();
+    EasyMock.expect(storageAdapter.getAvailableDimensions()).andReturn(new ListIndexed("metric")).anyTimes();
+    EasyMock.replay(storageAdapter);
     queryWaitLatch = new CountDownLatch(1);
     queryWaitYieldLatch = new CountDownLatch(1);
     queryNotifyLatch = new CountDownLatch(1);
@@ -150,7 +157,8 @@ public class ServerManagerTest
           {
             return ReferenceCountingSegment.wrapSegment(new SegmentForTesting(
                 MapUtils.getString(segment.getLoadSpec(), "version"),
-                (Interval) segment.getLoadSpec().get("interval")
+                (Interval) segment.getLoadSpec().get("interval"),
+              storageAdapter
             ), segment.getShardSpec());
           }
 
@@ -787,16 +795,19 @@ public class ServerManagerTest
   {
     private final String version;
     private final Interval interval;
+    private final StorageAdapter adapter;
     private final Object lock = new Object();
     private volatile boolean closed = false;
 
     SegmentForTesting(
         String version,
-        Interval interval
+        Interval interval,
+        StorageAdapter adapter
     )
     {
       this.version = version;
       this.interval = interval;
+      this.adapter = adapter;
     }
 
     public String getVersion()

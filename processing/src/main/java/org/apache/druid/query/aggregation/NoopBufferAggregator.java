@@ -23,7 +23,7 @@ import org.apache.druid.query.monomorphicprocessing.RuntimeShapeInspector;
 
 import java.nio.ByteBuffer;
 
-public final class NoopBufferAggregator implements BufferAggregator
+public class NoopBufferAggregator implements BufferAggregator
 {
   private static final NoopBufferAggregator INSTANCE = new NoopBufferAggregator();
 
@@ -32,7 +32,7 @@ public final class NoopBufferAggregator implements BufferAggregator
     return INSTANCE;
   }
 
-  private NoopBufferAggregator()
+  protected NoopBufferAggregator()
   {
   }
 

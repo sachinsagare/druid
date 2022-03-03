@@ -22,6 +22,7 @@ package org.apache.druid.emitter.statsd;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
 import java.util.SortedSet;
 
 /**
@@ -29,17 +30,20 @@ import java.util.SortedSet;
 public class StatsDMetric
 {
   public final SortedSet<String> dimensions;
+  public final Map<String, Long> dimensionThresholdMap;
   public final Type type;
   public final boolean convertRange;
 
   @JsonCreator
   public StatsDMetric(
       @JsonProperty("dimensions") SortedSet<String> dimensions,
+      @JsonProperty("dimensionThresholdMap") Map<String, Long> dimensionThresholdMap,
       @JsonProperty("type") Type type,
       @JsonProperty("convertRange") boolean convertRange
   )
   {
     this.dimensions = dimensions;
+    this.dimensionThresholdMap = dimensionThresholdMap;
     this.type = type;
     this.convertRange = convertRange;
   }

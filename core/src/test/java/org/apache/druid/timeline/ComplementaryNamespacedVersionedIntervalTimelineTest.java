@@ -129,6 +129,9 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
     add(timeline, NAMESPACE2, "2020-02-01/2020-03-01", new OvershadowableInteger("0", 0, 1));
     add(timeline, NAMESPACE2, "2020-03-01/2020-04-01", new OvershadowableInteger("0", 0, 1));
     add(timeline, NAMESPACE2, "2020-04-01/2020-05-01", new OvershadowableInteger("0", 0, 1));
+    add(timeline, NAMESPACE3, "2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1));
+    add(timeline, SUB_NAMESPACE3, "2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1));
+    add(timeline, SUB_NAMESPACE3, "2020-07-01/2020-08-01", new OvershadowableInteger("0", 0, 1));
   }
 
   @Test
@@ -223,7 +226,29 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
   }
 
   @Test
-  public void testNotUsingSegmentsFromSubNamespace()
+  public void testSubnamespacing()
+  {
+    assertValues(
+            ImmutableMap.of(
+                    DATASOURCE, Arrays.asList(
+                            createExpected("2020-01-01/2020-02-01", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2020-02-01/2020-03-01", new OvershadowableInteger("0", 0, 1))
+                    ),
+                    SUPPORT_DATASOURCE, Arrays.asList(
+                            createExpected("2020-03-01/2020-03-08", new OvershadowableInteger("0", 0, 1))
+                    ),
+                    SECOND_SUPPORT_DATASOURCE, Arrays.asList(
+                            createExpected("2020-03-08/2020-03-09", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2020-03-09/2020-03-10", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2020-03-10/2020-03-11", new OvershadowableInteger("0", 0, 1))
+                    )
+            ),
+            timeline.lookupWithComplementary(ImmutableList.of(Intervals.of("2020-01-01/2020-03-11")))
+    );
+  }
+
+  @Test
+  public void testUsingSegmentsFromSubNamespace()
   {
     assertValues(
         ImmutableMap.of(
@@ -237,6 +262,21 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
             )
         ),
         timeline.lookupWithComplementary(ImmutableList.of(Intervals.of("2019-09-01/2019-09-12")))
+    );
+  }
+
+  @Test
+  public void testSameInteralInMultipleSubNamespaces()
+  {
+    assertValues(
+            ImmutableMap.of(
+                    DATASOURCE, Arrays.asList(
+                            createExpected("2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2020-07-01/2020-08-01", new OvershadowableInteger("0", 0, 1)),
+                            createExpected("2020-06-01/2020-07-01", new OvershadowableInteger("0", 0, 1))
+                    )
+            ),
+            timeline.lookupWithComplementary(ImmutableList.of(Intervals.of("2020-06-01/2020-08-01")))
     );
   }
 
