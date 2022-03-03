@@ -24,8 +24,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
+import org.apache.druid.query.aggregation.AggregatorFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UnionDataSource implements DataSource
@@ -33,8 +37,20 @@ public class UnionDataSource implements DataSource
   @JsonProperty
   private final List<TableDataSource> dataSources;
 
+  @JsonProperty
+  private Map<TableDataSource, List<AggregatorFactory>> aggregatorOverride = null;
+
   @JsonCreator
-  public UnionDataSource(@JsonProperty("dataSources") List<TableDataSource> dataSources)
+  public UnionDataSource(
+      @JsonProperty("dataSources") List<TableDataSource> dataSources,
+      @JsonProperty("aggregatorOverride") @Nullable Map<TableDataSource, List<AggregatorFactory>> aggregatorOverride
+  )
+  {
+    this(dataSources);
+    this.aggregatorOverride = aggregatorOverride;
+  }
+
+  public UnionDataSource(List<TableDataSource> dataSources)
   {
     Preconditions.checkNotNull(dataSources, "dataSources cannot be null for unionDataSource");
     this.dataSources = dataSources;
@@ -52,6 +68,18 @@ public class UnionDataSource implements DataSource
     return dataSources;
   }
 
+  @Nullable
+  @JsonProperty
+  public Map<TableDataSource, List<AggregatorFactory>> getAggregatorOverride()
+  {
+    return aggregatorOverride;
+  }
+
+  public Optional<List<AggregatorFactory>> getOverrideAggregators(TableDataSource dataSource)
+  {
+    return Optional.ofNullable(aggregatorOverride == null ? null : aggregatorOverride.get(dataSource));
+  }
+
   @Override
   public boolean equals(Object o)
   {
@@ -65,6 +93,11 @@ public class UnionDataSource implements DataSource
     UnionDataSource that = (UnionDataSource) o;
 
     if (!dataSources.equals(that.dataSources)) {
+      return false;
+    }
+
+    if ((aggregatorOverride == null && that.aggregatorOverride != null)
+        || (aggregatorOverride != null && !aggregatorOverride.equals(that.aggregatorOverride))) {
       return false;
     }
 

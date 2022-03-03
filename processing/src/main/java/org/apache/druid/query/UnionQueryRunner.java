@@ -24,7 +24,11 @@ import com.google.common.collect.Lists;
 import org.apache.druid.java.util.common.guava.MergeSequence;
 import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.java.util.common.guava.Sequences;
+import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.context.ResponseContext;
+
+import java.util.List;
+import java.util.Optional;
 
 public class UnionQueryRunner<T> implements QueryRunner<T>
 {
@@ -49,13 +53,16 @@ public class UnionQueryRunner<T> implements QueryRunner<T>
           Sequences.simple(
               Lists.transform(
                   ((UnionDataSource) dataSource).getDataSources(),
-                  new Function<DataSource, Sequence<T>>()
+                  new Function<TableDataSource, Sequence<T>>()
                   {
                     @Override
-                    public Sequence<T> apply(DataSource singleSource)
+                    public Sequence<T> apply(TableDataSource singleSource)
                     {
+                      Optional<List<AggregatorFactory>> aggs = ((UnionDataSource) dataSource).getOverrideAggregators(
+                          singleSource);
+                      Query<T> newQuery = aggs.isPresent() ? query.withAggregatorSpecs(aggs.get()) : query;
                       return baseRunner.run(
-                          queryPlus.withQuery(query.withDataSource(singleSource)),
+                          queryPlus.withQuery(newQuery.withDataSource(singleSource)),
                           responseContext
                       );
                     }

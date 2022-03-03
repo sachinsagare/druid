@@ -864,6 +864,7 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     return new Builder(this).setLimitSpec(limitSpec).build();
   }
 
+  @Override
   public GroupByQuery withAggregatorSpecs(final List<AggregatorFactory> aggregatorSpecs)
   {
     return new Builder(this).setAggregatorSpecs(aggregatorSpecs).build();

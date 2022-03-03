@@ -148,7 +148,6 @@ public class BrokerServerViewTest extends CuratorTestBase
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
         new BrokerSegmentWatcherConfig(),
-        new BrokerDataSourceComplementConfig(),
         new BrokerDataSourceMultiComplementConfig()
         {
           @Override
@@ -467,7 +466,6 @@ public class BrokerServerViewTest extends CuratorTestBase
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
         new BrokerSegmentWatcherConfig(),
-        new BrokerDataSourceComplementConfig(),
         new BrokerDataSourceMultiComplementConfig(),
         new DruidProcessingConfig() {
           @Override
