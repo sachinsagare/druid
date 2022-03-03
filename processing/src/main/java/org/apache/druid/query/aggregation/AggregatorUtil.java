@@ -132,10 +132,13 @@ public class AggregatorUtil
   // TDigest sketch aggregators
   public static final byte TDIGEST_BUILD_SKETCH_CACHE_TYPE_ID = 0x38;
 
-  public static final byte MEAN_CACHE_TYPE_ID = 0x41;
   // LongsSketch module in datasketches extension
   public static final byte LONGS_SKETCH_BUILD_CACHE_TYPE_ID = 0x39;
   public static final byte LONGS_SKETCH_MERGE_CACHE_TYPE_ID = 0x3A;
+
+  // Pinterest aggregators
+  public static final byte COLLECT_SET_CACHE_TYPE_ID = 0x50;
+  public static final byte NOOP_CACHE_TYPE_ID = 0x51;
 
   // ANY aggregator
   public static final byte LONG_ANY_CACHE_TYPE_ID = 0x42;
