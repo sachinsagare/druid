@@ -191,6 +191,7 @@ public class TopNQuery extends BaseQuery<Result<TopNResultValue>>
     return new TopNQueryBuilder(this).dimension(spec).build();
   }
 
+  @Override
   public TopNQuery withAggregatorSpecs(List<AggregatorFactory> aggregatorSpecs)
   {
     return new TopNQueryBuilder(this).aggregators(aggregatorSpecs).build();
