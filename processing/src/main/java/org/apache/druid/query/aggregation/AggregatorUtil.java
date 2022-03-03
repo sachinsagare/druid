@@ -133,6 +133,9 @@ public class AggregatorUtil
   public static final byte TDIGEST_BUILD_SKETCH_CACHE_TYPE_ID = 0x38;
 
   public static final byte MEAN_CACHE_TYPE_ID = 0x41;
+  // LongsSketch module in datasketches extension
+  public static final byte LONGS_SKETCH_BUILD_CACHE_TYPE_ID = 0x39;
+  public static final byte LONGS_SKETCH_MERGE_CACHE_TYPE_ID = 0x3A;
 
   // ANY aggregator
   public static final byte LONG_ANY_CACHE_TYPE_ID = 0x42;

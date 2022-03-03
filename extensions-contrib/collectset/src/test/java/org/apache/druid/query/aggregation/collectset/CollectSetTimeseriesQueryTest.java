@@ -41,8 +41,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.druid.query.aggregation.collectset.CollectSetTestHelper.DIMENSIONS;
-
 public class CollectSetTimeseriesQueryTest
 {
   @Test
@@ -71,9 +69,9 @@ public class CollectSetTimeseriesQueryTest
                                   .intervals(QueryRunnerTestHelper.FULL_ON_INTERVAL_SPEC)
                                   .aggregators(
                                       Lists.newArrayList(
-                                          new CollectSetAggregatorFactory(DIMENSIONS[0], DIMENSIONS[0]),
-                                          new CollectSetAggregatorFactory(DIMENSIONS[1], DIMENSIONS[1]),
-                                          new CollectSetAggregatorFactory(DIMENSIONS[2], DIMENSIONS[2])
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[0], CollectSetTestHelper.DIMENSIONS[0]),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[1], CollectSetTestHelper.DIMENSIONS[1]),
+                                          new CollectSetAggregatorFactory(CollectSetTestHelper.DIMENSIONS[2], CollectSetTestHelper.DIMENSIONS[2])
                                       )
                                   )
                                   .build();
@@ -86,9 +84,9 @@ public class CollectSetTimeseriesQueryTest
             time,
             new TimeseriesResultValue(
                 ImmutableMap.of(
-                    DIMENSIONS[0], Sets.newHashSet("0", "1", "2"),
-                    DIMENSIONS[1], Sets.newHashSet("android", "iphone"),
-                    DIMENSIONS[2], Sets.newHashSet("text", "video", "image"))
+                    CollectSetTestHelper.DIMENSIONS[0], Sets.newHashSet("0", "1", "2"),
+                    CollectSetTestHelper.DIMENSIONS[1], Sets.newHashSet("android", "iphone"),
+                    CollectSetTestHelper.DIMENSIONS[2], Sets.newHashSet("text", "video", "image"))
             )
         )
     );
