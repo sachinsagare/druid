@@ -44,7 +44,7 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+     </dependency>
     <dependency>
       <groupId>org.apache.datasketches</groupId>
       <artifactId>datasketches-memory</artifactId>
