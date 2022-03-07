@@ -59,7 +59,7 @@ public class UnionQueryRunner<T> implements QueryRunner<T>
                     public Sequence<T> apply(TableDataSource singleSource)
                     {
                       Optional<List<AggregatorFactory>> aggs = ((UnionDataSource) dataSource).getOverrideAggregators(
-                          singleSource);
+                          singleSource.getName());
                       Query<T> newQuery = aggs.isPresent() ? query.withAggregatorSpecs(aggs.get()) : query;
                       return baseRunner.run(
                           queryPlus.withQuery(newQuery.withDataSource(singleSource)),

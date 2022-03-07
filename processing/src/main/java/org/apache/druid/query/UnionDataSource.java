@@ -38,12 +38,12 @@ public class UnionDataSource implements DataSource
   private final List<TableDataSource> dataSources;
 
   @JsonProperty
-  private Map<TableDataSource, List<AggregatorFactory>> aggregatorOverride = null;
+  private Map<String, List<AggregatorFactory>> aggregatorOverride = null;
 
   @JsonCreator
   public UnionDataSource(
       @JsonProperty("dataSources") List<TableDataSource> dataSources,
-      @JsonProperty("aggregatorOverride") @Nullable Map<TableDataSource, List<AggregatorFactory>> aggregatorOverride
+      @JsonProperty("aggregatorOverride") @Nullable Map<String, List<AggregatorFactory>> aggregatorOverride
   )
   {
     this(dataSources);
@@ -70,12 +70,12 @@ public class UnionDataSource implements DataSource
 
   @Nullable
   @JsonProperty
-  public Map<TableDataSource, List<AggregatorFactory>> getAggregatorOverride()
+  public Map<String, List<AggregatorFactory>> getAggregatorOverride()
   {
     return aggregatorOverride;
   }
 
-  public Optional<List<AggregatorFactory>> getOverrideAggregators(TableDataSource dataSource)
+  public Optional<List<AggregatorFactory>> getOverrideAggregators(String dataSource)
   {
     return Optional.ofNullable(aggregatorOverride == null ? null : aggregatorOverride.get(dataSource));
   }
