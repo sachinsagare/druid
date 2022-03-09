@@ -1,0 +1,2588 @@
+{
+    "queryType": "timeseries",
+    "dataSource": {
+        "type": "union",
+        "dataSources": [
+            {
+                "type": "table",
+                "name": "ads_metrics_daily_staging"
+            },
+            {
+                "type": "table",
+                "name": "ads_metrics_daily_uniques_staging"
+            }
+        ]
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "descending": false,
+    "virtualColumns": [],
+    "filter": {},
+    "granularity": "DAY",
+    "aggregations": [
+        {
+            "type": "longSum",
+            "name": "SPEND_IN_MICRO_DOLLAR",
+            "fieldName": "spendinfo_localpaidspend",
+            "expression": null
+        },
+        {
+            "type": "longSum",
+            "name": "TOTAL_CONVERSIONS_VALUE_IN_MICRO_DOLLAR",
+            "fieldName": "a_conversion_value",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_LEAD",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_LEAD"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P97_COMPLETE_1",
+                "fieldName": "video_p97_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P97_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P50_COMPLETE_1",
+                "fieldName": "video_p50_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P50_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P75_COMPLETE_1",
+                "fieldName": "video_p75_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P75_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P100_COMPLETE_1",
+                "fieldName": "video_p100_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P100_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P95_COMPLETE_1",
+                "fieldName": "video_p95_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P95_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_SIGNUP_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_SIGNUP_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_LEAD_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_LEAD_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_SIGNUP_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_SIGNUP_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P100_COMPLETE_2",
+                "fieldName": "video_p100_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P100_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P95_COMPLETE_2",
+                "fieldName": "video_p95_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P95_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P75_COMPLETE_2",
+                "fieldName": "video_p75_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P75_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P97_COMPLETE_2",
+                "fieldName": "video_p97_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P97_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P25_COMPLETE_2",
+                "fieldName": "video_p25_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P25_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P50_COMPLETE_2",
+                "fieldName": "video_p50_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P50_COMPLETE_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "thetaSketch",
+                "name": "TOTAL_IMPRESSION_USER",
+                "fieldName": "cnt_unique",
+                "size": 16384,
+                "shouldFinalize": true,
+                "isInputThetaSketch": false,
+                "errorBoundsStdDev": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION_USER"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_IMPRESSION",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_APP_INSTALL",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_APP_INSTALL"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "CLICKTHROUGH_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "CLICKTHROUGH_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_PAGE_VISIT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_PAGE_VISIT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_LEAD_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_LEAD_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "ONSITE_CHECKOUTS",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "14",
+                "extractionFn": null
+            },
+            "name": "ONSITE_CHECKOUTS"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_LEAD_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_LEAD_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "longSum",
+            "name": "TOTAL_CONVERSIONS_QUANTITY",
+            "fieldName": "a_conversion_quantity",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_ADD_TO_CART",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_ADD_TO_CART"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_APP_INSTALL",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "conversion_type",
+                "value": "9",
+                "extractionFn": null
+            },
+            "name": "TOTAL_APP_INSTALL"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_LEAD_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_LEAD_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_PAGE_VISIT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_PAGE_VISIT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_LEAD",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_LEAD"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_CHECKOUT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_CHECKOUT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_SIGNUP",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_SIGNUP"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_ADD_TO_CART",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_ADD_TO_CART"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "OUTBOUND_CLICK_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "153",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "OUTBOUND_CLICK_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_PAGE_VISIT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_PAGE_VISIT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_PAGE_VISIT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_APP_INSTALL",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_APP_INSTALL"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_CHECKOUT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_CHECKOUT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_SIGNUP",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_SIGNUP"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_CHECKOUT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_CHECKOUT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_LEAD_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_LEAD_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "CLICKTHROUGH_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "CLICKTHROUGH_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_APP_INSTALL_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_APP_INSTALL_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_APP_INSTALL_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_APP_INSTALL_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_PAGE_VISIT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_PAGE_VISIT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_CHECKOUT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_CHECKOUT"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_APP_INSTALL_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_APP_INSTALL_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_LEAD",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_LEAD"
+        },
+        {
+            "type": "longSum",
+            "name": "TOTAL_CONVERSIONS",
+            "fieldName": "a_conversions",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_ADD_TO_CART_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_ADD_TO_CART_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_CHECKOUT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_CHECKOUT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_ADD_TO_CART_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_1_V2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": "1613433600000",
+                        "upper": null,
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "153",
+                            "157",
+                            "164",
+                            "165",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_1_V2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_1_V1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "1",
+                            "132",
+                            "133",
+                            "147",
+                            "148",
+                            "2",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": null,
+                        "upper": "1613430000000",
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_1_V1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_MRC_VIEWS_1",
+                "fieldName": "video_mrc_views",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_MRC_VIEWS_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_SIGNUP_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_SIGNUP_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_ADD_TO_CART",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "153"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_ADD_TO_CART"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_VIEW_PAGE_VISIT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "131",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_VIEW_PAGE_VISIT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_SIGNUP",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "1",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_SIGNUP"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_PAGE_VISIT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "0",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_PAGE_VISIT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_APP_INSTALL_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "conversion_type",
+                "value": "9",
+                "extractionFn": null
+            },
+            "name": "TOTAL_APP_INSTALL_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_ADD_TO_CART_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_ADD_TO_CART_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_APP_INSTALL",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "9",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_APP_INSTALL"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_CHECKOUT_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "2",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_CHECKOUT_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P25_COMPLETE_1",
+                "fieldName": "video_p25_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P25_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_2_V2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": "1613433600000",
+                        "upper": null,
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "153",
+                            "157",
+                            "164",
+                            "165",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_2_V2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_2_V1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "1",
+                            "132",
+                            "133",
+                            "147",
+                            "148",
+                            "2",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": null,
+                        "upper": "1613430000000",
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_2_V1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "OUTBOUND_CLICK_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "153",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "OUTBOUND_CLICK_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICK_LEAD_VALUE_IN_MICRO_DOLLAR",
+                "fieldName": "a_conversion_value",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "132",
+                            "133"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "8",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_CLICK_LEAD_VALUE_IN_MICRO_DOLLAR"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_ENGAGEMENT_ADD_TO_CART_QUANTITY",
+                "fieldName": "a_conversion_quantity",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "148",
+                            "164",
+                            "165",
+                            "2"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "conversion_type",
+                        "value": "6",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "TOTAL_ENGAGEMENT_ADD_TO_CART_QUANTITY"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_MRC_VIEWS_2",
+                "fieldName": "video_mrc_views",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "false",
+                "extractionFn": null
+            },
+            "name": "VIDEO_MRC_VIEWS_2"
+        }
+    ],
+    "postAggregations": [
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P50_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_1",
+                    "fieldName": "VIDEO_P50_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P25_COMBINED_2",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P25_COMPLETE_2",
+                    "fieldName": "VIDEO_P25_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_2",
+                    "fieldName": "VIDEO_P50_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_2",
+                    "fieldName": "VIDEO_P75_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_2",
+                    "fieldName": "VIDEO_P95_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_2",
+                    "fieldName": "VIDEO_P97_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_2",
+                    "fieldName": "VIDEO_P100_COMPLETE_2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "thetaSketchEstimate",
+            "name": "TOTAL_IMPRESSION_USER_ESTIMATE",
+            "field": {
+                "type": "fieldAccess",
+                "name": "TOTAL_IMPRESSION_USER",
+                "fieldName": "TOTAL_IMPRESSION_USER"
+            },
+            "errorBoundsStdDev": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "TOTAL_IMPRESSION_FREQUENCY",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_IMPRESSION",
+                    "fieldName": "TOTAL_IMPRESSION"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_IMPRESSION_USER_ESTIMATE",
+                    "fieldName": "TOTAL_IMPRESSION_USER_ESTIMATE"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P75_COMBINED_2",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_2",
+                    "fieldName": "VIDEO_P75_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_2",
+                    "fieldName": "VIDEO_P95_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_2",
+                    "fieldName": "VIDEO_P97_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_2",
+                    "fieldName": "VIDEO_P100_COMPLETE_2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P50_COMBINED_2",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_2",
+                    "fieldName": "VIDEO_P50_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_2",
+                    "fieldName": "VIDEO_P75_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_2",
+                    "fieldName": "VIDEO_P95_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_2",
+                    "fieldName": "VIDEO_P97_COMPLETE_2"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_2",
+                    "fieldName": "VIDEO_P100_COMPLETE_2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ENGAGEMENT_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_1_V1",
+                    "fieldName": "_ENGAGEMENT_1_V1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_1_V2",
+                    "fieldName": "_ENGAGEMENT_1_V2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P25_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P25_COMPLETE_1",
+                    "fieldName": "VIDEO_P25_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_1",
+                    "fieldName": "VIDEO_P50_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ENGAGEMENT_2",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_2_V1",
+                    "fieldName": "_ENGAGEMENT_2_V1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_2_V2",
+                    "fieldName": "_ENGAGEMENT_2_V2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P75_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "constant",
+            "name": "insertion_candidate_gcampaignid",
+            "value": 626744530468
+        }
+    ],
+    "limit": 1000000000
+}

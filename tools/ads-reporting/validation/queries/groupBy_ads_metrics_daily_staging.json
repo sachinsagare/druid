@@ -1,0 +1,79 @@
+{
+    "queryType": "groupBy",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_daily_staging"
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "virtualColumns": [],
+    "granularity": {
+        "type": "all"
+    },
+    "dimensions": [
+        {
+            "type": "lookup",
+            "dimension": "insertion_candidate_features_impression_apptype",
+            "outputName": "TARGETING_VALUE",
+            "lookup": null,
+            "retainMissingValue": false,
+            "replaceMissingValueWith": null,
+            "name": "insertion_candidate_features_impression_apptype",
+            "optimize": true
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gadgroupid",
+            "outputName": "insertion_candidate_gadgroupid",
+            "outputType": "LONG"
+        },
+        {
+            "type": "lookup",
+            "dimension": "insertion_candidate_features_user_agebucket",
+            "outputName": "TARGETING_VALUE2",
+            "lookup": null,
+            "retainMissingValue": false,
+            "replaceMissingValueWith": null,
+            "name": "insertion_candidate_features_user_agebucket",
+            "optimize": true
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_features_pin_matchedtermgid",
+            "outputName": "insertion_candidate_features_pin_matchedtermgid",
+            "outputType": "LONG"
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_matchedaudience",
+            "outputName": "TARGETING_VALUE3",
+            "outputType": "STRING"
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gcampaignid",
+            "outputName": "insertion_candidate_gcampaignid",
+            "outputType": "LONG"
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gpinpromotionid",
+            "outputName": "insertion_candidate_gpinpromotionid",
+            "outputType": "LONG"
+        }
+    ],
+    "aggregations": [
+        {
+            "type": "longSum",
+            "name": "COUNT",
+            "fieldName": "cnt",
+            "expression": null
+        }
+    ],
+    "postAggregations": [],
+    "limitSpec": {
+        "type": "NoopLimitSpec"
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "queryType": "topN",
+    "dataSource": {
+        "type": "table",
+        "name": ""
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "granularity": {
+        "type": "all"
+    },
+    "dimension": {
+        "type": "default",
+        "dimension": "insertion_candidate_gcampaignid",
+        "outputName": "insertion_candidate_gcampaignid",
+        "outputType": "LONG"
+    },
+    "threshold": 50,
+    "metric": "count",
+    "aggregations": [
+        {
+            "type": "longSum",
+            "name": "count",
+            "fieldName": "cnt",
+            "expression": null
+        }
+    ]
+}

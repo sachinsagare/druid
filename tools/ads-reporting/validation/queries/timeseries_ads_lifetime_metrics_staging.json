@@ -1,0 +1,58 @@
+{
+    "queryType": "timeseries",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_lifetime_metrics_staging"
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "descending": false,
+    "virtualColumns": [],
+    "filter": {},
+    "granularity": {
+        "type": "all"
+    },
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICKTHROUGH",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "0",
+                "extractionFn": null
+            },
+            "name": "TOTAL_CLICKTHROUGH"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_IMPRESSION",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION"
+        },
+        {
+            "type": "longSum",
+            "name": "SPEND_IN_MICRO_DOLLAR",
+            "fieldName": "spendinfo_localpaidspend",
+            "expression": null
+        }
+    ],
+    "limit": 1000000000
+}

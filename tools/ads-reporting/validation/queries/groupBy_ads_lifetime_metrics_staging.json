@@ -1,0 +1,46 @@
+{
+    "queryType": "groupBy",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_lifetime_metrics_staging"
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "virtualColumns": [],
+    "granularity": {
+        "type": "all"
+    },
+    "dimensions": [
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gadgroupid",
+            "outputName": "insertion_candidate_gadgroupid",
+            "outputType": "LONG"
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gcampaignid",
+            "outputName": "insertion_candidate_gcampaignid",
+            "outputType": "LONG"
+        },
+        {
+            "type": "default",
+            "dimension": "insertion_candidate_gpinpromotionid",
+            "outputName": "insertion_candidate_gpinpromotionid",
+            "outputType": "LONG"
+        }
+    ],
+    "aggregations": [
+        {
+            "type": "longSum",
+            "name": "COUNT",
+            "fieldName": "cnt",
+            "expression": null
+        }
+    ],
+    "limitSpec": {
+        "type": "NoopLimitSpec"
+    }
+}

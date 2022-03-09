@@ -1,0 +1,53 @@
+{
+    "queryType": "topN",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_daily_uniques_staging"
+    },
+    "virtualColumns": [],
+    "dimension": {
+        "type": "default",
+        "dimension": "insertion_candidate_gcampaignid",
+        "outputName": "insertion_candidate_gcampaignid",
+        "outputType": "LONG"
+    },
+    "metric": {
+        "type": "dimension",
+        "previousStop": null,
+        "ordering": {
+            "type": "lexicographic"
+        }
+    },
+    "threshold": 100000,
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "filter": {},
+    "granularity": {
+        "type": "all"
+    },
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "thetaSketch",
+                "name": "TOTAL_IMPRESSION_USER",
+                "fieldName": "cnt_unique",
+                "size": 16384,
+                "shouldFinalize": true,
+                "isInputThetaSketch": false,
+                "errorBoundsStdDev": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION_USER"
+        }
+    ],
+    "postAggregations": [],
+    "descending": false
+}

@@ -1,0 +1,129 @@
+{
+    "queryType": "topN",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_lifetime_metrics_staging"
+    },
+    "virtualColumns": [],
+    "dimension": {
+        "type": "default",
+        "dimension": "insertion_candidate_gcampaignid",
+        "outputName": "insertion_candidate_gcampaignid",
+        "outputType": "LONG"
+    },
+    "metric": {
+        "type": "dimension",
+        "previousStop": null,
+        "ordering": {
+            "type": "lexicographic"
+        }
+    },
+    "threshold": 100000,
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "filter": {},
+    "granularity": {
+        "type": "all"
+    },
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "and",
+                        "fields": [
+                            {
+                                "type": "selector",
+                                "dimension": "action_isfirstorder",
+                                "value": "true",
+                                "extractionFn": null
+                            },
+                            {
+                                "type": "selector",
+                                "dimension": "action_actiontype",
+                                "value": "4",
+                                "extractionFn": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            "name": "IMPRESSION"
+        },
+        {
+
+                "type": "longSum",
+                "name": "SPEND_IN_MICRO_DOLLAR",
+                "fieldName": "spendinfo_localpaidspend",
+                "expression": null
+
+        }
+    ],
+    "postAggregations": [
+        {
+            "type": "arithmetic",
+            "name": "PER_MILLI",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "IMPRESSION",
+                    "fieldName": "IMPRESSION"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000",
+                    "value": 1000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPM_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "PER_MILLI",
+                    "fieldName": "PER_MILLI"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPM_IN_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "CPM_IN_MICRO_DOLLAR",
+                    "fieldName": "CPM_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        }
+    ],
+    "descending": false
+}

@@ -1,0 +1,940 @@
+{
+    "queryType": "timeseries",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_staging"
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "descending": false,
+    "virtualColumns": [],
+    "filter": {},
+    "granularity": "HOUR",
+    "aggregations": [
+        {
+            "type": "longSum",
+            "name": "SPEND_IN_MICRO_DOLLAR",
+            "fieldName": "spendinfo_localpaidspend",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P97_COMPLETE_1",
+                "fieldName": "video_p97_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P97_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P50_COMPLETE_1",
+                "fieldName": "video_p50_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P50_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P75_COMPLETE_1",
+                "fieldName": "video_p75_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P75_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P100_COMPLETE_1",
+                "fieldName": "video_p100_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P100_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P95_COMPLETE_1",
+                "fieldName": "video_p95_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P95_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_1_GROSS",
+                "fieldName": "cnt_gross",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_1_GROSS"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "REPIN_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "1",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "REPIN_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "CLICKTHROUGH_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "CLICKTHROUGH_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_SUM_V50_WATCHTIME_IN_MILLISECOND_1",
+                "fieldName": "video_sum_v50_watchtime_in_millisecond",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "35",
+                            "4"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "VIDEO_SUM_V50_WATCHTIME_IN_MILLISECOND_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P0_COMPLETE_1",
+                "fieldName": "video_p0_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P0_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_P25_COMPLETE_1",
+                "fieldName": "video_p25_complete",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_P25_COMPLETE_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_1_V2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": "1613433600000",
+                        "upper": null,
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "153",
+                            "157",
+                            "164",
+                            "165",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_1_V2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_1_V1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "1",
+                            "132",
+                            "133",
+                            "147",
+                            "148",
+                            "2",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": null,
+                        "upper": "1613430000000",
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_1_V1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "VIDEO_MRC_VIEWS_1",
+                "fieldName": "video_mrc_views",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_isfirstorder",
+                "value": "true",
+                "extractionFn": null
+            },
+            "name": "VIDEO_MRC_VIEWS_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "CLICKTHROUGH_1_GROSS",
+                "fieldName": "cnt_gross",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "CLICKTHROUGH_1_GROSS"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "REPIN_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "1",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "REPIN_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "OUTBOUND_CLICK_2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "153",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "OUTBOUND_CLICK_2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "OUTBOUND_CLICK_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "153",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "OUTBOUND_CLICK_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_2_V2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": "1613433600000",
+                        "upper": null,
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "153",
+                            "157",
+                            "164",
+                            "165",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_2_V2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_ENGAGEMENT_2_V1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "1",
+                            "132",
+                            "133",
+                            "147",
+                            "148",
+                            "2",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": null,
+                        "upper": "1613430000000",
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "false",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_ENGAGEMENT_2_V1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "CLICKTHROUGH_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "0",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "CLICKTHROUGH_1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_1"
+        }
+    ],
+    "postAggregations": [
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P50_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_1",
+                    "fieldName": "VIDEO_P50_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P95_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPCV_P95_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMBINED_1",
+                    "fieldName": "VIDEO_P95_COMBINED_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P0_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P0_COMPLETE_1",
+                    "fieldName": "VIDEO_P0_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P25_COMPLETE_1",
+                    "fieldName": "VIDEO_P25_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_1",
+                    "fieldName": "VIDEO_P50_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_SUM_V50_WATCHTIME_IN_SECOND_1",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_SUM_V50_WATCHTIME_IN_MILLISECOND_1",
+                    "fieldName": "VIDEO_SUM_V50_WATCHTIME_IN_MILLISECOND_1"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000",
+                    "value": 1000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_AVG_WATCHTIME_IN_SECOND_1",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_SUM_V50_WATCHTIME_IN_SECOND_1",
+                    "fieldName": "VIDEO_SUM_V50_WATCHTIME_IN_SECOND_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P0_COMBINED_1",
+                    "fieldName": "VIDEO_P0_COMBINED_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ENGAGEMENT_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_1_V1",
+                    "fieldName": "_ENGAGEMENT_1_V1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_1_V2",
+                    "fieldName": "_ENGAGEMENT_1_V2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPCV_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPV_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_MRC_VIEWS_1",
+                    "fieldName": "VIDEO_MRC_VIEWS_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P25_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P25_COMPLETE_1",
+                    "fieldName": "VIDEO_P25_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P50_COMPLETE_1",
+                    "fieldName": "VIDEO_P50_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ENGAGEMENT_2",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_2_V1",
+                    "fieldName": "_ENGAGEMENT_2_V1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "_ENGAGEMENT_2_V2",
+                    "fieldName": "_ENGAGEMENT_2_V2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "VIDEO_P75_COMBINED_1",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P75_COMPLETE_1",
+                    "fieldName": "VIDEO_P75_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P95_COMPLETE_1",
+                    "fieldName": "VIDEO_P95_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P97_COMPLETE_1",
+                    "fieldName": "VIDEO_P97_COMPLETE_1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "VIDEO_P100_COMPLETE_1",
+                    "fieldName": "VIDEO_P100_COMPLETE_1"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "constant",
+            "name": "insertion_candidate_gadgroupid",
+            "value": 2680060810186
+        }
+    ],
+    "limit": 1000000000
+}

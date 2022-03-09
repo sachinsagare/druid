@@ -1,0 +1,39 @@
+{
+    "queryType": "timeseries",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_daily_uniques_staging"
+    },
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "descending": false,
+    "virtualColumns": [],
+    "filter": {},
+    "granularity": {
+        "type": "all"
+    },
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "thetaSketch",
+                "name": "TOTAL_IMPRESSION_USER",
+                "fieldName": "cnt_unique",
+                "size": 16384,
+                "shouldFinalize": true,
+                "isInputThetaSketch": false,
+                "errorBoundsStdDev": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION_USER"
+        }
+    ],
+    "limit": 1000000000
+}

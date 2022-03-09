@@ -1,0 +1,325 @@
+{
+    "queryType": "topN",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_staging"
+    },
+    "virtualColumns": [],
+    "dimension": {
+        "type": "default",
+        "dimension": "insertion_candidate_gcampaignid",
+        "outputName": "insertion_candidate_gcampaignid",
+        "outputType": "LONG"
+    },
+    "metric": {
+        "type": "dimension",
+        "previousStop": null,
+        "ordering": {
+            "type": "lexicographic"
+        }
+    },
+    "threshold": 100000,
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "filter": {},
+    "granularity": "HOUR",
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICKTHROUGH",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "0",
+                "extractionFn": null
+            },
+            "name": "TOTAL_CLICKTHROUGH"
+        },
+        {
+            "type": "longSum",
+            "name": "SPEND_IN_MICRO_DOLLAR",
+            "fieldName": "spendinfo_localpaidspend",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_IMPRESSION",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "4",
+                "extractionFn": null
+            },
+            "name": "TOTAL_IMPRESSION"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_TOTAL_ENGAGEMENT_V2",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": "1613433600000",
+                        "upper": null,
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    },
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "1",
+                            "147",
+                            "153",
+                            "157",
+                            "164",
+                            "165",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "_TOTAL_ENGAGEMENT_V2"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "_TOTAL_ENGAGEMENT_V1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "in",
+                        "dimension": "action_actiontype",
+                        "values": [
+                            "0",
+                            "1",
+                            "132",
+                            "133",
+                            "147",
+                            "148",
+                            "2",
+                            "72"
+                        ],
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "bound",
+                        "dimension": "__time",
+                        "lower": null,
+                        "upper": "1613430000000",
+                        "lowerStrict": false,
+                        "upperStrict": false,
+                        "extractionFn": null,
+                        "ordering": {
+                            "type": "numeric"
+                        }
+                    }
+                ]
+            },
+            "name": "_TOTAL_ENGAGEMENT_V1"
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "IMPRESSION_1",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "and",
+                "fields": [
+                    {
+                        "type": "selector",
+                        "dimension": "action_isfirstorder",
+                        "value": "true",
+                        "extractionFn": null
+                    },
+                    {
+                        "type": "selector",
+                        "dimension": "action_actiontype",
+                        "value": "4",
+                        "extractionFn": null
+                    }
+                ]
+            },
+            "name": "IMPRESSION_1"
+        }
+    ],
+    "postAggregations": [
+        {
+            "type": "arithmetic",
+            "name": "ECPC_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_CLICKTHROUGH",
+                    "fieldName": "TOTAL_CLICKTHROUGH"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ECPC_IN_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "ECPC_IN_MICRO_DOLLAR",
+                    "fieldName": "ECPC_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "TOTAL_ENGAGEMENT",
+            "fn": "+",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "_TOTAL_ENGAGEMENT_V1",
+                    "fieldName": "_TOTAL_ENGAGEMENT_V1"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "_TOTAL_ENGAGEMENT_V2",
+                    "fieldName": "_TOTAL_ENGAGEMENT_V2"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "SPEND_IN_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "PER_MILLI",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "IMPRESSION_1",
+                    "fieldName": "IMPRESSION_1"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000",
+                    "value": 1000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPM_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "PER_MILLI",
+                    "fieldName": "PER_MILLI"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CPM_IN_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "CPM_IN_MICRO_DOLLAR",
+                    "fieldName": "CPM_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ECTR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_CLICKTHROUGH",
+                    "fieldName": "TOTAL_CLICKTHROUGH"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_IMPRESSION",
+                    "fieldName": "TOTAL_IMPRESSION"
+                }
+            ],
+            "ordering": null
+        }
+    ],
+    "descending": false
+}

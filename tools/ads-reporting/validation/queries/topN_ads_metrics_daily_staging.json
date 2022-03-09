@@ -1,0 +1,145 @@
+{
+    "queryType": "topN",
+    "dataSource": {
+        "type": "table",
+        "name": "ads_metrics_daily_staging"
+    },
+    "virtualColumns": [],
+    "dimension": {
+        "type": "default",
+        "dimension": "insertion_candidate_gcampaignid",
+        "outputName": "insertion_candidate_gcampaignid",
+        "outputType": "LONG"
+    },
+    "metric": {
+        "type": "dimension",
+        "previousStop": null,
+        "ordering": {
+            "type": "lexicographic"
+        }
+    },
+    "threshold": 100000,
+    "intervals": {
+        "type": "LegacySegmentSpec",
+        "intervals": []
+    },
+    "filter": {},
+    "granularity": {
+        "type": "all"
+    },
+    "aggregations": [
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CLICKTHROUGH",
+                "fieldName": "cnt",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "action_actiontype",
+                "value": "0",
+                "extractionFn": null
+            },
+            "name": "TOTAL_CLICKTHROUGH"
+        },
+        {
+            "type": "longSum",
+            "name": "SPEND_IN_MICRO_DOLLAR",
+            "fieldName": "spendinfo_localpaidspend",
+            "expression": null
+        },
+        {
+            "type": "filtered",
+            "aggregator": {
+                "type": "longSum",
+                "name": "TOTAL_CHECKOUT",
+                "fieldName": "a_conversions",
+                "expression": null
+            },
+            "filter": {
+                "type": "selector",
+                "dimension": "conversion_type",
+                "value": "2",
+                "extractionFn": null
+            },
+            "name": "TOTAL_CHECKOUT"
+        }
+    ],
+    "postAggregations": [
+        {
+            "type": "arithmetic",
+            "name": "ECPC_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_CLICKTHROUGH",
+                    "fieldName": "TOTAL_CLICKTHROUGH"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "ECPC_IN_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "ECPC_IN_MICRO_DOLLAR",
+                    "fieldName": "ECPC_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CHECKOUT_COST_PER_ACTION_IN_MICRO_DOLLAR",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "SPEND_IN_MICRO_DOLLAR",
+                    "fieldName": "SPEND_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "fieldAccess",
+                    "name": "TOTAL_CHECKOUT",
+                    "fieldName": "TOTAL_CHECKOUT"
+                }
+            ],
+            "ordering": null
+        },
+        {
+            "type": "arithmetic",
+            "name": "CHECKOUT_COST_PER_ACTION",
+            "fn": "/",
+            "fields": [
+                {
+                    "type": "fieldAccess",
+                    "name": "CHECKOUT_COST_PER_ACTION_IN_MICRO_DOLLAR",
+                    "fieldName": "CHECKOUT_COST_PER_ACTION_IN_MICRO_DOLLAR"
+                },
+                {
+                    "type": "constant",
+                    "name": "1000000",
+                    "value": 1000000
+                }
+            ],
+            "ordering": null
+        }
+    ],
+    "descending": false
+}
