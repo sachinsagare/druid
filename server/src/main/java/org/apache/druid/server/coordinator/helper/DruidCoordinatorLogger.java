@@ -21,7 +21,9 @@ package org.apache.druid.server.coordinator.helper;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.druid.client.ImmutableDruidServer;
+import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceMetricEvent;
@@ -34,7 +36,10 @@ import org.apache.druid.server.coordinator.LoadQueuePeon;
 import org.apache.druid.server.coordinator.ServerHolder;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.partition.PartitionChunk;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,36 +284,80 @@ public class DruidCoordinatorLogger implements DruidCoordinatorHelper
     allSegments
         .collect(Collectors.groupingBy(DataSegment::getDataSource))
         .forEach((final String name, final List<DataSegment> segments) -> {
-          long size = 0;
           Map<String, Long> lastSegmentTimeMap = new HashMap<>();
+          Map<String, Map<Range, Long>> segmentSize = new HashMap<>();
+          Map<String, Map<Range, Long>> segmentCount = new HashMap<>();
+
           for (DataSegment segment : segments) {
-            size += segment.getSize();
+            String namespace = getNamespace(segment.getShardSpec().getIdentifier());
+            Range range = Range.getRange(segment.getInterval().getStart());
+            segmentSize.putIfAbsent(namespace, new HashedMap());
+            segmentCount.putIfAbsent(namespace, new HashedMap());
+            segmentSize.get(namespace).compute(range, (k, v) -> v == null ? segment.getSize() : v + segment.getSize());
+            segmentCount.get(namespace).compute(range, (k, v) -> v == null ? segment.getSize() : v + 1);
             long end = segment.getInterval().getEndMillis() / 1000;
             lastSegmentTimeMap.compute(
                 getNamespace(segment.getShardSpec().getIdentifier()),
                 (k, v) -> v == null ? end : Math.max(v, end)
             );
           }
-          lastSegmentTimeMap.entrySet().forEach(e ->
-              emitter.emit(
-                  new ServiceMetricEvent.Builder()
-                      .setDimension(DruidMetrics.DATASOURCE, name)
-                      .setDimension(DruidMetrics.NAMESPACE, e.getKey())
-                      .build("segment/lastIntervalTimestamp", e.getValue())));
-          emitter.emit(
-              new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE, name).build("segment/size", size)
-          );
-          emitter.emit(
-              new ServiceMetricEvent.Builder()
-                  .setDimension(DruidMetrics.DATASOURCE, name)
-                  .build("segment/count", segments.size())
-          );
+          lastSegmentTimeMap.forEach((k, v) ->
+                                         emitter.emit(
+                                             new ServiceMetricEvent.Builder()
+                                                 .setDimension(DruidMetrics.DATASOURCE, name)
+                                                 .setDimension(DruidMetrics.NAMESPACE, k)
+                                                 .build("segment/lastIntervalTimestamp", v)));
+          segmentSize.forEach((ns, map) ->
+                                  map.forEach((r, v) -> emitter.emit(
+                                      new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE, name)
+                                                                      .setDimension(DruidMetrics.NAMESPACE, ns)
+                                                                      .setDimension(DruidMetrics.RANGE, r.name)
+                                                                      .build("segment/size", v)
+                                  )));
+          segmentCount.forEach((ns, map) ->
+                                   map.forEach((r, v) -> emitter.emit(
+                                       new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE, name)
+                                                                       .setDimension(DruidMetrics.NAMESPACE, ns)
+                                                                       .setDimension(DruidMetrics.RANGE, r.name)
+                                                                       .build("segment/count", v)
+                                   )));
         });
 
     return params;
   }
 
-  public static String getNamespace(Object identifier)
+  private enum Range
+  {
+    YESTERDAY(1, "yesterday"),
+    LAST_WEEK(7, "last_week"),
+    LAST_MONTH(30, "last_month"),
+    LAST_QUARTER(90, "last_year"),
+    ALL(Integer.MAX_VALUE, "other");
+    private int daysAgo;
+    private String name;
+
+    Range(int daysAgo, String name)
+    {
+      this.daysAgo = daysAgo;
+      this.name = name;
+    }
+
+    int getDaysAgo()
+    {
+      return daysAgo;
+    }
+
+    static Range getRange(DateTime time)
+    {
+      int daysFromNow = Days.daysBetween(time, DateTimes.nowUtc()).getDays();
+      return Stream.of(Range.values())
+                   .filter(r -> r.daysAgo >= daysFromNow)
+                   .min(Comparator.comparingInt(Range::getDaysAgo))
+                   .orElse(ALL);
+    }
+  }
+
+  private static String getNamespace(Object identifier)
   {
     if (identifier == null) {
       return "";

@@ -114,7 +114,7 @@
   "segment/loadQueue/failed" : { "dimensions" : ["server"], "type" : "gauge" },
   "segment/loadQueue/count" : { "dimensions" : ["server"], "type" : "gauge" },
   "segment/dropQueue/count" : { "dimensions" : ["server"], "type" : "gauge" },
-  "segment/size" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "segment/size" : { "dimensions" : ["dataSource","range","namespace"], "type" : "gauge" },
   "segment/overShadowed/count" : { "dimensions" : [], "type" : "gauge" },
 
   "segment/max" : { "dimensions" : [], "type" : "gauge"},
@@ -162,7 +162,7 @@
 
   "coordinator-segment/lastIntervalTimestamp" : { "dimensions" : ["dataSource", "namespace"], "type" : "gauge" },
 
-  "coordinator-segment/count" : { "dimensions" : ["dataSource"], "type" : "gauge" },
+  "coordinator-segment/count" : { "dimensions" : ["dataSource","namespace","range"], "type" : "gauge" },
   "historical-segment/count" : { "dimensions" : ["dataSource", "tier", "priority"], "type" : "gauge" },
 
   "ingest/kafka/lag" : { "dimensions" : ["dataSource"], "type" : "gauge" },
