@@ -784,7 +784,7 @@ public class AppenderatorDriverRealtimeIndexTask extends AbstractTask implements
     );
   }
 
-  private static StreamAppenderatorDriver newDriver(
+  private StreamAppenderatorDriver newDriver(
       final DataSchema dataSchema,
       final Appenderator appenderator,
       final TaskToolbox toolbox,
