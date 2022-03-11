@@ -60,7 +60,12 @@ public class UnionQueryRunner<T> implements QueryRunner<T>
                     {
                       Optional<List<AggregatorFactory>> aggs = ((UnionDataSource) dataSource).getOverrideAggregators(
                           singleSource.getName());
-                      Query<T> newQuery = aggs.isPresent() ? query.withAggregatorSpecs(aggs.get()) : query;
+                      // Since we are overriding the aggregator, we could run into a situation that a post aggregator
+                      // would be missing dependency. The check for dependency should have happened at the base query
+                      Query<T> newQuery =
+                          aggs.isPresent()
+                          ? QueryContexts.withIgnoreMissingDepPostAgg(query).withAggregatorSpecs(aggs.get())
+                          : query;
                       return baseRunner.run(
                           queryPlus.withQuery(newQuery.withDataSource(singleSource)),
                           responseContext

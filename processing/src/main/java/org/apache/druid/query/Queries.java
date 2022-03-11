@@ -90,7 +90,8 @@ public class Queries
   public static List<PostAggregator> prepareAggregations(
       List<String> otherOutputNames,
       List<AggregatorFactory> aggFactories,
-      List<PostAggregator> postAggs
+      List<PostAggregator> postAggs,
+      boolean ignoreMissingDep
   )
   {
     Preconditions.checkNotNull(otherOutputNames, "otherOutputNames cannot be null");
@@ -114,6 +115,10 @@ public class Queries
         final Set<String> dependencies = postAgg.getDependentFields();
         final Set<String> missing = Sets.difference(dependencies, combinedOutputNames);
 
+        if (!missing.isEmpty() && ignoreMissingDep) {
+          continue;
+        }
+
         Preconditions.checkArgument(
             missing.isEmpty(),
             "Missing fields [%s] for postAggregator [%s]", missing, postAgg.getName()
@@ -129,5 +134,14 @@ public class Queries
     }
 
     return postAggs;
+  }
+
+  public static List<PostAggregator> prepareAggregations(
+      List<String> otherOutputNames,
+      List<AggregatorFactory> aggFactories,
+      List<PostAggregator> postAggs
+  )
+  {
+    return prepareAggregations(otherOutputNames, aggFactories, postAggs, false);
   }
 }
