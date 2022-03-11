@@ -29,9 +29,10 @@ while [ "$i" -lt 25 ]; do
     docker restart tcollector
     echo "Druid process is running!!!"
 
-    if [[ ${STAGE_NAME} == *"query"* ]] && [[ "${TELETRAAN_SKIP_VALIDATION:-false}" == "false" ]]; then
+    if [[ ${STAGE_NAME} == *"query"* ]] && [[ "${TELETRAAN_SKIP_VALIDATION:false}" == "false" ]]; then
       echo "Running validation for Druid query server"
-      python3 ../../tools/ads-reporting/validation/druid_validation.py
+      validation_host=$(getin -rf name druid-ads-reporting-staging-query-validation 2> /dev/null)
+      python3 ../tools/ads-reporting/validation/druid_validation.py --host "localhost:9090" --validation-host "$validation_host:9090"
       exit $?
     fi
     exit 0
