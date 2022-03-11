@@ -29,6 +29,7 @@ import org.apache.druid.query.DataSource;
 import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.Queries;
 import org.apache.druid.query.Query;
+import org.apache.druid.query.QueryContexts;
 import org.apache.druid.query.Result;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.PostAggregator;
@@ -92,7 +93,8 @@ public class TopNQuery extends BaseQuery<Result<TopNResultValue>>
         this.aggregatorSpecs,
         postAggregatorSpecs == null
             ? ImmutableList.of()
-            : postAggregatorSpecs
+            : postAggregatorSpecs,
+        QueryContexts.isIgnoreMissingDepPostAgg(this)
     );
 
     topNMetricSpec.verifyPreconditions(this.aggregatorSpecs, this.postAggregatorSpecs);
