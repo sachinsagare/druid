@@ -226,7 +226,8 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     this.postAggregatorSpecs = Queries.prepareAggregations(
         this.dimensions.stream().map(DimensionSpec::getOutputName).collect(Collectors.toList()),
         this.aggregatorSpecs,
-        postAggregatorSpecs == null ? ImmutableList.of() : postAggregatorSpecs
+        postAggregatorSpecs == null ? ImmutableList.of() : postAggregatorSpecs,
+        QueryContexts.isIgnoreMissingDepPostAgg(this)
     );
 
     // Verify no duplicate names between dimensions, aggregators, and postAggregators.

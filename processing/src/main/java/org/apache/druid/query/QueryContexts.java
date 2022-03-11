@@ -78,6 +78,7 @@ public class QueryContexts
   // e.g. querying a metric that does not exist on the namespace, that could be expensive if the query requires scanning
   // large number of rows. Turn this option on to skip executing those irrelevant aggregators.
   public static final String GROUPBY_OPTIMIZE_AGGREGATOR = "groupbyOptimizeAggregator";
+  public static final String IGNORE_MISSING_DEP_POST_AGG = "ignoreMissingDepPostAgg";
 
   @Deprecated
   public static final String CHUNK_PERIOD_KEY = "chunkPeriod";
@@ -110,6 +111,7 @@ public class QueryContexts
   public static final boolean DEFAULT_RETURN_EMPTY_RESULTS = false;
   public static final boolean DEFAULT_RETURN_SEGMENT_COUNT_STATS = false;
   public static final boolean DEFAULT_GROUPBY_OPTIMIZE_AGGREGATOR = false;
+  public static final boolean DEFAULT_IGNORE_MISSING_DEP_POST_AGG = false;
 
 
   @SuppressWarnings("unused") // Used by Jackson serialization
@@ -384,6 +386,15 @@ public class QueryContexts
     return parseBoolean(query, INCLUDE_REALTIME_SERVERS, DEFAULT_INCLUDE_REALTIME_SERVERS);
   }
 
+  public static <T> boolean isIgnoreMissingDepPostAgg(Query<T> query)
+  {
+    return parseBoolean(
+            query,
+            IGNORE_MISSING_DEP_POST_AGG,
+            DEFAULT_IGNORE_MISSING_DEP_POST_AGG
+    );
+  }
+
   public static <T> boolean isGroupByOptimizeAggregator(Query<T> query)
   {
     return parseBoolean(
@@ -453,6 +464,11 @@ public class QueryContexts
     final long timeout = parseLong(query, TIMEOUT_KEY, defaultTimeout);
     Preconditions.checkState(timeout >= 0, "Timeout must be a non negative value, but was [%s]", timeout);
     return timeout;
+  }
+
+  public static <T> Query<T> withIgnoreMissingDepPostAgg(Query<T> query)
+  {
+    return query.withOverriddenContext(ImmutableMap.of(IGNORE_MISSING_DEP_POST_AGG, true));
   }
 
   public static <T> Query<T> withTimeout(Query<T> query, long timeout)
