@@ -35,7 +35,6 @@ class DruidValidation:
                 query = self.setIntervals(query)
                 query = self.setFilter(query)
                 logging.info(f'Started query validation: {filename}')
-                logging.info(f'Query: {query}')
                 try:
                     result_validation = self.queryDruid(
                         self._druid_valiation, self._validation_host, query)
@@ -48,20 +47,18 @@ class DruidValidation:
                 if result_validation != result_staging:
                     self._errors += 1
                     logging.error(
-                        'Query returned different values')
-                    logging.error(f'Validation result: {result_validation}')
-                    logging.error(f'Stagging result: {result_staging}')
+                        f'Query {filename} returned different values')
                 else:
                     logging.info(f'Query successfully validated: {filename}')
-                    logging.info(f'Result: {result_validation}')
         if self._errors > 0:
+            logging.info(f'Validation failed. {self._errors} queries returned different values')
             return 1
+        logging.info('Validation completed')
 
     def queryDruid(self, druid_instance, druid_host, query):
         headers = {'host': druid_instance,
                    'content-type': 'application/json'}
         query_endpoint = f'http://{druid_host}/druid/v2'
-        logging.info(f'Querying: {query_endpoint}')
         response = requests.post(query_endpoint, data=query, headers=headers)
         if response.status_code != 200:
             raise Exception(
@@ -113,7 +110,6 @@ class DruidValidation:
                 query = self.setIntervals(query)
                 logging.info(
                     f'Getting insertion_candidate_gadvertiserid filters for {datasource}')
-                logging.info(f'Query: {query}')
                 try:
                     response = self.queryDruid(
                         self._druid_valiation, self._validation_host, query)
@@ -138,7 +134,6 @@ class DruidValidation:
                 query = self.setFilter(query)
                 logging.info(
                     f'Getting insertion_candidate_gcampaignid filters for {datasource}')
-                logging.info(f'Query: {query}')
                 try:
                     response = self.queryDruid(
                         self._druid_valiation, self._validation_host, query)
