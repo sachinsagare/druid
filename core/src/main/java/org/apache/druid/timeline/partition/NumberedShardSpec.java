@@ -97,7 +97,7 @@ public class NumberedShardSpec implements ShardSpec
     return partitions;
   }
 
-  @JsonProperty("partitions")
+  @JsonProperty("partitions1")
   public int getPartitions()
   {
     return partitions;
