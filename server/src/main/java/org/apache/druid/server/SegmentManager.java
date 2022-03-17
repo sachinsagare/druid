@@ -228,9 +228,10 @@ public class SegmentManager
           final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
               dataSourceState.getTimeline();
           final PartitionChunk<ReferenceCountingSegment> entry = loadedIntervals.findChunk(
-              segment.getInterval(),
-              segment.getVersion(),
-              segment.getShardSpec().getPartitionNum()
+                  NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+                  segment.getInterval(),
+                  segment.getVersion(),
+                  segment.getShardSpec().getPartitionNum()
           );
 
           if (entry != null) {
