@@ -166,16 +166,17 @@ public class BrokerServerViewTest extends CuratorTestBase
 
     // Timelines should contain only dataSources in MultiComplimentMap until segments have been added
     Assert.assertEquals(
-            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("monthly"))).getClass(),
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("monthly"))).get().getClass(),
             ComplementaryNamespacedVersionedIntervalTimeline.class);
     Assert.assertEquals(
-            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("daily"))).getClass(),
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("daily"))).get().getClass(),
             ComplementaryNamespacedVersionedIntervalTimeline.class);
     Assert.assertEquals(
-            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("hourly"))).getClass(),
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("hourly"))).get().getClass(),
             NamespacedVersionedIntervalTimeline.class);
     Assert.assertEquals(
-            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))), null);
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))).get().getClass(),
+            NamespacedVersionedIntervalTimeline.class);
 
     brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment1);
     brokerServerView.serverAddedSegment(druidServer.getMetadata(), dailySegment1);
@@ -201,9 +202,9 @@ public class BrokerServerViewTest extends CuratorTestBase
     Assert.assertEquals(
             ((ComplementaryNamespacedVersionedIntervalTimeline) brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("daily"))).get())
                     .getSupportTimelinesByDataSource().size(),
-            2);
+            3);
     Assert.assertEquals(
-            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))).getClass(),
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))).get().getClass(),
             NamespacedVersionedIntervalTimeline.class);
   }
 
