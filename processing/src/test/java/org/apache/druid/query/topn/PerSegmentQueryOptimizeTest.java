@@ -25,7 +25,6 @@ import org.apache.druid.query.SegmentDescriptor;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.FilteredAggregatorFactory;
 import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
-import org.apache.druid.query.aggregation.NoopNumberAggregatorFactory;
 import org.apache.druid.query.aggregation.SuppressedAggregatorFactory;
 import org.apache.druid.query.filter.IntervalDimFilter;
 import org.apache.druid.segment.column.ColumnHolder;
@@ -127,7 +126,7 @@ public class PerSegmentQueryOptimizeTest
         new SegmentDescriptor(include, "0", 0)
     );
     AggregatorFactory noopAgg = aggregatorFactory.optimizeForSegment(context);
-    Assert.assertTrue(noopAgg instanceof NoopNumberAggregatorFactory);
+    Assert.assertTrue(noopAgg instanceof FilteredAggregatorFactory);
   }
 
 }
