@@ -130,7 +130,7 @@ public class NumberedShardSpec implements ShardSpec
     NumberedShardSpec that = (NumberedShardSpec) o;
     return partitionNum == that.partitionNum &&
             partitions == that.partitions;
-}
+  }
 
   @Override
   public int hashCode()
