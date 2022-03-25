@@ -251,6 +251,7 @@ public class ServerManager implements QuerySegmentWalker
   )
   {
     final PartitionChunk<ReferenceCountingSegment> chunk = timeline.findChunk(
+        NamespacedVersionedIntervalTimeline.getNamespace(descriptor.getPartitionIdentifier()),
         descriptor.getInterval(),
         descriptor.getVersion(),
         descriptor.getPartitionNumber()
