@@ -41,6 +41,9 @@
             "filterValues",
             "requestLevel",
             "customColumnIds",
+            "validateOnly",
+            "dataOutputFormat",
+            "millisSpentOnPatioFetchPerEntityType",
             {
               "type": "long",
               "name": "userId"
@@ -106,6 +109,21 @@
         "type" : "longSum",
         "name": "countFilters",
         "fieldName": "countFilters"
+      },
+      {
+        "type" : "longSum",
+        "name": "numEntitiesFetchedFromPatio",
+        "fieldName": "numEntitiesFetchedFromPatio"
+      },
+      {
+        "type" : "longSum",
+        "name": "millisSpentOnDruidFetch",
+        "fieldName": "millisSpentOnDruidFetch"
+      },
+      {
+        "type" : "longSum",
+        "name": "millisSpentOnPatioFetchTotal",
+        "fieldName": "millisSpentOnPatioFetchTotal"
       }
     ],
     "transformSpec": {
