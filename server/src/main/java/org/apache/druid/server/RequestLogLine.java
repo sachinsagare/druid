@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.query.Query;
 import org.joda.time.DateTime;
 
@@ -140,6 +141,11 @@ public class RequestLogLine
   public QueryStats getQueryStats()
   {
     return queryStats;
+  }
+
+  public long getLatencyMs()
+  {
+    return DateTimes.nowUtc().getMillis() - timestamp.getMillis();
   }
 
   @Override
