@@ -27,7 +27,6 @@ import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.segment.ColumnInspector;
 import org.apache.druid.segment.ColumnSelectorFactory;
 import org.apache.druid.segment.column.ColumnType;
-//import org.apache.druid.segment.column.ColumnTypeFactory;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.vector.VectorColumnSelectorFactory;
 
@@ -222,7 +221,8 @@ public abstract class AggregatorFactory implements Cacheable
    */
   public ColumnType getIntermediateType()
   {
-    //SSAGARE: commented code as below getComplexTypeName() function call is depricated  therefore now returning UNKNOWN_COMPLEX value
+    //commented code below getComplexTypeName() function call to handle deprecated method call.
+    // Just to make function work we are returning UNKNOWN_COMPLEX value
     //final ValueType intermediateType = getType();
    // if (intermediateType == ValueType.COMPLEX) {
       //return ColumnType.ofComplex(getComplexTypeName());
@@ -241,8 +241,8 @@ public abstract class AggregatorFactory implements Cacheable
   public ColumnType getResultType()
   {
     // this default 'fill' method is incomplete and can at best return 'unknown' complex
-    //SSAGARE: commented code as below getFinalizedType() function call is depricated  therefore now returning UNKNOWN_COMPLEX value
-    //final ValueType finalized = getFinalizedType();
+    //commented code below getComplexTypeName() function call to handle deprecated method call.
+    // Just to make function work we are returning UNKNOWN_COMPLEX value
    // if (finalized == ValueType.COMPLEX) {
       return ColumnType.UNKNOWN_COMPLEX;
     //}
