@@ -78,7 +78,8 @@
             },
             "loggingClient",
             "exceptionName",
-            "exceptionMessage"
+            "exceptionMessage",
+            "emailToEmailClientJobIds"
           ]
         },
         "metricsSpec": [
