@@ -110,15 +110,15 @@
     </build>
 
     <profiles>
-    <!-- Moving the full pull-deps execution out of the dist profile since we don't want to
-            pull-deps if we're running with reducedBuild (since we won't have built all of them). In
-             previous versions of Druid, this was fine because you had to manually specify bundle-exts.
-             With the new distribution approach, this is done automatically and so causes failures if
-             both the dist and bundle-contrib-pinterest profiles are active. Because maven does not allow
-             multiple property checks, this profile will run every time reducedBuild is _not_ specified,
-             even if dist isn't specified either. This does mean that if reducedBuild is specified but
-             not bundle-contrib-pinterest, dependencies will not be properly positioned in the resulting
-             tarball. -->
+        <!-- Moving the full pull-deps execution out of the dist profile since we don't want to
+        pull-deps if we're running with reducedBuild (since we won't have built all of them). In
+         previous versions of Druid, this was fine because you had to manually specify bundle-exts.
+         With the new distribution approach, this is done automatically and so causes failures if
+         both the dist and bundle-contrib-pinterest profiles are active. Because maven does not allow
+         multiple property checks, this profile will run every time reducedBuild is _not_ specified,
+         even if dist isn't specified either. This does mean that if reducedBuild is specified but
+         not bundle-contrib-pinterest, dependencies will not be properly positioned in the resulting
+         tarball. -->
         <profile>
             <id>bundle-contribs</id>
             <activation>
@@ -270,8 +270,9 @@
                                     <!--</arguments>-->
                                 <!--</configuration>-->
                             <!--</execution>-->
-                            </executions>
-                       </plugin>
+
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
