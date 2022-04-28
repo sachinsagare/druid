@@ -40,6 +40,7 @@
 
   "query/mergeBufferMaxNum" : { "dimensions" : [], "type" : "gauge"},
   "query/mergeBufferAvailNum" : { "dimensions" : [], "type" : "gauge"},
+  "query/intermResultBufferAvailNum" : { "dimensions" : [], "type" : "gauge"},
 
   "ingest/events/thrownAway" : { "dimensions" : ["dataSource"], "type" : "count" },
   "ingest/events/unparseable" : { "dimensions" : ["dataSource"], "type" : "count" },

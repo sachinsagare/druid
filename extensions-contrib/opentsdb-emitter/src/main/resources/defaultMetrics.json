@@ -55,6 +55,7 @@
   "query/cache/total/errors": [],
   "query/mergeBufferMaxNum": [],
   "query/mergeBufferAvailNum": [],
+  "query/intermResultBufferAvailNum": [],
   "ingest/events/thrownAway": [
     "dataSource"
   ],
