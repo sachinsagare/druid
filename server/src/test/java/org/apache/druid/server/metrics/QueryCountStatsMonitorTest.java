@@ -19,11 +19,15 @@
 
 package org.apache.druid.server.metrics;
 
+import com.google.common.base.Supplier;
+import org.apache.druid.collections.CloseableDefaultBlockingPool;
+import org.apache.druid.collections.CloseableStupidPool;
 import org.apache.druid.java.util.metrics.StubServiceEmitter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -70,11 +74,33 @@ public class QueryCountStatsMonitorTest
       }
     };
   }
-
+  private static final CloseableDefaultBlockingPool<ByteBuffer> MERGE_BUFFER_POOL = new CloseableDefaultBlockingPool<>(
+          new Supplier<ByteBuffer>()
+          {
+            @Override
+            public ByteBuffer get()
+            {
+              return ByteBuffer.allocateDirect(10 * 1024 * 1024);
+            }
+          },
+          1
+  );
+  private static final CloseableStupidPool<ByteBuffer> BUFFER_POOL = new CloseableStupidPool<>(
+          "GroupByQueryEngine-bufferPool",
+          new Supplier<ByteBuffer>()
+          {
+            @Override
+            public ByteBuffer get()
+            {
+              return ByteBuffer.allocateDirect(10 * 1024 * 1024);
+            }
+          }
+  );
   @Test
   public void testMonitor()
   {
-    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider);
+
+    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider,MERGE_BUFFER_POOL,BUFFER_POOL);
     final StubServiceEmitter emitter = new StubServiceEmitter("service", "host");
     monitor.doMonitor(emitter);
     // Trigger metric emission

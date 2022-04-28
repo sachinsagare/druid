@@ -145,11 +145,16 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public void exceptionName(String exceptionName)
+  {
+    setDimension("exceptionName", exceptionName);
+  }
+  @Override
   public void context(QueryType query)
   {
     if (query.getContext() != null) {
       query.getContext().entrySet()
-          .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
+              .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
     }
   }
 
@@ -315,6 +320,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public QueryMetrics<QueryType> reportNodeException(long count)
+  {
+    return reportMetric("query/node/exception", count);
+  }
+
+  @Override
   public QueryMetrics<QueryType> reportParallelMergeInputSequences(long numSequences)
   {
     // Don't emit by default.
@@ -354,6 +365,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   {
     // Don't emit by default.
     return this;
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportNodeCount(int nodeCount)
+  {
+    return reportMetric("query/node/count", nodeCount);
   }
 
   @Override
