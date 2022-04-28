@@ -390,11 +390,6 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportParallelMergeTotalCpuTime(long timeNs);
 
   /**
-   * Reports the number of segment queried
-   */
-  QueryMetrics reportSegmentCount(int segmentCount);
-
-  /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.
    */
   void emit(ServiceEmitter emitter);
