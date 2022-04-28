@@ -158,8 +158,8 @@ public class ComplementaryNamespacedVersionedIntervalTimelineTest
     add(timeline, NAMESPACE1, "2021-06-01/2021-07-01", new OvershadowableInteger("0", 0, 1));
 
     //Prepare timeline with lifetime
-    add(lifetimeSupportTimeline, NAMESPACE1, "2020-09-01/2020-09-18", new OvershadowableInteger("0", 0, 1));
-    add(lifetimeSupportTimeline, NAMESPACE2, "2020-08-01/2020-08-18", new OvershadowableInteger("0", 0, 1));
+    add(lifetimeSupportTimeline, NAMESPACE1, "2014-09-01/2020-09-18", new OvershadowableInteger("0", 0, 1));
+    add(lifetimeSupportTimeline, NAMESPACE2, "2014-09-01/2020-09-18", new OvershadowableInteger("0", 0, 1));
     supportTimelinesByDataSourcewithLifetime.put(LIFETIME_SUPPORT_DATASOURCE, lifetimeSupportTimeline);
     timelineWithLifetime = new ComplementaryNamespacedVersionedIntervalTimeline(
         LIFETIME_DATASOURCE,
