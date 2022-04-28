@@ -103,6 +103,19 @@ public class ComplementaryNamespacedVersionedIntervalTimeline<VersionType, Objec
       // should be covered by this base timeline
       NamespacedVersionedIntervalTimeline<VersionType, ObjectType> baseTimeline =
               supportTimelinesByDataSource.get(supportTimelinesByDataSource.lastKey());
+      Map<String, List<Interval>> namespaceToRemainingInterval;
+
+      if (isLifetime) {
+        namespaceToRemainingInterval = supportTimelinesByDataSource.get(dataSource).getNamespaces().stream()
+                .map(ComplementaryNamespacedVersionedIntervalTimeline::getRootNamespace)
+                .distinct()
+                .collect(Collectors.toMap(namespace -> namespace, namespace -> intervals));
+      } else {
+        namespaceToRemainingInterval = baseTimeline.getNamespaces().stream()
+                .map(ComplementaryNamespacedVersionedIntervalTimeline::getRootNamespace)
+                .distinct()
+                .collect(Collectors.toMap(namespace -> namespace, namespace -> intervals));
+      }
 
       Map<String, List<Interval>> namespaceToRemainingInterval = baseTimeline.getNamespaces().stream()
               .map(ComplementaryNamespacedVersionedIntervalTimeline::getRootNamespace)
