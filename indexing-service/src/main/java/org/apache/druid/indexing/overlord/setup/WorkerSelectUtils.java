@@ -57,6 +57,7 @@ public class WorkerSelectUtils
       final Function<ImmutableMap<String, ImmutableWorkerInfo>, ImmutableWorkerInfo> workerSelector
   )
   {
+    // Workers that could potentially run this task, ignoring affinityConfig.
     final Map<String, ImmutableWorkerInfo> runnableWorkers = getRunnableWorkers(task, allWorkers, workerTaskRunnerConfig);
 
     if (affinityConfig == null) {

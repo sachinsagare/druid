@@ -149,13 +149,12 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   {
     setDimension("exceptionName", exceptionName);
   }
-
   @Override
   public void context(QueryType query)
   {
     if (query.getContext() != null) {
       query.getContext().entrySet()
-          .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
+              .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
     }
   }
 

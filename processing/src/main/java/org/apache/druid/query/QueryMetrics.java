@@ -369,7 +369,6 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportPreFilteredRows(long numRows);
 
   /**
-<<<<<<< HEAD
    * Reports number of parallel tasks the broker used to process the query during parallel merge. This value is
    * identical to the {@link #parallelMergeParallelism} dimension value, but optionally also available as a metric.
    */

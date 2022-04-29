@@ -903,11 +903,9 @@ public class DruidQuery
       return null;
     }
 
-    // Must have GROUP BY one column, no GROUPING SETS, ORDER BY ≤ 1 column, LIMIT > 0 and ≤ maxTopNLimit,
-    // no OFFSET, no HAVING.
+    // Must have GROUP BY one column, no GROUPING SETS, ORDER BY ≤ 1 column, LIMIT > 0 and ≤ maxTopNLimit,no OFFSET, no HAVING.
     final boolean topNOk = grouping != null
                            && grouping.getDimensions().size() == 1
-                           && !grouping.getSubtotals().hasEffect(grouping.getDimensionSpecs())
                            && sorting != null
                            && (sorting.getOrderBys().size() <= 1
                                && sorting.getOffsetLimit().hasLimit()
@@ -920,7 +918,6 @@ public class DruidQuery
     if (!topNOk) {
       return null;
     }
-
     final DimensionSpec dimensionSpec = Iterables.getOnlyElement(grouping.getDimensions()).toDimensionSpec();
     final OrderByColumnSpec limitColumn;
     if (sorting.getOrderBys().isEmpty()) {

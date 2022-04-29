@@ -21,24 +21,37 @@ package org.apache.druid.server.metrics;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import org.apache.druid.collections.BlockingPool;
+import org.apache.druid.collections.DefaultBlockingPool;
+import org.apache.druid.collections.NonBlockingPool;
+import org.apache.druid.collections.StupidPool;
+import org.apache.druid.guice.annotations.Global;
+import org.apache.druid.guice.annotations.Merging;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceMetricEvent;
 import org.apache.druid.java.util.metrics.AbstractMonitor;
 import org.apache.druid.java.util.metrics.KeyedDiff;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 public class QueryCountStatsMonitor extends AbstractMonitor
 {
   private final KeyedDiff keyedDiff = new KeyedDiff();
   private final QueryCountStatsProvider statsProvider;
+  private final BlockingPool<ByteBuffer> mergeBufferPool;
+  private final StupidPool<ByteBuffer> intermediateResultPool;
 
   @Inject
   public QueryCountStatsMonitor(
-      QueryCountStatsProvider statsProvider
+      QueryCountStatsProvider statsProvider,
+      @Merging BlockingPool<ByteBuffer> mergeBufferPool,
+      @Global NonBlockingPool<ByteBuffer> intermediateResultPool
   )
   {
     this.statsProvider = statsProvider;
+    this.mergeBufferPool = mergeBufferPool;
+    this.intermediateResultPool = (StupidPool<ByteBuffer>) intermediateResultPool;
   }
 
   @Override
@@ -65,6 +78,16 @@ public class QueryCountStatsMonitor extends AbstractMonitor
         emitter.emit(builder.build(diffEntry.getKey(), diffEntry.getValue()));
       }
     }
+
+    int mergeBufferMaxNum = mergeBufferPool.maxSize();
+    emitter.emit(new ServiceMetricEvent.Builder().build("query/mergeBufferMaxNum", mergeBufferMaxNum));
+
+    int mergeBufferAvailNum = ((DefaultBlockingPool<ByteBuffer>) mergeBufferPool).getPoolSize();
+    emitter.emit(new ServiceMetricEvent.Builder().build("query/mergeBufferAvailNum", mergeBufferAvailNum));
+
+    long intermediateResultPoolSize = intermediateResultPool.poolSize();
+    emitter.emit(new ServiceMetricEvent.Builder().build("query/intermResultBufferAvailNum", intermediateResultPoolSize));
+
     return true;
   }
 

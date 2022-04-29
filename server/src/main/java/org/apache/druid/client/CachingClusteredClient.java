@@ -336,6 +336,8 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       queryMetrics = toolChest.makeMetrics(query);
       queryMetrics.query(query);
+      queryMetrics.context(query);
+
       this.isBySegment = QueryContexts.isBySegment(query);
       // Note that enabling this leads to putting uncovered intervals information in the response headers
       // and might blow up in some cases https://github.com/apache/druid/issues/2108
