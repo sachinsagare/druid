@@ -43,6 +43,8 @@ public class QueryContexts
   public static final String MAX_SCATTER_GATHER_BYTES_KEY = "maxScatterGatherBytes";
   public static final String MAX_QUEUED_BYTES_KEY = "maxQueuedBytes";
   public static final String DEFAULT_TIMEOUT_KEY = "defaultTimeout";
+  public static final String BROKER_ENABLE_SPECULATIVE_EXECUTION_KEY = "enableSpeculativeExecution";
+  public static final String BROKER_SPECULATIVE_EXECUTION_WAIT_TIME_MS_KEY = "speculativeExecutionWaitTimeMs";
   public static final String BROKER_PARALLEL_MERGE_KEY = "enableParallelMerge";
   public static final String BROKER_PARALLEL_MERGE_INITIAL_YIELD_ROWS_KEY = "parallelMergeInitialYieldRows";
   public static final String BROKER_PARALLEL_MERGE_SMALL_BATCH_ROWS_KEY = "parallelMergeSmallBatchRows";
@@ -90,6 +92,9 @@ public class QueryContexts
   public static final boolean DEFAULT_USE_FILTER_CNF = false;
   public static final boolean DEFAULT_SECONDARY_PARTITION_PRUNING = true;
   public static final boolean DEFAULT_ENABLE_DEBUG = false;
+  public static final boolean DEFAULT_ENABLE_SPECULATIVE_EXECUTION = false;
+  public static final int DEFAULT_SPECULATIVE_EXECUTION_WAIT_TIME_MS = 3000;
+  public static final int DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED = 2;
 
   @SuppressWarnings("unused") // Used by Jackson serialization
   public enum Vectorize
@@ -254,6 +259,16 @@ public class QueryContexts
   public static <T> int getPriority(Query<T> query, int defaultValue)
   {
     return parseInt(query, PRIORITY_KEY, defaultValue);
+  }
+
+  public static <T> int getSpeculativeExecutionWaitTimeMs(Query<T> query)
+  {
+    return parseInt(query, BROKER_SPECULATIVE_EXECUTION_WAIT_TIME_MS_KEY, DEFAULT_SPECULATIVE_EXECUTION_WAIT_TIME_MS);
+  }
+
+  public static <T> boolean getEnableSpeculativeExecution(Query<T> query)
+  {
+    return parseBoolean(query, BROKER_ENABLE_SPECULATIVE_EXECUTION_KEY, DEFAULT_ENABLE_SPECULATIVE_EXECUTION);
   }
 
   public static <T> String getLane(Query<T> query)
