@@ -647,9 +647,10 @@ public class CachingClusteredClient implements QuerySegmentWalker
       final SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
               serverSegments = new TreeMap<>();
       for (SegmentServerSelector serverToSegment : segments) {
-        QueryableDruidServer queryableDruidServers =
+        List<QueryableDruidServer> queryableDruidServers =
                 serverToSegment.getServer()
                         .pickForPriority(
+                                QueryContexts.getPriority(query),
                                 QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED
                         );
         if (queryableDruidServers == null) {
@@ -659,12 +660,12 @@ public class CachingClusteredClient implements QuerySegmentWalker
                   query.getDataSource()
           ).emit();
         } else {
-          final DruidServer primaryServer = queryableDruidServers.getServer();
+          final DruidServer primaryServer = queryableDruidServers.get(0).getServer();
           serverSegments.computeIfAbsent(primaryServer, s -> Pair.of(new ArrayList<>(), new TreeMap<>()))
                   .lhs
                   .add(serverToSegment.getSegmentDescriptor());
-          //I believe this might not needed
-         /* if (queryableDruidServers.size() == QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED) {
+
+          if (queryableDruidServers.size() == QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED) {
             final DruidServer backupServer = queryableDruidServers.get(1).getServer();
             serverSegments.get(primaryServer)
                     .rhs
@@ -674,7 +675,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
             log.debug("Unable to add backup server for speculative execution: replicas needed [%d] not equal " +
                             "to number of queryable druid servers [%d]",
                     QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED, queryableDruidServers.size());
-          }*/
+          }
         }
       }
       return serverSegments;
