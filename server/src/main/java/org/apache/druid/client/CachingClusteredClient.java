@@ -26,7 +26,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.RangeSet;
@@ -82,12 +81,7 @@ import org.apache.druid.segment.join.JoinableFactoryWrapper;
 import org.apache.druid.server.QueryResource;
 import org.apache.druid.server.QueryScheduler;
 import org.apache.druid.server.coordination.DruidServerMetadata;
-import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
-import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.TimelineLookup;
-import org.apache.druid.timeline.TimelineObjectHolder;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.*;
 import org.apache.druid.timeline.VersionedIntervalTimeline.PartitionChunkEntry;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.joda.time.Interval;
@@ -102,7 +96,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -978,6 +971,8 @@ public class CachingClusteredClient implements QuerySegmentWalker
     @Override
     public TimelineLookup<String, ServerSelector> apply(TimelineLookup<String, ServerSelector> timeline)
     {
+      //Sachin commentted below code to add namespace change and need remove once finalize.
+      /*
       final VersionedIntervalTimeline<String, ServerSelector> timeline2 =
           new VersionedIntervalTimeline<>(Ordering.natural());
       Iterator<PartitionChunkEntry<String, ServerSelector>> unfilteredIterator =
@@ -985,11 +980,32 @@ public class CachingClusteredClient implements QuerySegmentWalker
       Iterator<PartitionChunkEntry<String, ServerSelector>> iterator = Iterators.filter(
           unfilteredIterator,
           Objects::nonNull
-      );
+      );*/
       // VersionedIntervalTimeline#addAll implementation is much more efficient than calling VersionedIntervalTimeline#add
       // in a loop when there are lot of segments to be added for same interval and version.
-      timeline2.addAll(iterator);
+      /*timeline2.addAll(iterator);
+      return timeline2; */
+
+      final NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline2 =
+              new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
+      for (SegmentDescriptor spec : specs) {
+        final PartitionChunk<ServerSelector> entry;
+        entry = ((NamespacedVersionedIntervalTimeline) timeline).findChunk(
+                NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
+                spec.getInterval(),
+                spec.getVersion(),
+                spec.getPartitionNumber()
+        );
+        if (entry != null) {
+            timeline2.add(
+                    NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
+                    spec.getInterval(),
+                    spec.getVersion(),
+                    entry);
+        }
+      }
       return timeline2;
+
     }
 
     @Nullable
