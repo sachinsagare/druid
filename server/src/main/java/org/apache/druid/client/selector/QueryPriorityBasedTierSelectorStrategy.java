@@ -26,7 +26,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
 import org.apache.druid.timeline.DataSegment;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,13 +59,25 @@ public class QueryPriorityBasedTierSelectorStrategy extends HighestPriorityTierS
       DataSegment segment
   )
   {
+    return Iterables.getOnlyElement(pick(queryPriority, prioritizedServers, segment, 1), null);
+  }
+
+  @NotNull
+  @Override
+  public List<QueryableDruidServer> pick(
+      int queryPriority,
+      Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
+      DataSegment segment,
+      int numServersToPick
+  )
+  {
     if (lookup.containsKey(queryPriority)) {
       int tierPriority = lookup.get(queryPriority);
       if (prioritizedServers.containsKey(tierPriority)) {
-        return Iterables.getOnlyElement(pick(prioritizedServers.get(tierPriority), segment, 1), null);
+        return pick(prioritizedServers.get(tierPriority), segment, numServersToPick);
       }
     }
     // Default to the parent which is the highest priority tier selector
-    return pick(prioritizedServers, segment);
+    return pick(prioritizedServers, segment, numServersToPick);
   }
 }

@@ -27,6 +27,7 @@ import org.apache.druid.collections.NonBlockingPool;
 import org.apache.druid.collections.StupidPool;
 import org.apache.druid.guice.annotations.Global;
 import org.apache.druid.guice.annotations.Merging;
+import org.apache.druid.java.util.common.guava.SpeculativeExecutedSequence;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceMetricEvent;
 import org.apache.druid.java.util.metrics.AbstractMonitor;
@@ -62,16 +63,18 @@ public class QueryCountStatsMonitor extends AbstractMonitor
     final long failedQueryCount = statsProvider.getFailedQueryCount();
     final long interruptedQueryCount = statsProvider.getInterruptedQueryCount();
     final long timedOutQueryCount = statsProvider.getTimedOutQueryCount();
-
+    ImmutableMap.Builder<String, Long> mapBuilder = ImmutableMap.builder();
     Map<String, Long> diff = keyedDiff.to(
         "queryCountStats",
-        ImmutableMap.of(
-            "query/count", successfulQueryCount + failedQueryCount + interruptedQueryCount + timedOutQueryCount,
-            "query/success/count", successfulQueryCount,
-            "query/failed/count", failedQueryCount,
-            "query/interrupted/count", interruptedQueryCount,
-            "query/timeout/count", timedOutQueryCount
-        )
+            mapBuilder.put("query/count", successfulQueryCount + failedQueryCount + interruptedQueryCount)
+                    .put("query/success/count", successfulQueryCount)
+                    .put("query/failed/count", failedQueryCount)
+                    .put("query/interrupted/count", interruptedQueryCount)
+                    .put("query/timeout/count", timedOutQueryCount)
+                    .put("query/speculativeExecutionBackupFired/count", SpeculativeExecutedSequence.getBackupFiredCount())
+                    .put("query/speculativeExecutionPrimaryWon/count", SpeculativeExecutedSequence.getPrimaryWonCount())
+                    .put("query/speculativeExecutionPrimaryLost/count", SpeculativeExecutedSequence.getPrimaryLostCount())
+                    .build()
     );
     if (diff != null) {
       for (Map.Entry<String, Long> diffEntry : diff.entrySet()) {

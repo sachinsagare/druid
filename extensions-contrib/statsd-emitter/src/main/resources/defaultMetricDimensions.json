@@ -20,6 +20,10 @@
   "query/interrupted/count" : { "dimensions" : [], "type" : "count" },
   "query/timeout/count" : { "dimensions" : [], "type" : "count" },
 
+  "query/speculativeExecutionBackupFired/count": { "dimensions" : [], "type" : "count" },
+  "query/speculativeExecutionPrimaryWon/count": { "dimensions" : [], "type" : "count" },
+  "query/speculativeExecutionPrimaryLost/count": { "dimensions" : [], "type" : "count" },
+
   "query/cache/delta/numEntries" : { "dimensions" : [], "type" : "count" },
   "query/cache/delta/sizeBytes" : { "dimensions" : [], "type" : "count" },
   "query/cache/delta/hits" : { "dimensions" : [], "type" : "count" },
