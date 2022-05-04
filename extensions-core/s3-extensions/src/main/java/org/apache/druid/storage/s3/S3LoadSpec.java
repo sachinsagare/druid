@@ -59,7 +59,7 @@ public class S3LoadSpec implements LoadSpec
   @Override
   public LoadSpecResult loadSegment(File outDir) throws SegmentLoadingException
   {
-    return new LoadSpecResult(puller.getSegmentFiles(new S3DataSegmentPuller.S3Coords(bucket, key), outDir).size());
+    return new LoadSpecResult(puller.getSegmentFiles(new CloudObjectLocation(bucket, key), outDir).size());
   }
 
   @Override
@@ -67,7 +67,7 @@ public class S3LoadSpec implements LoadSpec
   {
     String supplimentalIndexKey = String.join("/", key.substring(0, key.lastIndexOf('/')),
                                               SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX, supplimentalIndexFileName);
-    return new LoadSpecResult(puller.getSegmentFiles(new S3DataSegmentPuller.S3Coords(bucket, supplimentalIndexKey), outDir).size());
+    return new LoadSpecResult(puller.getSegmentFiles(new CloudObjectLocation(bucket, supplimentalIndexKey), outDir).size());
   }
 
   @JsonProperty(S3DataSegmentPuller.BUCKET)
