@@ -243,8 +243,8 @@ public abstract class AggregatorFactory implements Cacheable
     // this default 'fill' method is incomplete and can at best return 'unknown' complex
     //commented code below getComplexTypeName() function call to handle deprecated method call.
     // Just to make function work we are returning UNKNOWN_COMPLEX value
-   // if (finalized == ValueType.COMPLEX) {
-      return ColumnType.UNKNOWN_COMPLEX;
+    // if (finalized == ValueType.COMPLEX) {
+    return ColumnType.UNKNOWN_COMPLEX;
     //}
     //return ColumnTypeFactory.ofValueType(finalized);
   }

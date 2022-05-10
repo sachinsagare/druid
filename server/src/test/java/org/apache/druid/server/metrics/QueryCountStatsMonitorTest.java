@@ -74,33 +74,35 @@ public class QueryCountStatsMonitorTest
       }
     };
   }
+
   private static final CloseableDefaultBlockingPool<ByteBuffer> MERGE_BUFFER_POOL = new CloseableDefaultBlockingPool<>(
-          new Supplier<ByteBuffer>()
+        new Supplier<ByteBuffer>()
+        {
+          @Override
+          public ByteBuffer get()
           {
-            @Override
-            public ByteBuffer get()
-            {
-              return ByteBuffer.allocateDirect(10 * 1024 * 1024);
-            }
-          },
-          1
+            return ByteBuffer.allocateDirect(10 * 1024 * 1024);
+          }
+        },
+        1
   );
   private static final CloseableStupidPool<ByteBuffer> BUFFER_POOL = new CloseableStupidPool<>(
           "GroupByQueryEngine-bufferPool",
           new Supplier<ByteBuffer>()
-          {
-            @Override
-            public ByteBuffer get()
-            {
-              return ByteBuffer.allocateDirect(10 * 1024 * 1024);
-            }
-          }
+      {
+        @Override
+        public ByteBuffer get()
+        {
+          return ByteBuffer.allocateDirect(10 * 1024 * 1024);
+        }
+      }
   );
+
   @Test
   public void testMonitor()
   {
 
-    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider,MERGE_BUFFER_POOL,BUFFER_POOL);
+    final QueryCountStatsMonitor monitor = new QueryCountStatsMonitor(queryCountStatsProvider);
     final StubServiceEmitter emitter = new StubServiceEmitter("service", "host");
     monitor.doMonitor(emitter);
     // Trigger metric emission

@@ -84,7 +84,7 @@ public interface TierSelectorStrategy
       Int2ObjectRBTreeMap<Set<QueryableDruidServer>> prioritizedServers,
       DataSegment segment,
       int numServersToPick
-  );	
+  );
 
   @Nullable
   QueryableDruidServer pick(

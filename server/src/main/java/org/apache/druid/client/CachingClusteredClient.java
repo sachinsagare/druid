@@ -640,7 +640,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
      *                     value: segments (a subset of lhs) that the backup server will be queried for
      */
     private SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
-    groupSegmentsByServer(Set<SegmentServerSelector> segments)
+        groupSegmentsByServer(Set<SegmentServerSelector> segments)
     {
       final SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
               serverSegments = new TreeMap<>();
@@ -987,11 +987,11 @@ public class CachingClusteredClient implements QuerySegmentWalker
                 spec.getPartitionNumber()
         );
         if (entry != null) {
-            timeline2.add(
-                    NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
-                    spec.getInterval(),
-                    spec.getVersion(),
-                    entry);
+          timeline2.add(
+                  NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
+                  spec.getInterval(),
+                  spec.getVersion(),
+                  entry);
         }
       }
       return timeline2;

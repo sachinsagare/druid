@@ -78,6 +78,7 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+import org.eclipse.jetty.util.thread.ThreadPool;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
@@ -99,6 +100,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -108,6 +110,7 @@ public class JettyServerModule extends JerseyServletModule
   private static final Logger log = new Logger(JettyServerModule.class);
 
   private static final AtomicInteger ACTIVE_CONNECTIONS = new AtomicInteger();
+  private static final AtomicReference<ThreadPool> JETTY_SERVER_THREAD_POOL = new AtomicReference<>(null);
   private static final String HTTP_1_1_STRING = "HTTP/1.1";
   private static QueuedThreadPool jettyServerThreadPool = null;
 
@@ -233,6 +236,7 @@ public class JettyServerModule extends JerseyServletModule
     jettyServerThreadPool = threadPool;
 
     final Server server = new Server(threadPool);
+    JETTY_SERVER_THREAD_POOL.compareAndSet(null, threadPool);
 
     // Without this bean set, the default ScheduledExecutorScheduler runs as non-daemon, causing lifecycle hooks to fail
     // to fire on main exit. Related bug: https://github.com/apache/druid/pull/1627
