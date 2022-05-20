@@ -24,11 +24,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.RangeSet;
 import org.apache.druid.data.input.InputRow;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -38,7 +36,7 @@ import java.util.Objects;
  * {@link #partitions} partitions are successfully updated, and {@link #partitionNum} can go beyond it when some types
  * of index tasks are trying to append to existing partitions.
  */
-public class NumberedShardSpec implements ShardSpec
+public class NumberedShardSpec extends BloomFilterShardSpec
 {
   @JsonIgnore
   private final int partitionNum;
@@ -82,12 +80,6 @@ public class NumberedShardSpec implements ShardSpec
   public List<String> getDomainDimensions()
   {
     return ImmutableList.of();
-  }
-
-  @Override
-  public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
-  {
-    return true;
   }
 
   @Override

@@ -67,14 +67,14 @@ public interface DataSegmentPusher
    * @return segment descriptor
    * @throws IOException
    */
-  default DataSegment push(File file, final File supplimentalIndexFilesDir, DataSegment segment, boolean useUniquePath)
+  DataSegment push(File indexFilesDir, File supplimentalIndexFilesDir, DataSegment segment, boolean useUniquePath)
+      throws IOException;
+
+  default DataSegment push(File indexFilesDir, DataSegment segment, boolean useUniquePath)
       throws IOException
   {
-    return push(file, segment, useUniquePath);
+    return push(indexFilesDir, null, segment, useUniquePath);
   }
-
-  DataSegment push(File file, DataSegment segment, boolean useUniquePath)
-      throws IOException;
 
   //use map instead of LoadSpec class to avoid dependency pollution.
   Map<String, Object> makeLoadSpec(URI finalIndexZipFilePath);

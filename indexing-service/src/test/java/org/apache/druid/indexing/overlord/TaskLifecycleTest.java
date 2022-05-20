@@ -545,6 +545,17 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
       }
 
       @Override
+      public DataSegment push(
+          File indexFilesDir,
+          File supplimentalIndexFilesDir,
+          DataSegment segment,
+          boolean useUniquePath
+      )
+      {
+        return push(indexFilesDir, segment, useUniquePath);
+      }
+
+      @Override
       public Map<String, Object> makeLoadSpec(URI uri)
       {
         throw new UnsupportedOperationException();
@@ -1201,6 +1212,17 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
       public String getPathForHadoop()
       {
         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public DataSegment push(
+          File indexFilesDir,
+          File supplimentalIndexFilesDir,
+          DataSegment segment,
+          boolean useUniquePath
+      )
+      {
+        return push(indexFilesDir, segment, useUniquePath);
       }
 
       @Override

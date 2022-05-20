@@ -21,6 +21,7 @@ package org.apache.druid.segment;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.hash.BloomFilter;
 import com.google.common.collect.PeekingIterator;
 import org.apache.druid.collections.bitmap.BitmapFactory;
 import org.apache.druid.collections.bitmap.MutableBitmap;
@@ -28,6 +29,7 @@ import org.apache.druid.collections.spatial.ImmutableRTree;
 import org.apache.druid.collections.spatial.RTree;
 import org.apache.druid.collections.spatial.split.LinearGutmanSplitStrategy;
 import org.apache.druid.common.config.NullHandling;
+import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.io.Closer;
 import org.apache.druid.segment.column.ColumnCapabilities;

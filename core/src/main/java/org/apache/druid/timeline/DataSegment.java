@@ -38,7 +38,6 @@ import org.apache.druid.guice.annotations.PublicApi;
 import org.apache.druid.jackson.CommaListJoinDeserializer;
 import org.apache.druid.jackson.CommaListJoinSerializer;
 import org.apache.druid.query.SegmentDescriptor;
-import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.NumberedShardSpec;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.joda.time.Interval;
@@ -85,6 +84,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
   private static final Interner<List<String>> DIMENSIONS_INTERNER = Interners.newWeakInterner();
   private static final Interner<List<String>> METRICS_INTERNER = Interners.newWeakInterner();
   private static final Interner<CompactionState> COMPACTION_STATE_INTERNER = Interners.newWeakInterner();
+  private static final Interner<List<String>> AVAILABLE_SUPPLIMENTAL_INDEXES_INTERNER = Interners.newWeakInterner();
   private static final Map<String, Object> PRUNED_LOAD_SPEC = ImmutableMap.of(
       "load spec is pruned, because it's not needed on Brokers, but eats a lot of heap space",
       ""
@@ -96,6 +96,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
   private final Map<String, Object> loadSpec;
   private final List<String> dimensions;
   private final List<String> metrics;
+  private final List<String> availableSupplimentalIndexes;
   private final ShardSpec shardSpec;
 
   /**
@@ -189,6 +190,62 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
     );
   }
 
+  public DataSegment(
+      String dataSource,
+      Interval interval,
+      String version,
+      Map<String, Object> loadSpec,
+      List<String> dimensions,
+      List<String> metrics,
+      ShardSpec shardSpec,
+      Integer binaryVersion,
+      long size,
+      List<String> availableSupplimentalIndexes
+  )
+  {
+    this(
+        dataSource,
+        interval,
+        version,
+        loadSpec,
+        dimensions,
+        metrics,
+        shardSpec,
+        binaryVersion,
+        size,
+        availableSupplimentalIndexes,
+        PruneLoadSpecHolder.DEFAULT
+    );
+  }
+
+  public DataSegment(
+      String dataSource,
+      Interval interval,
+      String version,
+      Map<String, Object> loadSpec,
+      List<String> dimensions,
+      List<String> metrics,
+      ShardSpec shardSpec,
+      Integer binaryVersion,
+      long size,
+      PruneLoadSpecHolder pruneLoadSpecHolder
+  )
+  {
+    this(
+        dataSource,
+        interval,
+        version,
+        loadSpec,
+        dimensions,
+        metrics,
+        shardSpec,
+        binaryVersion,
+        size,
+        null,
+        pruneLoadSpecHolder
+    );
+  }
+
   @JsonCreator
   public DataSegment(
       @JsonProperty("dataSource") String dataSource,
@@ -208,17 +265,27 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
       @JsonProperty("lastCompactionState") @Nullable CompactionState lastCompactionState,
       @JsonProperty("binaryVersion") Integer binaryVersion,
       @JsonProperty("size") long size,
-      @JacksonInject PruneSpecsHolder pruneSpecsHolder
+      @JacksonInject PruneSpecsHolder pruneSpecsHolder,
+      @JsonProperty("availableSupplimentalIndexes")
+      @JsonDeserialize(using = CommaListJoinDeserializer.class)
+      @Nullable
+              List<String> availableSupplimentalIndexes,
+      @JacksonInject PruneLoadSpecHolder pruneLoadSpecHolder
   )
   {
     this.id = SegmentId.of(dataSource, interval, version, shardSpec);
-    boolean needsLoadSpecForShardSpec = shardSpec instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec;
-    this.loadSpec = (pruneLoadSpecHolder.pruneLoadSpec && !needsLoadSpecForShardSpec) ? PRUNED_LOAD_SPEC :
-                    prepareLoadSpec(loadSpec);
-    // Deduplicating dimensions and metrics lists as a whole because they are very likely the same for the same
-    // dataSource
-    this.dimensions = prepareDimensionsOrMetrics(dimensions, DIMENSIONS_INTERNER);
-    this.metrics = prepareDimensionsOrMetrics(metrics, METRICS_INTERNER);
+    // Deduplicating dimensions, metrics and availableSupplimentalIndexes lists as a whole because they are very likely
+    // the same for the same dataSource
+    this.dimensions = prepareDimensionsOrMetricsOrAvailableSupplimentalIndexes(dimensions, DIMENSIONS_INTERNER);
+    this.metrics = prepareDimensionsOrMetricsOrAvailableSupplimentalIndexes(metrics, METRICS_INTERNER);
+    this.availableSupplimentalIndexes = prepareDimensionsOrMetricsOrAvailableSupplimentalIndexes(
+            availableSupplimentalIndexes,
+            AVAILABLE_SUPPLIMENTAL_INDEXES_INTERNER
+    );
+    // If there are available available supplimental indexes, we need the load spec
+    this.loadSpec = (pruneLoadSpecHolder.pruneLoadSpec && this.availableSupplimentalIndexes.isEmpty()) ?
+            PRUNED_LOAD_SPEC : prepareLoadSpec(loadSpec);
+
     this.shardSpec = (shardSpec == null) ? new NumberedShardSpec(0, 1) : shardSpec;
     this.lastCompactionState = pruneSpecsHolder.pruneLastCompactionState
                                ? null
@@ -251,7 +318,8 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
     return COMPACTION_STATE_INTERNER.intern(lastCompactionState);
   }
 
-  private List<String> prepareDimensionsOrMetrics(@Nullable List<String> list, Interner<List<String>> interner)
+  private List<String> prepareDimensionsOrMetricsOrAvailableSupplimentalIndexes(@Nullable List<String> list,
+                                                                                Interner<List<String>> interner)
   {
     if (list == null) {
       return ImmutableList.of();
@@ -311,6 +379,16 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
   public List<String> getMetrics()
   {
     return metrics;
+  }
+
+  @JsonProperty
+  // Skip serializing empty values to save footprint considering some places where this value can reside don't scale
+  // well, e.g., znode if using zk based segment discovery
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  @JsonSerialize(using = CommaListJoinSerializer.class)
+  public List<String> getAvailableSupplimentalIndexes()
+  {
+    return availableSupplimentalIndexes;
   }
 
   @JsonProperty
@@ -431,6 +509,11 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
     return builder(this).binaryVersion(binaryVersion).build();
   }
 
+  public DataSegment withAvailableSupplimentalIndexes(List<String> availableSupplimentalIndexes)
+  {
+    return builder(this).availableSupplimentalIndexes(availableSupplimentalIndexes).build();
+  }
+
   public DataSegment withLastCompactionState(CompactionState compactionState)
   {
     return builder(this).lastCompactionState(compactionState).build();
@@ -469,6 +552,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
            ", shardSpec=" + shardSpec +
            ", lastCompactionState=" + lastCompactionState +
            ", size=" + size +
+           ", availableSupplimentalIndexes=" + availableSupplimentalIndexes +
            '}';
   }
 
@@ -494,6 +578,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
     private CompactionState lastCompactionState;
     private Integer binaryVersion;
     private long size;
+    private List<String> availableSupplimentalIndexes;
 
     public Builder()
     {
@@ -516,6 +601,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
       this.lastCompactionState = segment.getLastCompactionState();
       this.binaryVersion = segment.getBinaryVersion();
       this.size = segment.getSize();
+      this.availableSupplimentalIndexes = segment.getAvailableSupplimentalIndexes();
     }
 
     public Builder dataSource(String dataSource)
@@ -578,6 +664,12 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
       return this;
     }
 
+    public Builder availableSupplimentalIndexes(List<String> availableSupplimentalIndexes)
+    {
+      this.availableSupplimentalIndexes = availableSupplimentalIndexes;
+      return this;
+    }
+
     public DataSegment build()
     {
       // Check stuff that goes into the id, at least.
@@ -596,7 +688,8 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
           shardSpec,
           lastCompactionState,
           binaryVersion,
-          size
+          size,
+          availableSupplimentalIndexes
       );
     }
   }

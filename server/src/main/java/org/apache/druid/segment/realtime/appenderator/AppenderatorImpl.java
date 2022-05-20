@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -41,6 +40,7 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.druid.client.cache.Cache;
 import org.apache.druid.data.input.Committer;
 import org.apache.druid.data.input.InputRow;
+import org.apache.druid.data.input.impl.DimensionsSpec;
 import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.FileUtils;
 import org.apache.druid.java.util.common.IAE;
@@ -63,6 +63,7 @@ import org.apache.druid.segment.QueryableIndex;
 import org.apache.druid.segment.QueryableIndexSegment;
 import org.apache.druid.segment.ReferenceCountingSegment;
 import org.apache.druid.segment.Segment;
+import org.apache.druid.segment.column.ColumnHolder;
 import org.apache.druid.segment.incremental.IncrementalIndexAddResult;
 import org.apache.druid.segment.incremental.IndexSizeExceededException;
 import org.apache.druid.segment.incremental.ParseExceptionHandler;
@@ -76,7 +77,6 @@ import org.apache.druid.server.coordination.DataSegmentAnnouncer;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
@@ -330,12 +330,6 @@ public class AppenderatorImpl implements Appenderator
     rowsCurrentlyInMemory.addAndGet(numAddedRows);
     bytesCurrentlyInMemory.addAndGet(bytesInMemoryAfterAdd - bytesInMemoryBeforeAdd);
     totalRows.addAndGet(numAddedRows);
-
-    if (identifier.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec && numAddedRows > 0) {
-      final long start = System.currentTimeMillis();
-      ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) identifier.getShardSpec()).updateBloomFilter(row);
-      metrics.setUpdateBloomFilterMillis(System.currentTimeMillis() - start);
-    }
 
     boolean isPersistRequired = false;
     boolean persist = false;
@@ -850,8 +844,6 @@ public class AppenderatorImpl implements Appenderator
 
     // Use a descriptor file to indicate that pushing has completed.
     final File persistDir = computePersistDir(identifier);
-    final File mergedTarget = new File(persistDir, "merged");
-    final File mergedSupplimentalIndexTarget = new File(persistDir, "merged_supplimental_index");
     final File descriptorFile = computeDescriptorFile(identifier);
 
     // Sanity checks
@@ -884,25 +876,39 @@ public class AppenderatorImpl implements Appenderator
         }
       }
 
-      removeDirectory(mergedTarget);
-      removeDirectory(mergedSupplimentalIndexTarget);
-
-      if (mergedTarget.exists()) {
-        throw new ISE("Merged target[%s] exists after removing?!", mergedTarget);
+      final File mergedIndexTarget = new File(persistDir, "merged");
+      removeDirectory(mergedIndexTarget);
+      if (mergedIndexTarget.exists()) {
+        throw new ISE("Merged target[%s] exists after removing?!", mergedIndexTarget);
       }
 
-      if (mergedSupplimentalIndexTarget.exists()) {
-        throw new ISE("Merged supplimental index target[%s] exists after removing?!",
-                mergedSupplimentalIndexTarget);
-      }
-
-      final File mergedFile;
+      final File mergedIndexFile;
+      final File mergedSupplimentalIndexFile;
       final long mergeFinishTime;
       final long startTime = System.nanoTime();
       List<QueryableIndex> indexes = new ArrayList<>();
       Closer closer = Closer.create();
       try {
-        for (FireHydrant fireHydrant : sink) {
+	DimensionsSpec dimensionsSpec = schema.getParser() == null ? null : schema.getParser()
+                                                                                  .getParseSpec()
+                                                                                  .getDimensionsSpec();
+        boolean hasSupplimentalIndex = IndexMerger.hasSupplimentalIndex(dimensionsSpec);
+        final File mergedSupplimentalIndexTarget = hasSupplimentalIndex ?
+                                                   new File(persistDir, "merged_supplimental_index") : null;
+        if (hasSupplimentalIndex) {
+          removeDirectory(mergedSupplimentalIndexTarget);
+          if (mergedSupplimentalIndexTarget.exists()) {
+            throw new ISE(
+                "Merged supplimental index target[%s] exists after removing?!",
+                mergedSupplimentalIndexTarget
+            );
+          }
+        }
+
+        List<String> dimensionNamesHasBloomFilterIndexes = IndexMerger.getDimensionNamesHasBloomFilterIndexes(
+            dimensionsSpec);
+        
+	for (FireHydrant fireHydrant : sink) {
 
           // if batch, swap/persist did not memory map the incremental index, we need it mapped now:
           if (!isOpenSegments()) {
@@ -933,56 +939,33 @@ public class AppenderatorImpl implements Appenderator
 
           Pair<ReferenceCountingSegment, Closeable> segmentAndCloseable = fireHydrant.getAndIncrementSegment();
           final QueryableIndex queryableIndex = segmentAndCloseable.lhs.asQueryableIndex();
+          IndexMerger.setHasBloomFilterIndexesInColumnCapabilities(
+              dimensionNamesHasBloomFilterIndexes,
+              dimension -> {
+                ColumnHolder columnHolder = queryableIndex.getColumnHolder(dimension);
+                return columnHolder == null ? null : columnHolder.getCapabilities();
+              }
+          );
           log.debug("Segment[%s] adding hydrant[%s]", identifier, fireHydrant);
           indexes.add(queryableIndex);
           closer.register(segmentAndCloseable.rhs);
         }
 
-        mergedFile = indexMerger.mergeQueryableIndex(
+        Pair<File, File> p = indexMerger.mergeQueryableIndex(
             indexes,
             schema.getGranularitySpec().isRollup(),
             schema.getAggregators(),
             schema.getDimensionsSpec(),
-            mergedTarget,
+            mergedIndexTarget,
+            mergedSupplimentalIndexTarget,
             tuningConfig.getIndexSpec(),
             tuningConfig.getIndexSpecForIntermediatePersists(),
             new BaseProgressIndicator(),
             tuningConfig.getSegmentWriteOutMediumFactory(),
             tuningConfig.getMaxColumnsToMerge()
         );
-        // Upload supplimental indexes
-        if (identifier.getShardSpec() instanceof BloomFilterStreamFanOutHashBasedNumberedShardSpec) {
-          BloomFilterStreamFanOutHashBasedNumberedShardSpec s =
-                  ((BloomFilterStreamFanOutHashBasedNumberedShardSpec) identifier.getShardSpec());
-          org.apache.commons.io.FileUtils.forceMkdir(mergedSupplimentalIndexTarget);
-
-          s.completeBloomFilter();
-          byte[] serializedBloomFilter = s.serializeBloomFilter();
-          if (serializedBloomFilter != null) {
-            final File partitionDimensionsBloomFilterDir = new File(
-                    mergedSupplimentalIndexTarget,
-                    BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_DIR
-            );
-            org.apache.commons.io.FileUtils.forceMkdir(partitionDimensionsBloomFilterDir);
-            // Write version
-            Files.asByteSink(new File(
-                    partitionDimensionsBloomFilterDir,
-                    BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_VERSION_FILE
-            )).write(
-                    Ints.toByteArray(BloomFilterStreamFanOutHashBasedNumberedShardSpec.CURRENT_VERSION_ID));
-            // Write serialized bloom filter
-            Files.asByteSink(new File(
-                    partitionDimensionsBloomFilterDir,
-                    BloomFilterStreamFanOutHashBasedNumberedShardSpec.BLOOM_FILTER_BIN_FILE
-            )).write(serializedBloomFilter);
-          } else {
-            log.warn("Empty serialized bytes for bloom filter for segment[%s], skip uploading", identifier);
-          }
-        }
-
-        mergeFinishTime = System.nanoTime();
-
-        log.debug("Segment[%s] built in %,dms.", identifier, (mergeFinishTime - startTime) / 1000000);
+        mergedIndexFile = p.lhs;
+        mergedSupplimentalIndexFile = p.rhs;
       }
       catch (Throwable t) {
         throw closer.rethrow(t);
@@ -1001,8 +984,8 @@ public class AppenderatorImpl implements Appenderator
           // Kafka indexing task, pushers must use unique file paths in deep storage in order to maintain exactly-once
           // semantics.
           () -> dataSegmentPusher.push(
-              mergedFile,
-              mergedSupplimentalIndexTarget,
+              mergedIndexFile,
+              mergedSupplimentalIndexFile,
               segmentToPush,
               useUniquePath
           ),
@@ -1022,6 +1005,8 @@ public class AppenderatorImpl implements Appenderator
       final long pushFinishTime = System.nanoTime();
 
       objectMapper.writeValue(descriptorFile, segment);
+
+      mergeFinishTime = System.nanoTime();
 
       log.info(
           "Segment[%s] of %,d bytes "

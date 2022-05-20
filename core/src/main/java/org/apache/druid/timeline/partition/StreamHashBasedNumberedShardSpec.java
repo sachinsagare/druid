@@ -78,9 +78,10 @@ public class StreamHashBasedNumberedShardSpec extends HashBasedNumberedShardSpec
   /*@Override*/
   public boolean isCompatible(Class<? extends ShardSpec> other)
   {
-    return other == NumberedShardSpec.class || other == NumberedOverwriteShardSpec.class ||
+    return other == NumberedShardSpec.class ||
+           other == NumberedOverwriteShardSpec.class ||
            other == StreamHashBasedNumberedShardSpec.class ||
-           other == BloomFilterStreamFanOutHashBasedNumberedShardSpec.class;
+           other == StreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @Override

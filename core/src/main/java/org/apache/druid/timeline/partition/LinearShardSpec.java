@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.RangeSet;
 import org.apache.druid.data.input.InputRow;
 
 import java.util.List;
@@ -32,7 +31,7 @@ import java.util.Map;
 /**
  * An extendable linear shard spec.  {@link #partitionNum} represents an unique id of a partition.
  */
-public final class LinearShardSpec implements ShardSpec
+public final class LinearShardSpec extends BloomFilterShardSpec
 {
   private final int partitionNum;
 
@@ -65,12 +64,6 @@ public final class LinearShardSpec implements ShardSpec
   public List<String> getDomainDimensions()
   {
     return ImmutableList.of();
-  }
-
-  @Override
-  public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
-  {
-    return true;
   }
 
   @Override

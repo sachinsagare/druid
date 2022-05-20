@@ -17,22 +17,42 @@
  * under the License.
  */
 
-package org.apache.druid.indexing.test;
+package org.apache.druid.indexing.worker;
 
+import org.apache.druid.segment.SegmentUtils;
 import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.timeline.DataSegment;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-public class TestDataSegmentPusher implements DataSegmentPusher
+/**
+ * DataSegmentPusher used for storing intermediary data in local storage during data shuffle of native parallel
+ * indexing.
+ */
+public class ShuffleDataSegmentPusher implements DataSegmentPusher
 {
-  @Deprecated
+  private final String supervisorTaskId;
+  private final String subTaskId;
+  private final IntermediaryDataManager intermediaryDataManager;
+
+  public ShuffleDataSegmentPusher(
+      String supervisorTaskId,
+      String subTaskId,
+      IntermediaryDataManager intermediaryDataManager
+  )
+  {
+    this.supervisorTaskId = supervisorTaskId;
+    this.subTaskId = subTaskId;
+    this.intermediaryDataManager = intermediaryDataManager;
+  }
+
   @Override
   public String getPathForHadoop(String dataSource)
   {
-    return getPathForHadoop();
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -42,9 +62,11 @@ public class TestDataSegmentPusher implements DataSegmentPusher
   }
 
   @Override
-  public DataSegment push(File file, DataSegment segment, boolean useUniquePath)
+  public DataSegment push(File file, DataSegment segment, boolean useUniquePath) throws IOException
   {
-    return segment;
+    final long unzippedSize = intermediaryDataManager.addSegment(supervisorTaskId, subTaskId, segment, file);
+    return segment.withSize(unzippedSize)
+                  .withBinaryVersion(SegmentUtils.getVersionFromDir(file));
   }
 
   @Override
@@ -53,15 +75,15 @@ public class TestDataSegmentPusher implements DataSegmentPusher
       File supplimentalIndexFilesDir,
       DataSegment segment,
       boolean useUniquePath
-  )
+  ) throws IOException
   {
-    return segment;
+    // TODO (add logic to use supplimentalIndexFilesDir)
+    return push(indexFilesDir, segment, useUniquePath);
   }
 
   @Override
-  public Map<String, Object> makeLoadSpec(URI uri)
+  public Map<String, Object> makeLoadSpec(URI finalIndexZipFilePath)
   {
     throw new UnsupportedOperationException();
   }
-
 }

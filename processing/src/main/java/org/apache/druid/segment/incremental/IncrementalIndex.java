@@ -1120,6 +1120,12 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
     int putIfAbsent(IncrementalIndexRow key, int rowIndex);
 
     void clear();
+
+    long getTimestamp(int rowIndex);
+
+    IncrementalIndexRow getRow(int rowInex);
+
+    int getNumRows();
   }
 
   static class RollupFactsHolder implements FactsHolder
@@ -1222,6 +1228,22 @@ public abstract class IncrementalIndex extends AbstractIndex implements Iterable
     public void clear()
     {
       facts.clear();
+    }
+
+    @Override
+    public long getTimestamp(int rowIndex)
+    {
+      return Long.parseLong(null);  // return null for now
+    }
+
+    @Override
+    public IncrementalIndexRow getRow(int rowInex) {
+      return null;
+    }
+
+    @Override
+    public int getNumRows() {
+      return 0;
     }
   }
 
