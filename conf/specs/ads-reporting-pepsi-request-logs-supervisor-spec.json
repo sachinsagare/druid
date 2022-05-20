@@ -41,6 +41,8 @@
             "filterValues",
             "requestLevel",
             "customColumnIds",
+            "validateOnly",
+            "dataOutputFormat",
             "millisSpentOnPatioFetchPerEntityType",
             {
               "type": "long",
