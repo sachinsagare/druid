@@ -53,9 +53,9 @@ import java.util.Map;
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_HASH, value = HashBucketShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_SINGLE_DIM, value = SingleDimensionRangeBucketShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class),
-    @JsonSubTypes.Type(name = ShardSpec.Type.BLOOM_FILTER_STREAM_FANOUT_HASHED, value = BloomFilterStreamFanOutHashBasedNumberedShardSpec.class)
+    @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_FANOUT_NAMED_HASHED, value = StreamFanOutNamedHashBasedNumberedShardSpec.class)
 })
-public interface ShardSpec
+public interface  ShardSpec
 {
   @JsonIgnore
   <T> PartitionChunk<T> createChunk(T obj);
@@ -180,6 +180,6 @@ public interface ShardSpec
     String BUCKET_HASH = "bucket_hash";
     String BUCKET_SINGLE_DIM = "bucket_single_dim";
     String BUCKET_RANGE = "bucket_range";
-    String BLOOM_FILTER_STREAM_FANOUT_HASHED = "bloom_filter_stream_fanout_hashed";
+    String STREAM_FANOUT_NAMED_HASHED = "stream_fanout_named_hashed";
   }
 }
