@@ -71,6 +71,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         null,
         null,
         null,
+        null,
+        null,
         null
     );
   }
@@ -78,6 +80,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
   public KafkaSupervisorTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
@@ -101,12 +104,14 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
       @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
-      @JsonProperty("ignoreOutOfOrderSequenceNumber") Boolean ignoreOutOfOrderSequenceNumber
+      @JsonProperty("ignoreOutOfOrderSequenceNumber") Boolean ignoreOutOfOrderSequenceNumber,
+      @JsonProperty("enableInMemoryBitmap") @Nullable Boolean enableInMemoryBitmap
   )
   {
     super(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
@@ -124,7 +129,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         logParseExceptions,
         maxParseExceptions,
         maxSavedParseExceptions,
-        ignoreOutOfOrderSequenceNumber
+        ignoreOutOfOrderSequenceNumber,
+        enableInMemoryBitmap
     );
     this.workerThreads = workerThreads;
     this.chatThreads = chatThreads;
@@ -198,6 +204,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
   {
     return "KafkaSupervisorTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
            ", maxTotalRows=" + getMaxTotalRows() +
            ", maxBytesInMemory=" + getMaxBytesInMemoryOrDefault() +
@@ -221,6 +228,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
            ", maxParseExceptions=" + getMaxParseExceptions() +
            ", maxSavedParseExceptions=" + getMaxSavedParseExceptions() +
            ", ignoreOutOfOrderSequenceNumber=" + isIgnoreOutOfOrderSequenceNumber() +
+           ", enableInMemoryBitmap=" + isEnableInMemoryBitmap() +
            '}';
   }
 
@@ -230,6 +238,7 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
     return new KafkaIndexTaskTuningConfig(
         getAppendableIndexSpec(),
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),
@@ -247,7 +256,8 @@ public class KafkaSupervisorTuningConfig extends KafkaIndexTaskTuningConfig
         isLogParseExceptions(),
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
-        isIgnoreOutOfOrderSequenceNumber()
+        isIgnoreOutOfOrderSequenceNumber(),
+        isEnableInMemoryBitmap()
     );
   }
 }

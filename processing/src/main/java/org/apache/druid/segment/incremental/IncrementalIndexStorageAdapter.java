@@ -255,7 +255,8 @@ public class IncrementalIndexStorageAdapter implements StorageAdapter
       final VirtualColumns virtualColumns,
       final Granularity gran,
       final boolean descending,
-      @Nullable QueryMetrics<?> queryMetrics
+      @Nullable QueryMetrics<?> queryMetrics,
+      final boolean useInMemoryBitmapInQuery
   )
   {
     if (index.isEmpty()) {

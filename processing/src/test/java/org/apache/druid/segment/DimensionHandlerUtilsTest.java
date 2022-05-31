@@ -66,7 +66,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandler dimensionHandler = DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         capabilities,
-        null
+        null,
+        false
     );
 
     Assert.assertEquals(DIM_NAME, dimensionHandler.getDimensionName());
@@ -83,7 +84,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         capabilities,
-        null
+        null,
+        false
     );
   }
 
@@ -98,7 +100,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandler stringHandler = DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         stringCapabilities,
-        DimensionSchema.MultiValueHandling.SORTED_SET
+        DimensionSchema.MultiValueHandling.SORTED_SET,
+        false
     );
     Assert.assertTrue(stringHandler instanceof StringDimensionHandler);
     Assert.assertTrue(stringHandler.getDimensionSchema(stringCapabilities) instanceof StringDimensionSchema);
@@ -112,7 +115,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         capabilities,
-        null
+        null,
+        false
     );
     Assert.assertTrue(handler instanceof FloatDimensionHandler);
     Assert.assertTrue(handler.getDimensionSchema(capabilities) instanceof FloatDimensionSchema);
@@ -126,7 +130,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         capabilities,
-        null
+        null,
+        false
     );
     Assert.assertTrue(handler instanceof DoubleDimensionHandler);
     Assert.assertTrue(handler.getDimensionSchema(capabilities) instanceof DoubleDimensionSchema);
@@ -139,7 +144,8 @@ public class DimensionHandlerUtilsTest extends InitializedNullHandlingTest
     DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(
         DIM_NAME,
         capabilities,
-        null
+        null,
+        false
     );
     Assert.assertTrue(handler instanceof LongDimensionHandler);
     Assert.assertTrue(handler.getDimensionSchema(capabilities) instanceof LongDimensionSchema);

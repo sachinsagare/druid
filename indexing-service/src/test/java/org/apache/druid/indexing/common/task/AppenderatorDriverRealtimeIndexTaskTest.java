@@ -1443,6 +1443,7 @@ public class AppenderatorDriverRealtimeIndexTaskTest extends InitializedNullHand
     );
     RealtimeAppenderatorTuningConfig tuningConfig = new RealtimeAppenderatorTuningConfig(
         null,
+        null,
         1000,
         null,
         null,

@@ -21,6 +21,7 @@ package org.apache.druid.query.filter;
 
 import com.google.common.base.Function;
 import com.google.common.collect.RangeSet;
+import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.timeline.partition.ShardSpec;
 
 import java.nio.ByteBuffer;
@@ -56,6 +57,8 @@ public class DimFilterUtils
   public static final byte BLOOM_DIM_FILTER_CACHE_ID = 0x10;
 
   public static final byte STRING_SEPARATOR = (byte) 0xFF;
+
+  private static final Logger log = new Logger(DimFilterUtils.class);
 
   static byte[] computeCacheKey(byte cacheIdKey, List<DimFilter> filters)
   {

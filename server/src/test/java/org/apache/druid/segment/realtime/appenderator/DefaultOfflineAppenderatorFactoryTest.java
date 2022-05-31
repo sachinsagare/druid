@@ -134,6 +134,7 @@ public class DefaultOfflineAppenderatorFactoryTest
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
         75000,
+        75000,
         null,
         null,
         null,
@@ -147,6 +148,7 @@ public class DefaultOfflineAppenderatorFactoryTest
         null,
         0,
         0,
+        null,
         null,
         null,
         null,

@@ -102,7 +102,7 @@ public class ServerDiscoverySelector implements DiscoverySelector<Server>
 
   @Nullable
   @Override
-  public Server pick()
+  public Server pick(boolean includeRealtimeServers)
   {
     final ServiceInstance instance;
     try {

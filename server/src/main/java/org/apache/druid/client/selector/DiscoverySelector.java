@@ -26,5 +26,5 @@ import javax.annotation.Nullable;
 public interface DiscoverySelector<T>
 {
   @Nullable
-  T pick();
+  T pick(boolean includeRealtimeServers);
 }

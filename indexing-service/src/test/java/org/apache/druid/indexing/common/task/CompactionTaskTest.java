@@ -577,6 +577,7 @@ public class CompactionTaskTest
             null,
             null, // null to compute maxRowsPerSegment automatically
             null,
+            null,
             500000,
             1000000L,
             null,
@@ -639,6 +640,7 @@ public class CompactionTaskTest
     IndexTuningConfig indexTuningConfig = new IndexTuningConfig(
         null,
         null, // null to compute maxRowsPerSegment automatically
+        null,
         null,
         500000,
         1000000L,
@@ -716,6 +718,7 @@ public class CompactionTaskTest
     ParallelIndexTuningConfig parallelIndexTuningConfig = new ParallelIndexTuningConfig(
         null,
         null, // null to compute maxRowsPerSegment automatically
+        null,
         null,
         500000,
         1000000L,
@@ -1625,6 +1628,34 @@ public class CompactionTaskTest
         null
     );
     Assert.assertNull(chooseFinestGranularityHelper(input));
+
+    final IndexTuningConfig tuningConfig = new IndexTuningConfig(
+            null,
+            null,
+            null,
+            null,
+            500000,
+            1000000L,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            5000,
+            true,
+            false,
+            null,
+            100L,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+    );
   }
 
   @Test

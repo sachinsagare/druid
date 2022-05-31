@@ -70,6 +70,7 @@ public class TestModifiedKinesisIndexTaskTuningConfig extends KinesisIndexTaskTu
     super(
         appendableIndexSpec,
         maxRowsInMemory,
+        null,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
@@ -103,6 +104,7 @@ public class TestModifiedKinesisIndexTaskTuningConfig extends KinesisIndexTaskTu
     super(
         base.getAppendableIndexSpec(),
         base.getMaxRowsInMemory(),
+        base.getMaxRowsInMemoryPerSegment(),
         base.getMaxBytesInMemory(),
         base.isSkipBytesInMemoryOverheadCheck(),
         base.getMaxRowsPerSegment(),

@@ -17,6 +17,9 @@
   "ingest/rows/maxInMemory": [
     "dataSource"
   ],
+  "ingest/rows/maxInMemoryPerSegment": [
+    "dataSource"
+  ],
   "ingest/bytes/inMemory": [
     "dataSource"
   ],

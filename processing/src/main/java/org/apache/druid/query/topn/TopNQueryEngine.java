@@ -83,6 +83,8 @@ public class TopNQueryEngine
         queryIntervals
     );
 
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+
     return Sequences.filter(
         Sequences.map(
             adapter.makeCursors(
@@ -91,7 +93,8 @@ public class TopNQueryEngine
                 query.getVirtualColumns(),
                 granularity,
                 query.isDescending(),
-                queryMetrics
+                queryMetrics,
+                useInMemoryBitmapInQuery
             ),
             input -> {
               if (queryMetrics != null) {
