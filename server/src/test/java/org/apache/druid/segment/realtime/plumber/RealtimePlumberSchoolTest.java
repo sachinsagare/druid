@@ -203,6 +203,7 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
     tuningConfig = new RealtimeTuningConfig(
         null,
         1,
+        1,
         null,
         null,
         null,
@@ -217,6 +218,7 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
         0,
         0,
         false,
+        null,
         null,
         null,
         null,
@@ -283,7 +285,8 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
         tuningConfig.getAppendableIndexSpec(),
         tuningConfig.getMaxRowsInMemory(),
         tuningConfig.getMaxBytesInMemoryOrDefault(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
     plumber.getSinks().put(0L, sink);
     Assert.assertNull(plumber.startJob());
@@ -329,7 +332,8 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
         tuningConfig.getAppendableIndexSpec(),
         tuningConfig.getMaxRowsInMemory(),
         tuningConfig.getMaxBytesInMemoryOrDefault(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
     plumber.getSinks().put(0L, sink);
     plumber.startJob();
@@ -380,7 +384,8 @@ public class RealtimePlumberSchoolTest extends InitializedNullHandlingTest
         tuningConfig.getAppendableIndexSpec(),
         tuningConfig.getMaxRowsInMemory(),
         tuningConfig.getMaxBytesInMemoryOrDefault(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
     plumber2.getSinks().put(0L, sink);
     Assert.assertNull(plumber2.startJob());

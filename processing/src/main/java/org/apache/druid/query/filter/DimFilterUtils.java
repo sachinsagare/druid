@@ -61,6 +61,8 @@ public class DimFilterUtils
 
   public static final byte STRING_SEPARATOR = (byte) 0xFF;
 
+  private static final Logger log = new Logger(DimFilterUtils.class);
+
   static byte[] computeCacheKey(byte cacheIdKey, List<DimFilter> filters)
   {
     if (filters.size() == 1) {

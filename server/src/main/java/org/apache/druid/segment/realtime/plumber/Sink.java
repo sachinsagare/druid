@@ -67,6 +67,7 @@ public class Sink implements Iterable<FireHydrant>, Overshadowable<Sink>
   private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
   private final long maxBytesInMemory;
+  private final boolean enableInMemoryBitmap;
   private final CopyOnWriteArrayList<FireHydrant> hydrants = new CopyOnWriteArrayList<>();
   private final LinkedHashSet<String> dimOrder = new LinkedHashSet<>();
   private final AtomicInteger numRowsExcludingCurrIndex = new AtomicInteger();
@@ -84,7 +85,8 @@ public class Sink implements Iterable<FireHydrant>, Overshadowable<Sink>
       AppendableIndexSpec appendableIndexSpec,
       int maxRowsInMemory,
       long maxBytesInMemory,
-      String dedupColumn
+      String dedupColumn,
+      boolean isEnableInMemoryBitmap
   )
   {
     this(
@@ -96,7 +98,8 @@ public class Sink implements Iterable<FireHydrant>, Overshadowable<Sink>
         maxRowsInMemory,
         maxBytesInMemory,
         dedupColumn,
-        Collections.emptyList()
+        Collections.emptyList(),
+        isEnableInMemoryBitmap
     );
   }
 
@@ -109,7 +112,8 @@ public class Sink implements Iterable<FireHydrant>, Overshadowable<Sink>
       int maxRowsInMemory,
       long maxBytesInMemory,
       String dedupColumn,
-      List<FireHydrant> hydrants
+      List<FireHydrant> hydrants,
+      boolean isEnableInMemoryBitmap
   )
   {
     this.schema = schema;
@@ -120,6 +124,7 @@ public class Sink implements Iterable<FireHydrant>, Overshadowable<Sink>
     this.maxRowsInMemory = maxRowsInMemory;
     this.maxBytesInMemory = maxBytesInMemory;
     this.dedupColumn = dedupColumn;
+    this.enableInMemoryBitmap = isEnableInMemoryBitmap;
 
     int maxCount = -1;
     for (int i = 0; i < hydrants.size(); ++i) {

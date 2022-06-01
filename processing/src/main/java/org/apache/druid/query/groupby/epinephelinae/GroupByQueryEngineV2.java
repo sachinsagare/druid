@@ -519,6 +519,8 @@ public class GroupByQueryEngineV2
 
   private static class HashAggregateIterator extends GroupByEngineIterator<ByteBuffer>
   {
+    private static final Logger LOGGER = new Logger(HashAggregateIterator.class);
+
     private final int[] stack;
     private final Object[] valuess;
     private final ByteBuffer keyBuffer;

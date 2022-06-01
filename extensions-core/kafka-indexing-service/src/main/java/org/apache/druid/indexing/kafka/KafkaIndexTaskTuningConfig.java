@@ -36,6 +36,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
   public KafkaIndexTaskTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") @Nullable Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
@@ -54,6 +55,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
       @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
       @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions,
       @JsonProperty("ignoreOutOfOrderSequenceNumber") @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @JsonProperty("enableInMemoryBitmap") @Nullable Boolean enableInMemoryBitmap,
       @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType
   )
   {
@@ -79,6 +81,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         maxParseExceptions,
         maxSavedParseExceptions,
         ignoreOutOfOrderSequenceNumber,
+        enableInMemoryBitmap,
         allowMixedShardSpecType
     );
   }
@@ -89,6 +92,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
     return new KafkaIndexTaskTuningConfig(
         getAppendableIndexSpec(),
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),
@@ -107,6 +111,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         getMaxParseExceptions(),
         getMaxSavedParseExceptions(),
         isIgnoreOutOfOrderSequenceNumber(),
+        isEnableInMemoryBitmap(),
         isAllowMixedShardSpecType()
     );
   }
@@ -117,6 +122,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
   {
     return "KafkaIndexTaskTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
            ", maxTotalRows=" + getMaxTotalRows() +
            ", maxBytesInMemory=" + getMaxBytesInMemory() +
@@ -135,6 +141,7 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
            ", maxParseExceptions=" + getMaxParseExceptions() +
            ", maxSavedParseExceptions=" + getMaxSavedParseExceptions() +
            ", ignoreOutOfOrderSequenceNumber=" + isIgnoreOutOfOrderSequenceNumber() +
+           ", enableInMemoryBitmap=" + isEnableInMemoryBitmap() +
            '}';
   }
 

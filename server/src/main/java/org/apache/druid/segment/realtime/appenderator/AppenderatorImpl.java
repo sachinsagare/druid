@@ -246,6 +246,10 @@ public class AppenderatorImpl implements Appenderator
       log.info("Running closed segments appenderator");
     }
 
+    this.metrics.setMaxBytesInMemory(maxBytesTuningConfig);
+    this.metrics.setMaxRowsInMemory(tuningConfig.getMaxRowsInMemory());
+    this.metrics.setMaxRowsInMemoryPerSegment(tuningConfig.getMaxRowsInMemoryPerSegment());
+    log.info("Created Appenderator for dataSource[%s].", schema.getDataSource());
   }
 
   @Override
@@ -327,8 +331,8 @@ public class AppenderatorImpl implements Appenderator
     }
 
     final int numAddedRows = sinkRowsInMemoryAfterAdd - sinkRowsInMemoryBeforeAdd;
-    rowsCurrentlyInMemory.addAndGet(numAddedRows);
-    bytesCurrentlyInMemory.addAndGet(bytesInMemoryAfterAdd - bytesInMemoryBeforeAdd);
+    metrics.setRowsInMemory(rowsCurrentlyInMemory.addAndGet(numAddedRows));
+    metrics.setBytesInMemory(bytesCurrentlyInMemory.addAndGet(bytesInMemoryAfterAdd - bytesInMemoryBeforeAdd));
     totalRows.addAndGet(numAddedRows);
 
     boolean isPersistRequired = false;
@@ -463,7 +467,7 @@ public class AppenderatorImpl implements Appenderator
   }
 
   @VisibleForTesting
-  int getRowsInMemory()
+  public int getRowsInMemory()
   {
     return rowsCurrentlyInMemory.get();
   }
@@ -497,9 +501,10 @@ public class AppenderatorImpl implements Appenderator
           identifier.getShardSpec(),
           identifier.getVersion(),
           tuningConfig.getAppendableIndexSpec(),
-          tuningConfig.getMaxRowsInMemory(),
+          tuningConfig.getMaxRowsInMemoryPerSegment(),
           maxBytesTuningConfig,
-          null
+          null,
+          tuningConfig.isEnableInMemoryBitmap()
       );
       bytesCurrentlyInMemory.addAndGet(calculateSinkMemoryInUsed(retVal));
 
@@ -1336,10 +1341,11 @@ public class AppenderatorImpl implements Appenderator
             identifier.getShardSpec(),
             identifier.getVersion(),
             tuningConfig.getAppendableIndexSpec(),
-            tuningConfig.getMaxRowsInMemory(),
+            tuningConfig.getMaxRowsInMemoryPerSegment(),
             maxBytesTuningConfig,
             null,
-            hydrants
+            hydrants,
+            tuningConfig.isEnableInMemoryBitmap()
         );
         rowsSoFar += currSink.getNumRows();
         sinks.put(identifier, currSink);

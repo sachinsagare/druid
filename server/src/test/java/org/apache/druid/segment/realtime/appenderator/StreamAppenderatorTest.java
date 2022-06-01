@@ -163,7 +163,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -215,7 +216,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -400,7 +402,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
             null,
             true,
             new SimpleRowIngestionMeters(),
-            true
+            true,
+            false
         )
     ) {
       final Appenderator appenderator = tester.getAppenderator();
@@ -724,6 +727,8 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
     }
   }
 
+
+
   @Test
   public void testMaxRowsInMemoryDisallowIncrementalPersists() throws Exception
   {
@@ -816,11 +821,13 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
       appenderator.add(IDENTIFIERS.get(0), ir("2000", "bob", 5), committerSupplier);
       appenderator.close();
 
+      final RowIngestionMeters rowIngestionMeters = new SimpleRowIngestionMeters();
       try (final StreamAppenderatorTester tester2 = new StreamAppenderatorTester(
           2,
-          -1,
+          2,
           tuningConfig.getBasePersistDirectory(),
-          true
+          true,
+          rowIngestionMeters
       )) {
         final Appenderator appenderator2 = tester2.getAppenderator();
         Assert.assertEquals(ImmutableMap.of("eventCount", 4), appenderator2.startJob());
@@ -1209,6 +1216,22 @@ public class StreamAppenderatorTest extends InitializedNullHandlingTest
         ImmutableMap.of(
             "dim",
             dim,
+            "met",
+            met
+        )
+    );
+  }
+
+  static InputRow ir(String ts, String dim1, String dim2, long met)
+  {
+    return new MapBasedInputRow(
+        DateTimes.of(ts).getMillis(),
+        ImmutableList.of("dim1", "dim2"),
+        ImmutableMap.of(
+            "dim1",
+            dim1,
+            "dim2",
+            dim2,
             "met",
             met
         )

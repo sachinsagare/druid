@@ -37,6 +37,8 @@ public class FireDepartmentMetrics
   private final AtomicLong rowOutputCount = new AtomicLong(0);
   private final AtomicLong numPersists = new AtomicLong(0);
   private final AtomicLong pendingPersistSubmissions = new AtomicLong(0);
+  private final AtomicLong numPersistSegment = new AtomicLong(0);
+  private final AtomicLong numPersistAll = new AtomicLong(0);
   private final AtomicLong persistTimeMillis = new AtomicLong(0);
   private final AtomicLong persistBackPressureMillis = new AtomicLong(0);
   private final AtomicLong failedPersists = new AtomicLong(0);
@@ -49,6 +51,11 @@ public class FireDepartmentMetrics
   private final AtomicLong messageMaxTimestamp = new AtomicLong(0);
   private final AtomicLong messageGap = new AtomicLong(0);
   private final AtomicLong messageProcessingCompletionTime = new AtomicLong(DEFAULT_PROCESSING_COMPLETION_TIME);
+  private final AtomicLong rowsInMemory = new AtomicLong(0);
+  private final AtomicLong bytesInMemory = new AtomicLong(0);
+  private final AtomicLong maxRowsInMemory = new AtomicLong(0);
+  private final AtomicLong maxRowsInMemoryPerSegment = new AtomicLong(0);
+  private final AtomicLong maxBytesInMemory = new AtomicLong(0);
 
   public void incrementProcessed()
   {
@@ -88,6 +95,16 @@ public class FireDepartmentMetrics
   public void incrementPendingPersistSubmissions() { pendingPersistSubmissions.incrementAndGet(); }
 
   public void decrementPendingPersistSubmissions() { pendingPersistSubmissions.decrementAndGet(); }
+
+  public void incrementPersistSegment()
+  {
+    numPersistSegment.incrementAndGet();
+  }
+
+  public void incrementPersistAll()
+  {
+    numPersistAll.incrementAndGet();
+  }
 
   public void incrementPersistTimeMillis(long millis)
   {
@@ -156,6 +173,31 @@ public class FireDepartmentMetrics
     return messageProcessingCompletionTime.get();
   }
 
+  public void setRowsInMemory(long rowsInMemory)
+  {
+    this.rowsInMemory.set(rowsInMemory);
+  }
+
+  public void setBytesInMemory(long bytesInMemory)
+  {
+    this.bytesInMemory.set(bytesInMemory);
+  }
+
+  public void setMaxBytesInMemory(long maxBytesInMemory)
+  {
+    this.maxBytesInMemory.set(maxBytesInMemory);
+  }
+
+  public void setMaxRowsInMemory(long maxRowsInMemory)
+  {
+    this.maxRowsInMemory.set(maxRowsInMemory);
+  }
+
+  public void setMaxRowsInMemoryPerSegment(long maxRowsInMemoryPerSegment)
+  {
+    this.maxRowsInMemoryPerSegment.set(maxRowsInMemoryPerSegment);
+  }
+
   public long processed()
   {
     return processedCount.get();
@@ -189,6 +231,16 @@ public class FireDepartmentMetrics
   public long numPersists()
   {
     return numPersists.get();
+  }
+
+  public long numPersistSegment()
+  {
+    return numPersistSegment.get();
+  }
+
+  public long numersistAll()
+  {
+    return numPersistAll.get();
   }
 
   public long persistTimeMillis()
@@ -238,6 +290,31 @@ public class FireDepartmentMetrics
     return sinkCount.get();
   }
 
+  public long rowsInMemory()
+  {
+    return rowsInMemory.get();
+  }
+
+  public long bytesInMemory()
+  {
+    return bytesInMemory.get();
+  }
+
+  public long maxRowsInMemory()
+  {
+    return maxRowsInMemory.get();
+  }
+
+  public long maxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment.get();
+  }
+
+  public long maxBytesInMemory()
+  {
+    return maxBytesInMemory.get();
+  }
+
   public long messageMaxTimestamp()
   {
     return messageMaxTimestamp.get();
@@ -258,6 +335,8 @@ public class FireDepartmentMetrics
     retVal.dedupCount.set(dedupCount.get());
     retVal.rowOutputCount.set(rowOutputCount.get());
     retVal.numPersists.set(numPersists.get());
+    retVal.numPersistSegment.set(numPersistSegment.get());
+    retVal.numPersistAll.set(numPersistAll.get());
     retVal.persistTimeMillis.set(persistTimeMillis.get());
     retVal.persistBackPressureMillis.set(persistBackPressureMillis.get());
     retVal.failedPersists.set(failedPersists.get());
@@ -268,6 +347,12 @@ public class FireDepartmentMetrics
     retVal.handOffCount.set(handOffCount.get());
     retVal.sinkCount.set(sinkCount.get());
     retVal.messageMaxTimestamp.set(messageMaxTimestamp.get());
+    retVal.messageGap.set(System.currentTimeMillis() - messageMaxTimestamp.get());
+    retVal.rowsInMemory.set(rowsInMemory.get());
+    retVal.bytesInMemory.set(bytesInMemory.get());
+    retVal.maxRowsInMemory.set(maxRowsInMemory.get());
+    retVal.maxRowsInMemoryPerSegment.set(maxRowsInMemoryPerSegment.get());
+    retVal.maxBytesInMemory.set(maxBytesInMemory.get());
     retVal.messageProcessingCompletionTime.set(messageProcessingCompletionTime.get());
     retVal.messageProcessingCompletionTime.compareAndSet(DEFAULT_PROCESSING_COMPLETION_TIME, System.currentTimeMillis());
     retVal.messageGap.set(retVal.messageProcessingCompletionTime.get() - messageMaxTimestamp.get());

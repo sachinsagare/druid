@@ -22,9 +22,12 @@ package org.apache.druid.segment;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.primitives.Ints;
+import com.google.common.util.concurrent.Striped;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import org.apache.druid.collections.bitmap.BitmapFactory;
+import org.apache.druid.collections.bitmap.ImmutableBitmap;
 import org.apache.druid.collections.bitmap.MutableBitmap;
+import org.apache.druid.collections.bitmap.RoaringBitmapFactory;
 import org.apache.druid.common.config.NullHandling;
 import org.apache.druid.data.input.impl.DimensionSchema.MultiValueHandling;
 import org.apache.druid.java.util.common.ISE;
@@ -45,9 +48,13 @@ import org.apache.druid.segment.incremental.IncrementalIndexRowHolder;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class StringDimensionIndexer extends DictionaryEncodedColumnIndexer<int[], String>
 {
@@ -57,16 +64,48 @@ public class StringDimensionIndexer extends DictionaryEncodedColumnIndexer<int[]
     return o != null ? NullHandling.emptyToNullIfNeeded(o.toString()) : null;
   }
 
+  private static final int ABSENT_VALUE_ID = -1;
+
+  /**
+   * Borrowed from extensions-core/datasketches/src/main/java/org/apache/druid/query/aggregation/datasketches/hll/HllSketchBuildBufferAggregator.java
+   *
+   * for locking per bitmap (power of 2 to make index computation faster)
+   */
+  private static final int NUM_STRIPES = 64;
+
   private final MultiValueHandling multiValueHandling;
   private final boolean hasBitmapIndexes;
   private final boolean hasSpatialIndexes;
   private volatile boolean hasMultipleValues = false;
 
-  public StringDimensionIndexer(MultiValueHandling multiValueHandling, boolean hasBitmapIndexes, boolean hasSpatialIndexes)
+  private final boolean enableInMemoryBitmap;
+  // Used only as a read lock to check if modification is needed for inMemoryBitmaps
+  private final ReentrantReadWriteLock inMemoryBitmapsReadLock;
+  // Used as a write lock to modify inMemoryBitmaps. Can't use inMemoryBitmapsReadLock because it's not easy to upgrade
+  // the same lock after holding a read lock first.
+  private final ReentrantLock inMemoryBitmapsWriteLock;
+  // Per bitmap lock
+  private final Striped<Lock> stripedLock;
+  private final List<MutableBitmap> inMemoryBitmaps;
+  private final BitmapFactory inMemoryBitmapFactory;
+
+  @Nullable
+  private SortedDimensionDictionary sortedLookup;
+
+  public StringDimensionIndexer(MultiValueHandling multiValueHandling, boolean hasBitmapIndexes, boolean hasSpatialIndexes, boolean
+          enableInMemoryBitmap)
   {
     this.multiValueHandling = multiValueHandling == null ? MultiValueHandling.ofDefault() : multiValueHandling;
     this.hasBitmapIndexes = hasBitmapIndexes;
+
     this.hasSpatialIndexes = hasSpatialIndexes;
+
+    this.enableInMemoryBitmap = enableInMemoryBitmap;
+    this.inMemoryBitmaps = new ArrayList<>();
+    this.inMemoryBitmapFactory = new RoaringBitmapFactory();
+    this.inMemoryBitmapsReadLock = new ReentrantReadWriteLock();
+    this.inMemoryBitmapsWriteLock = new ReentrantLock();
+    this.stripedLock = Striped.lock(NUM_STRIPES);
   }
 
   @Override
@@ -526,5 +565,132 @@ public class StringDimensionIndexer extends DictionaryEncodedColumnIndexer<int[]
       }
       bitmapIndexes[dimValIdx].add(rowNum);
     }
+  }
+
+  public void fillInMemoryBitmapsFromUnsortedEncodedKeyComponent(
+      int[] key,
+      int rowNum,
+      BitmapFactory factory
+  )
+  {
+    if (!hasBitmapIndexes || !enableInMemoryBitmap) {
+      throw new UnsupportedOperationException("This column does not include or enable in memory bitmap indexes");
+    }
+
+    int maxIndex = Arrays.stream(key)
+                    .max()
+                    .getAsInt();
+    List<MutableBitmap> bitmapsToUpdate = new ArrayList<>();
+    inMemoryBitmapsReadLock.readLock().lock();
+    try {
+      // Insert encountering new elements, expand bitmap list
+      if (inMemoryBitmaps.size() <= maxIndex) {
+        inMemoryBitmapsWriteLock.lock();
+        try {
+          while (inMemoryBitmaps.size() <= maxIndex) {
+            inMemoryBitmaps.add(factory.makeEmptyMutableBitmap());
+          }
+        }
+        finally {
+          inMemoryBitmapsWriteLock.unlock();
+        }
+      }
+
+      // Get bitmaps to update
+      for (int dimValIdx : key) {
+        bitmapsToUpdate.add(inMemoryBitmaps.get(dimValIdx));
+      }
+    }
+    finally {
+      inMemoryBitmapsReadLock.readLock().unlock();
+    }
+
+    // Update bitmaps
+    for (int i = 0; i < key.length; i++) {
+      int dimValIdx = key[i];
+      MutableBitmap b = bitmapsToUpdate.get(i);
+
+      Lock lock = stripedLock.getAt(lockIndex(dimValIdx));
+      lock.lock();
+      try {
+        b.add(rowNum);
+      }
+      finally {
+        lock.unlock();
+      }
+    }
+  }
+
+  public String getValue(int index)
+  {
+    return dimLookup.getValue(index);
+  }
+
+  public boolean hasNulls()
+  {
+    return dimLookup.getIdForNull() != ABSENT_VALUE_ID;
+  }
+
+  public int getIndex(@Nullable String value)
+  {
+    return dimLookup.getId(value);
+  }
+
+  public ImmutableBitmap getBitmap(int idx)
+  {
+    if (!hasBitmapIndexes || !enableInMemoryBitmap) {
+      throw new UnsupportedOperationException("This column does not include or enable in memory bitmap indexes");
+    }
+
+    inMemoryBitmapsReadLock.readLock().lock();
+    MutableBitmap mutableBitmapToClone;
+    try {
+      mutableBitmapToClone =
+          (idx < 0 || idx >= inMemoryBitmaps.size()) ? null : inMemoryBitmaps.get(idx);
+    }
+    finally {
+      inMemoryBitmapsReadLock.readLock().unlock();
+    }
+
+    // If underlying bitmap has an internal buffer, it will trigger flush during clone to get an immutable version
+    // which is a write operation, use an exclusive lock here
+    Lock lock = stripedLock.getAt(lockIndex(idx));
+    lock.lock();
+    try {
+      return mutableBitmapToClone == null ? inMemoryBitmapFactory.makeEmptyImmutableBitmap() :
+             inMemoryBitmapFactory.makeImmutableBitmap(mutableBitmapToClone);
+    }
+    finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Borrowed from extensions-core/datasketches/src/main/java/org/apache/druid/query/aggregation/datasketches/hll/HllSketchBuildBufferAggregator.java
+   *
+   * compute lock index to avoid boxing in Striped.get() call
+   *
+   * @param position
+   *
+   * @return index
+   */
+  private static int lockIndex(final int position)
+  {
+    return smear(position) % NUM_STRIPES;
+  }
+
+  /**
+   * Borrowed from extensions-core/datasketches/src/main/java/org/apache/druid/query/aggregation/datasketches/hll/HllSketchBuildBufferAggregator.java
+   *
+   * see https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/Striped.java#L536-L548
+   *
+   * @param hashCode
+   *
+   * @return smeared hashCode
+   */
+  private static int smear(int hashCode)
+  {
+    hashCode ^= (hashCode >>> 20) ^ (hashCode >>> 12);
+    return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
   }
 }

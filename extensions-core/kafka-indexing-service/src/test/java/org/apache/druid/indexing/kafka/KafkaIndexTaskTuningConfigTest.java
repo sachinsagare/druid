@@ -124,6 +124,7 @@ public class KafkaIndexTaskTuningConfigTest
         1,
         null,
         null,
+        null,
         2,
         10L,
         new Period("PT3S"),
@@ -169,6 +170,7 @@ public class KafkaIndexTaskTuningConfigTest
     KafkaIndexTaskTuningConfig base = new KafkaIndexTaskTuningConfig(
         null,
         1,
+        null,
         null,
         null,
         2,

@@ -177,7 +177,7 @@ public class ScanQueryEngine
                               throw new NoSuchElementException();
                             }
                             if (hasTimeout && System.currentTimeMillis() >= timeoutAt) {
-                              throw new QueryInterruptedException(new TimeoutException());
+                              throw new QueryTimeoutException(StringUtils.nonStrictFormat("Query [%s] timed out", query.getId()));
                             }
                             final long lastOffset = offset;
                             final Object events;
@@ -189,10 +189,9 @@ public class ScanQueryEngine
                             } else {
                               throw new UOE("resultFormat[%s] is not supported", resultFormat.toString());
                             }
-                            responseContext.add(ResponseContext.Key.NUM_SCANNED_ROWS, offset - lastOffset);
+                            responseContext.addRowScanCount(offset - lastOffset);
                             if (hasTimeout) {
-                              responseContext.put(
-                                  ResponseContext.Key.TIMEOUT_AT,
+                              responseContext.putTimeoutTime(
                                   timeoutAt - (System.currentTimeMillis() - start)
                               );
                             }
@@ -205,9 +204,9 @@ public class ScanQueryEngine
                             throw new UnsupportedOperationException();
                           }
 
-                          private List<Object> rowsToCompactedList()
+                          private List<List<Object>> rowsToCompactedList()
                           {
-                            final List<Object> events = new ArrayList<>(batchSize);
+                            final List<List<Object>> events = new ArrayList<>(batchSize);
                             final long iterLimit = Math.min(limit, offset + batchSize);
                             for (; !cursor.isDone() && offset < iterLimit; cursor.advance(), offset++) {
                               final List<Object> theEvent = new ArrayList<>(allColumns.size());

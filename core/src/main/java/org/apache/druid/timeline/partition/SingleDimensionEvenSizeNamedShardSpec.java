@@ -19,13 +19,14 @@
 
 package org.apache.druid.timeline.partition;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSizeShardSpec
 {
@@ -34,19 +35,20 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
 
   @JsonCreator
   public SingleDimensionEvenSizeNamedShardSpec(
-          @JsonProperty("dimension") String dimension,
-          @JsonProperty("start") String start,
-          @JsonProperty("end") String end,
-          @JsonProperty("partitionNum") int partitionNum,
-          @JsonProperty("partitions") int partitions,
-          @JsonProperty("partitionSize") int partitionSize,
-          @JsonProperty("startCount") int startCount,
-          @JsonProperty("endCount") int endCount,
-          @JsonProperty("partitionName") String partitionName,
-          @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions // nullable for backward compatibility
+      @JsonProperty("dimension") String dimension,
+      @JsonProperty("start") String start,
+      @JsonProperty("end") String end,
+      @JsonProperty("partitionNum") int partitionNum,
+      @JsonProperty("partitions") int partitions,
+      @JsonProperty("partitionSize") int partitionSize,
+      @JsonProperty("startCount") int startCount,
+      @JsonProperty("endCount") int endCount,
+      @JsonProperty("partitionName") String partitionName,
+      @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions, // nullable for backward compatibility
+      @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(dimension, start, end, partitionNum, partitions, partitionSize, startCount, endCount, numCorePartitions);
+    super(dimension, start, end, partitionNum, partitions, partitionSize, startCount, endCount, numCorePartitions, jsonMapper);
     Preconditions.checkArgument(partitionName != null && !partitionName.isEmpty(), "partitionName");
     this.partitionName = partitionName;
   }
@@ -83,52 +85,5 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
            ", endCount=" + getEndCount() +
            ", partitionName=" + partitionName +
            '}';
-  }
-
-  @Override
-  public boolean equals(Object o)
-  {
-    if (this == o) {
-      return true;
-    }
-
-    if (!(o instanceof SingleDimensionEvenSizeNamedShardSpec)) {
-      return false;
-    }
-
-    final SingleDimensionEvenSizeNamedShardSpec that = (SingleDimensionEvenSizeNamedShardSpec) o;
-    if (!getDimension().equals(that.getDimension())) {
-      return false;
-    } else if (!getStart().equals(that.getStart())) {
-      return false;
-    } else if (!getEnd().equals(that.getEnd())) {
-      return false;
-    } else if (getPartitionNum() != that.getPartitionNum()) {
-      return false;
-    } else if (getPartitions() != that.getPartitions()) {
-      return false;
-    } else if (getPartitionSize() != that.getPartitionSize()) {
-      return false;
-    } else if (getStartCount() != that.getStartCount()) {
-      return false;
-    } else if (getEndCount() != that.getEndCount()) {
-      return false;
-    }
-    return partitionName.equals(that.getPartitionName());
-  }
-
-  @Override
-  public int hashCode()
-  {
-    return Objects.hash(
-        getStart(),
-        getEnd(),
-        getPartitionNum(),
-        getPartitions(),
-        getPartitionSize(),
-        getStartCount(),
-        getEndCount(),
-        partitionName
-    );
   }
 }

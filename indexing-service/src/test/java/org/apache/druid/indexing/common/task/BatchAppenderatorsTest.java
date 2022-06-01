@@ -425,6 +425,12 @@ public class BatchAppenderatorsTest
       }
 
       @Override
+      public int getMaxRowsInMemoryPerSegment()
+      {
+        return 0;
+      }
+
+      @Override
       public long getMaxBytesInMemory()
       {
         return maxBytesInMemory;
@@ -465,6 +471,12 @@ public class BatchAppenderatorsTest
       public boolean isReportParseExceptions()
       {
         return reportParseExceptions;
+      }
+
+      @Override
+      public boolean isEnableInMemoryBitmap()
+      {
+        return false;
       }
 
       @Nullable

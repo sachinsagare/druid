@@ -363,7 +363,13 @@ public class ClosedSegmensSinksBatchAppenderatorTester implements AutoCloseable
     {
       return maxRowsInMemory;
     }
-    
+
+    @Override
+    public int getMaxRowsInMemoryPerSegment()
+    {
+      return 0;
+    }
+
     @Override
     public long getMaxBytesInMemory()
     {
@@ -405,6 +411,12 @@ public class ClosedSegmensSinksBatchAppenderatorTester implements AutoCloseable
     public boolean isReportParseExceptions()
     {
       return reportParseExceptions;
+    }
+
+    @Override
+    public boolean isEnableInMemoryBitmap()
+    {
+      return false;
     }
 
     @Nullable

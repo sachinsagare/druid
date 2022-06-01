@@ -104,10 +104,16 @@ public class TaskRealtimeMetricsMonitor extends AbstractMonitor
     emitter.emit(builder.build("ingest/events/duplicate", dedup));
 
     emitter.emit(builder.build("ingest/rows/output", metrics.rowOutput() - previousFireDepartmentMetrics.rowOutput()));
-    emitter.emit(builder.build("ingest/persists/pendingSubmissions", metrics.pendingPersistSubmissions()));
+    emitter.emit(builder.build("ingest/rows/inMemory", metrics.rowsInMemory()));
+    emitter.emit(builder.build("ingest/rows/maxInMemory", metrics.maxRowsInMemory()));
+    emitter.emit(builder.build("ingest/rows/maxInMemoryPerSegment", metrics.maxRowsInMemoryPerSegment()));
+    emitter.emit(builder.build("ingest/bytes/inMemory", metrics.bytesInMemory()));
+    emitter.emit(builder.build("ingest/bytes/maxInMemory", metrics.maxBytesInMemory()));
     emitter.emit(builder.build("ingest/persists/count", metrics.numPersists() - previousFireDepartmentMetrics.numPersists()));
     emitter.emit(builder.build("ingest/persists/time", metrics.persistTimeMillis() - previousFireDepartmentMetrics.persistTimeMillis()));
     emitter.emit(builder.build("ingest/persists/cpu", metrics.persistCpuTime() - previousFireDepartmentMetrics.persistCpuTime()));
+    emitter.emit(builder.build("ingest/persists/segment", metrics.numPersistSegment() - previousFireDepartmentMetrics.numPersistSegment()));
+    emitter.emit(builder.build("ingest/persists/all", metrics.numersistAll() - previousFireDepartmentMetrics.numersistAll()));
     emitter.emit(
         builder.build(
             "ingest/persists/backPressure",

@@ -650,7 +650,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
      *                     value: segments (a subset of lhs) that the backup server will be queried for
      */
     private SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
-    groupSegmentsByServer(Set<SegmentServerSelector> segments)
+        groupSegmentsByServer(Set<SegmentServerSelector> segments)
     {
       final SortedMap<DruidServer, Pair<List<SegmentDescriptor>, SortedMap<DruidServer, List<SegmentDescriptor>>>>
               serverSegments = new TreeMap<>();
@@ -661,12 +661,14 @@ public class CachingClusteredClient implements QuerySegmentWalker
                                 QueryContexts.getPriority(query),
                                 QueryContexts.DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED
                         );
-        if (queryableDruidServers == null) {
-          log.makeAlert(
-                  "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
-                  serverToSegment.getSegmentDescriptor(),
-                  query.getDataSource()
-          ).emit();
+        if (queryableDruidServers.isEmpty()) {
+          if (QueryContexts.isIncludeRealtimeServers(query)) {
+            log.makeAlert(
+                    "No servers found for SegmentDescriptor[%s] for DataSource[%s]?! How can this be?!",
+                    serverToSegment.getSegmentDescriptor(),
+                    query.getDataSource()
+            ).emit();
+          }
         } else {
           final DruidServer primaryServer = queryableDruidServers.get(0).getServer();
           serverSegments.computeIfAbsent(primaryServer, s -> Pair.of(new ArrayList<>(), new TreeMap<>()))
@@ -997,11 +999,11 @@ public class CachingClusteredClient implements QuerySegmentWalker
                 spec.getPartitionNumber()
         );
         if (entry != null) {
-            timeline2.add(
-                    NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
-                    spec.getInterval(),
-                    spec.getVersion(),
-                    entry);
+          timeline2.add(
+                  NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
+                  spec.getInterval(),
+                  spec.getVersion(),
+                  entry);
         }
       }
       return timeline2;

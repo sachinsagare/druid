@@ -67,6 +67,7 @@ public class SinkTest extends InitializedNullHandlingTest
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
         100,
+        100,
         null,
         null,
         new Period("P1Y"),
@@ -84,6 +85,7 @@ public class SinkTest extends InitializedNullHandlingTest
         null,
         null,
         null,
+        null,
         null
     );
     final Sink sink = new Sink(
@@ -94,7 +96,8 @@ public class SinkTest extends InitializedNullHandlingTest
         tuningConfig.getAppendableIndexSpec(),
         tuningConfig.getMaxRowsInMemory(),
         tuningConfig.getMaxBytesInMemoryOrDefault(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
 
     sink.add(
@@ -223,6 +226,7 @@ public class SinkTest extends InitializedNullHandlingTest
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
         100,
+        100,
         null,
         null,
         new Period("P1Y"),
@@ -240,7 +244,8 @@ public class SinkTest extends InitializedNullHandlingTest
         null,
         null,
         null,
-        "dedupColumn"
+        "dedupColumn",
+        null
     );
     final Sink sink = new Sink(
         interval,
@@ -250,7 +255,8 @@ public class SinkTest extends InitializedNullHandlingTest
         tuningConfig.getAppendableIndexSpec(),
         tuningConfig.getMaxRowsInMemory(),
         tuningConfig.getMaxBytesInMemoryOrDefault(),
-        tuningConfig.getDedupColumn()
+        tuningConfig.getDedupColumn(),
+        tuningConfig.isEnableInMemoryBitmap()
     );
 
     int rows = sink.add(new MapBasedInputRow(

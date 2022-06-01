@@ -64,6 +64,7 @@ public class AppenderatorPlumberTest
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(
         null,
         1,
+        1,
         null,
         null,
         null,
@@ -78,6 +79,7 @@ public class AppenderatorPlumberTest
         0,
         0,
         false,
+        null,
         null,
         null,
         null,

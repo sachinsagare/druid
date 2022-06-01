@@ -70,6 +70,8 @@ public class QueryContexts
   public static final String ENABLE_DEBUG = "debug";
   public static final String BY_SEGMENT_KEY = "bySegment";
   public static final String BROKER_SERVICE_NAME = "brokerService";
+  public static final String BROKER_ALLOWED_SERVER_KEYWORD = "allowedServerKeyword";
+  public static final String INCLUDE_REALTIME_SERVERS = "includeRealtimeServers";
 
   public static final boolean DEFAULT_BY_SEGMENT = false;
   public static final boolean DEFAULT_POPULATE_CACHE = true;
@@ -95,6 +97,7 @@ public class QueryContexts
   public static final boolean DEFAULT_ENABLE_SPECULATIVE_EXECUTION = false;
   public static final int DEFAULT_SPECULATIVE_EXECUTION_WAIT_TIME_MS = 3000;
   public static final int DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED = 2;
+  public static final boolean DEFAULT_INCLUDE_REALTIME_SERVERS = true;
 
   @SuppressWarnings("unused") // Used by Jackson serialization
   public enum Vectorize
@@ -347,6 +350,16 @@ public class QueryContexts
   public static boolean isDebug(Map<String, Object> queryContext)
   {
     return parseBoolean(queryContext, ENABLE_DEBUG, DEFAULT_ENABLE_DEBUG);
+  }
+
+  public static <T> String getAllowedServerKeyword(Query<T> query)
+  {
+    return query.getContextValue(BROKER_ALLOWED_SERVER_KEYWORD, null);
+  }
+
+  public static <T> boolean isIncludeRealtimeServers(Query<T> query)
+  {
+    return parseBoolean(query, INCLUDE_REALTIME_SERVERS, DEFAULT_INCLUDE_REALTIME_SERVERS);
   }
 
   public static <T> Query<T> withMaxScatterGatherBytes(Query<T> query, long maxScatterGatherBytesLimit)

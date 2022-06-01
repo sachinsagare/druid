@@ -2792,6 +2792,7 @@ public class KinesisIndexTaskTest extends SeekableStreamIndexTaskTestBase
         maxRowsInMemory,
         null,
         null,
+        null,
         maxRowsPerSegment,
         maxTotalRows,
         new Period("P1Y"),

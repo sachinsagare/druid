@@ -161,6 +161,7 @@ class ParallelIndexTestingFactory
           1,
           null,
           null,
+          null,
           3,
           4L,
           null,

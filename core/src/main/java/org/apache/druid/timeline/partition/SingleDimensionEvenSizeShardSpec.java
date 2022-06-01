@@ -19,25 +19,19 @@
 
 package org.apache.druid.timeline.partition;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import org.apache.druid.data.input.InputRow;
-import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.ISE;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Unlike SingleDimensionShardSpec, start and end are both inclusive in SingleDimensionEvenSizeShardSpec as one
@@ -46,15 +40,13 @@ import java.util.stream.IntStream;
 public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
 {
   @JsonIgnore
-  private final int partitionSize;
+  private int partitionSize;
   @JsonIgnore
   private final int startCount;
   @JsonIgnore
   private final int endCount;
   @JsonIgnore
-  private final int partitions;
-  @Nullable
-  private final int numCorePartitions;
+  private int partitions;
 
   @JsonCreator
   public SingleDimensionEvenSizeShardSpec(
@@ -66,23 +58,15 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
           @JsonProperty("partitionSize") int partitionSize,
           @JsonProperty("startCount") int startCount,
           @JsonProperty("endCount") int endCount,
-          @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions // nullable for backward compatibility
+          @JsonProperty("numCorePartitions") @Nullable Integer numCorePartitions, // nullable for backward compatibility
+          @JacksonInject ObjectMapper jsonMapper
   )
   {
     super(dimension, start, end, partitionNum, numCorePartitions);
-    Preconditions.checkArgument(dimension != null && !dimension.isEmpty(), "dimension");
-    Preconditions.checkArgument(start != null && !start.isEmpty(), "start");
-    Preconditions.checkArgument(end != null && !end.isEmpty(), "end");
-    Preconditions.checkArgument(partitionNum >= 0, "partitionNum");
-    Preconditions.checkArgument(partitions > 0, "partitions");
-    Preconditions.checkArgument(partitionSize > 0, "partitionSize");
-    Preconditions.checkArgument(startCount > 0, "startCount");
-    Preconditions.checkArgument(endCount > 0, "endCount");
     this.partitions = partitions;
     this.partitionSize = partitionSize;
     this.startCount = startCount;
     this.endCount = endCount;
-    this.numCorePartitions = numCorePartitions;
   }
 
   @JsonProperty("partitions")
@@ -91,10 +75,20 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
     return partitions;
   }
 
+  public void setPartitions(int partitions)
+  {
+    this.partitions = partitions;
+  }
+
   @JsonProperty("partitionSize")
   public int getPartitionSize()
   {
     return partitionSize;
+  }
+
+  public void setPartitionSize(int partitionSize)
+  {
+    this.partitionSize = partitionSize;
   }
 
   @JsonProperty("startCount")
@@ -112,66 +106,7 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
   @Override
   public ShardSpecLookup getLookup(final List<? extends ShardSpec> shardSpecs)
   {
-    return (long timestamp, InputRow row) -> {
-      // 1) Get dimension value
-      final List<String> values = row.getDimension(getDimension());
-      if (values == null || values.size() != 1) {
-        throw new IAE("Value must not be null or of multi value type");
-      }
-      String value = values.get(0);
-
-      // 2) Get all the shards with dimension value in [shard.start, shard.end] interval
-      List<SingleDimensionEvenSizeShardSpec> candidateShardSpecs = shardSpecs
-          .stream()
-          .map(s -> (SingleDimensionEvenSizeShardSpec) s)
-          .filter(s -> value.compareTo(s.getStart()) >= 0 && value.compareTo(s.getEnd()) <= 0)
-          .collect(Collectors.toList());
-
-      if (candidateShardSpecs.size() == 1) {
-        return candidateShardSpecs.get(0);
-      } else if (candidateShardSpecs.isEmpty()) {
-        throw new ISE(
-            "The number of candidate shard specs is 0. row[%s] doesn't fit in any shard[%s]",
-            row,
-            shardSpecs
-        );
-      } else {
-        // 3) The value is in multiple shards, pick a shard according to how many rows the value in each shard
-        // Calculate weights
-        IntStream countStream = candidateShardSpecs.stream()
-                                                   .mapToInt(s -> {
-                                                     if (value.equals(s.getStart()) && value.equals(s.getEnd())) {
-                                                       return s.getPartitionSize();
-                                                     } else if (value.equals(s.getStart())) {
-                                                       return s.getStartCount();
-                                                     } else if (value.equals(s.getEnd())) {
-                                                       return s.getEndCount();
-                                                     } else {
-                                                       throw new ISE("Either start or end should equal to value");
-                                                     }
-                                                   });
-
-        double[] weights = new double[candidateShardSpecs.size()];
-        int curWeight = 0;
-        int[] rowsInShard = countStream.toArray();
-        int totalWeight = IntStream.of(rowsInShard).sum();
-        for (int i = 0; i < rowsInShard.length - 1; i++) {
-          curWeight += rowsInShard[i];
-          weights[i] = curWeight / (double) totalWeight;
-        }
-        weights[rowsInShard.length - 1] = 1;
-
-        double r = ThreadLocalRandom.current().nextDouble();
-        int index = Arrays.binarySearch(weights, r);
-        if (index < 0) {
-          index = -index - 1;
-          if (index == candidateShardSpecs.size()) {
-            throw new ISE("The value is in multiple shards but row[%s] doesn't fit in any shard[%s]", row, shardSpecs);
-          }
-        }
-        return candidateShardSpecs.get(index);
-      }
-    };
+    throw new ISE("Only needed for ingestion");
   }
 
   @Override
@@ -193,7 +128,7 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
   @Override
   public <T> PartitionChunk<T> createChunk(T obj)
   {
-    return NumberedPartitionChunk.make(getPartitionNum(), partitions, obj);
+    return NumberedPartitionChunk.make(getPartitionNum(), getPartitions(), obj);
   }
 
   @Override
@@ -209,41 +144,5 @@ public class SingleDimensionEvenSizeShardSpec extends SingleDimensionShardSpec
            ", startCount=" + getStartCount() +
            ", endCount=" + getEndCount() +
            '}';
-  }
-
-  @Override
-  public boolean equals(Object o)
-  {
-    if (this == o) {
-      return true;
-    }
-
-    if (!(o instanceof SingleDimensionEvenSizeShardSpec)) {
-      return false;
-    }
-
-    final SingleDimensionEvenSizeShardSpec that = (SingleDimensionEvenSizeShardSpec) o;
-    if (!getDimension().equals(that.getDimension())) {
-      return false;
-    } else if (!getStart().equals(that.getStart())) {
-      return false;
-    } else if (!getEnd().equals(that.getEnd())) {
-      return false;
-    } else if (getPartitionNum() != that.getPartitionNum()) {
-      return false;
-    } else if (partitions != that.getPartitions()) {
-      return false;
-    } else if (partitionSize != that.getPartitionSize()) {
-      return false;
-    } else if (startCount != that.getStartCount()) {
-      return false;
-    }
-    return endCount == that.getEndCount();
-  }
-
-  @Override
-  public int hashCode()
-  {
-    return Objects.hash(getStart(), getEnd(), getPartitionNum(), partitions, partitionSize, startCount, endCount);
   }
 }

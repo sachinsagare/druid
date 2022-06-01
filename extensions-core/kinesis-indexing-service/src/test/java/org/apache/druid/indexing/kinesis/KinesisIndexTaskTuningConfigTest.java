@@ -140,6 +140,7 @@ public class KinesisIndexTaskTuningConfigTest
     KinesisIndexTaskTuningConfig base = new KinesisIndexTaskTuningConfig(
         null,
         1,
+        null,
         3L,
         null,
         2,
@@ -200,6 +201,7 @@ public class KinesisIndexTaskTuningConfigTest
     KinesisIndexTaskTuningConfig base = new KinesisIndexTaskTuningConfig(
         null,
         1,
+        null,
         3L,
         null,
         2,
@@ -287,6 +289,7 @@ public class KinesisIndexTaskTuningConfigTest
     KinesisSupervisorTuningConfig original = new KinesisSupervisorTuningConfig(
         null,
         1,
+        null,
         (long) 3,
         null,
         2,

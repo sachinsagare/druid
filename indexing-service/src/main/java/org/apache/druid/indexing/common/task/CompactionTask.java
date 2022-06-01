@@ -966,7 +966,8 @@ public class CompactionTask extends AbstractBatchIndexTask
         DimensionHandler handler = DimensionHandlerUtils.getHandlerFromCapabilities(
             name,
             capabilities,
-            multiValueHandling
+            multiValueHandling,
+            false
         );
         return handler.getDimensionSchema(capabilities);
     }
@@ -1246,6 +1247,7 @@ public class CompactionTask extends AbstractBatchIndexTask
           maxRowsPerSegment,
           appendableIndexSpec,
           maxRowsInMemory,
+          null,
           maxBytesInMemory,
           skipBytesInMemoryOverheadCheck,
           maxTotalRows,

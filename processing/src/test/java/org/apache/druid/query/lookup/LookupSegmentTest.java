@@ -180,7 +180,8 @@ public class LookupSegmentTest
         VirtualColumns.EMPTY,
         Granularities.ALL,
         false,
-        null
+        null,
+        false
     );
 
     final List<Pair<String, String>> kvs = new ArrayList<>();

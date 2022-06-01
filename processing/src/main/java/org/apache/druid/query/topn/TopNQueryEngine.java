@@ -55,6 +55,12 @@ public class TopNQueryEngine
     this.bufferPool = bufferPool;
   }
 
+  /**
+   * Do the thing - process a {@link StorageAdapter} into a {@link Sequence} of {@link TopNResultValue}, with one of the
+   * fine {@link TopNAlgorithm} available chosen based on the type of column being aggregated. The algorithm provides a
+   * mapping function to process rows from the adapter {@link org.apache.druid.segment.Cursor} to apply
+   * {@link AggregatorFactory} and create or update {@link TopNResultValue}
+   */
   public Sequence<Result<TopNResultValue>> query(
       final TopNQuery query,
       final StorageAdapter adapter,
@@ -73,7 +79,9 @@ public class TopNQueryEngine
     final TopNMapFn mapFn = getMapFn(query, adapter, queryMetrics);
 
     Preconditions.checkArgument(
-        queryIntervals.size() == 1, "Can only handle a single interval, got[%s]", queryIntervals
+        queryIntervals.size() == 1,
+        "Can only handle a single interval, got[%s]",
+        queryIntervals
     );
 
     final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
@@ -105,6 +113,9 @@ public class TopNQueryEngine
     );
   }
 
+  /**
+   * Choose the best {@link TopNAlgorithm} for the given query.
+   */
   private TopNMapFn getMapFn(
       final TopNQuery query,
       final StorageAdapter adapter,
@@ -163,6 +174,48 @@ public class TopNQueryEngine
     return new TopNMapFn(query, topNAlgorithm);
   }
 
+  /**
+   * {@link PooledTopNAlgorithm} (and {@link AggregateTopNMetricFirstAlgorithm} which utilizes the pooled
+   * algorithm) are optimized off-heap algorithms for aggregating dictionary encoded string columns. These algorithms
+   * rely on dictionary ids being unique so to aggregate on the dictionary ids directly and defer
+   * {@link org.apache.druid.segment.DimensionSelector#lookupName(int)} until as late as possible in query processing.
+   *
+   * When these conditions are not true, we have an on-heap fall-back algorithm, the {@link HeapBasedTopNAlgorithm}
+   * (and {@link TimeExtractionTopNAlgorithm} for a specialized form for long columns) which aggregates on values of
+   * selectors.
+   */
+  private static boolean canUsePooledAlgorithm(
+      final TopNAlgorithmSelector selector,
+      final TopNQuery query,
+      final ColumnCapabilities capabilities
+  )
+  {
+    if (selector.isHasExtractionFn()) {
+      // extraction functions can have a many to one mapping, and should use a heap algorithm
+      return false;
+    }
+
+    if (!query.getDimensionSpec().getOutputType().is(ValueType.STRING)) {
+      // non-string output cannot use the pooled algorith, even if the underlying selector supports it
+      return false;
+    }
+    if (Types.is(capabilities, ValueType.STRING)) {
+      // string columns must use the on heap algorithm unless they have the following capabilites
+      return capabilities.isDictionaryEncoded().isTrue() && capabilities.areDictionaryValuesUnique().isTrue();
+    } else {
+      // non-strings are not eligible to use the pooled algorithm, and should use a heap algorithm
+      return false;
+    }
+  }
+
+  /**
+   * {@link ExtractionFn} which are one to one may have their execution deferred until as late as possible, since
+   * which value is used as the grouping key itself doesn't particularly matter. For top-n, this method allows the
+   * query to be transformed in {@link TopNQueryQueryToolChest#preMergeQueryDecoration} to strip off the
+   * {@link ExtractionFn} on the broker, so that a more optimized algorithm (e.g. {@link PooledTopNAlgorithm}) can be
+   * chosen for processing segments, and then added back and evaluated against the final merged result sets on the
+   * broker via {@link TopNQueryQueryToolChest#postMergeQueryDecoration}.
+   */
   public static boolean canApplyExtractionInPost(TopNQuery query)
   {
     return query.getDimensionSpec() != null

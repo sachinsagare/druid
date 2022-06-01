@@ -477,9 +477,21 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
+    public boolean isEnableInMemoryBitmap()
+    {
+      return baseConfig.isEnableInMemoryBitmap();
+    }
+
+    @Override
     public int getMaxRowsInMemory()
     {
       return Integer.MAX_VALUE; // unlimited, rely on maxBytesInMemory instead
+    }
+
+    @Override
+    public int getMaxRowsInMemoryPerSegment()
+    {
+      return Integer.MAX_VALUE;
     }
 
     @Override

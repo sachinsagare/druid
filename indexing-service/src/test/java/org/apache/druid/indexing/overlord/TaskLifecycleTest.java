@@ -760,7 +760,8 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
-                10000,
+                null,
+                null,
                 null,
                 10,
                 null,
@@ -844,7 +845,8 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockExceptionInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
-                10000,
+                null,
+                null,
                 null,
                 10,
                 null,
@@ -1290,7 +1292,8 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
-                10000,
+                null,
+                null,
                 null,
                 10,
                 null,
@@ -1401,7 +1404,8 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
             new IndexIOConfig(null, new MockInputSource(), new NoopInputFormat(), false, false),
             new IndexTuningConfig(
                 null,
-                10000,
+                null,
+                null,
                 null,
                 10,
                 null,
@@ -1575,6 +1579,7 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
         1000,
         null,
         null,
+        null,
         new Period("P1Y"),
         null, //default window period of 10 minutes
         null, // base persist dir ignored by Realtime Index task
@@ -1590,7 +1595,9 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
         null,
         null,
         null,
+        null,
         null
+
     );
     FireDepartment fireDepartment = new FireDepartment(dataSchema, realtimeIOConfig, realtimeTuningConfig);
     return new RealtimeIndexTask(
