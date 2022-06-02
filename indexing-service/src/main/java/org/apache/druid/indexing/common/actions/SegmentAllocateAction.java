@@ -96,7 +96,7 @@ public class SegmentAllocateAction implements TaskAction<SegmentIdWithShardSpec>
       // nullable for backward compatibility
       @JsonProperty("shardSpecFactory") @Nullable PartialShardSpec partialShardSpec,
       @JsonProperty("lockGranularity") @Nullable LockGranularity lockGranularity,
-      @JsonProperty("taskLockType") @Nullable TaskLockType taskLockType
+      @JsonProperty("taskLockType") @Nullable TaskLockType taskLockType,
       @JsonProperty("allowMixedShardSpecType") @Nullable Boolean allowMixedShardSpecType // nullable for backward compatibility
   )
   {

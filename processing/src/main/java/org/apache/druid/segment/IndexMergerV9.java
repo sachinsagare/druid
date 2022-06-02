@@ -1124,6 +1124,16 @@ public class IndexMergerV9 implements IndexMerger
   }
 
   @Override
+  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    return IndexMerger.super.mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, indexSpec, segmentWriteOutMediumFactory);
+  }
+
+  @Override
+  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    return IndexMerger.super.mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, indexSpec, progress, segmentWriteOutMediumFactory);
+  }
+
+  @Override
   public File mergeQueryableIndex(
           List<QueryableIndex> indexes,
           boolean rollup,
@@ -1149,6 +1159,11 @@ public class IndexMergerV9 implements IndexMerger
             segmentWriteOutMediumFactory,
             maxColumnsToMerge
     );
+  }
+
+  @Override
+  public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, @Nullable File supplimentalIndexDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+    return null;
   }
 
   @Override

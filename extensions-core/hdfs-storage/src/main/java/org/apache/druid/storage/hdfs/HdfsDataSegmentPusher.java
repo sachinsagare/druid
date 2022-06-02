@@ -129,7 +129,7 @@ public class HdfsDataSegmentPusher implements DataSegmentPusher
     return pushToPath(inDir, segment, outIndexFilePathSuffix);
   }
 
-  @Override
+  //@Override
   public DataSegment pushToPath(File inDir, DataSegment segment, String storageDirSuffix) throws IOException
   {
     log.debug(

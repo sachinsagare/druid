@@ -186,6 +186,37 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
         lastCompactionState,
         binaryVersion,
         size,
+        null,
+        PruneSpecsHolder.DEFAULT
+    );
+  }
+
+  public DataSegment(
+      String dataSource,
+      Interval interval,
+      String version,
+      Map<String, Object> loadSpec,
+      List<String> dimensions,
+      List<String> metrics,
+      ShardSpec shardSpec,
+      CompactionState lastCompactionState,
+      Integer binaryVersion,
+      long size,
+      List<String> availableSupplimentalIndexes
+  )
+  {
+    this(
+        dataSource,
+        interval,
+        version,
+        loadSpec,
+        dimensions,
+        metrics,
+        shardSpec,
+        lastCompactionState,
+        binaryVersion,
+        size,
+        availableSupplimentalIndexes,
         PruneSpecsHolder.DEFAULT
     );
   }
@@ -200,7 +231,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
       ShardSpec shardSpec,
       Integer binaryVersion,
       long size,
-      List<String> availableSupplimentalIndexes
+      PruneSpecsHolder pruneSpecHolder
   )
   {
     this(
@@ -211,38 +242,11 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
         dimensions,
         metrics,
         shardSpec,
-        binaryVersion,
-        size,
-        availableSupplimentalIndexes,
-        PruneLoadSpecHolder.DEFAULT
-    );
-  }
-
-  public DataSegment(
-      String dataSource,
-      Interval interval,
-      String version,
-      Map<String, Object> loadSpec,
-      List<String> dimensions,
-      List<String> metrics,
-      ShardSpec shardSpec,
-      Integer binaryVersion,
-      long size,
-      PruneLoadSpecHolder pruneLoadSpecHolder
-  )
-  {
-    this(
-        dataSource,
-        interval,
-        version,
-        loadSpec,
-        dimensions,
-        metrics,
-        shardSpec,
+        null,
         binaryVersion,
         size,
         null,
-        pruneLoadSpecHolder
+        pruneSpecHolder
     );
   }
 
@@ -265,12 +269,11 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
       @JsonProperty("lastCompactionState") @Nullable CompactionState lastCompactionState,
       @JsonProperty("binaryVersion") Integer binaryVersion,
       @JsonProperty("size") long size,
-      @JacksonInject PruneSpecsHolder pruneSpecsHolder,
       @JsonProperty("availableSupplimentalIndexes")
       @JsonDeserialize(using = CommaListJoinDeserializer.class)
       @Nullable
               List<String> availableSupplimentalIndexes,
-      @JacksonInject PruneLoadSpecHolder pruneLoadSpecHolder
+      @JacksonInject PruneSpecsHolder pruneSpecsHolder
   )
   {
     this.id = SegmentId.of(dataSource, interval, version, shardSpec);
@@ -283,7 +286,7 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
             AVAILABLE_SUPPLIMENTAL_INDEXES_INTERNER
     );
     // If there are available available supplimental indexes, we need the load spec
-    this.loadSpec = (pruneLoadSpecHolder.pruneLoadSpec && this.availableSupplimentalIndexes.isEmpty()) ?
+    this.loadSpec = (pruneSpecsHolder.pruneLoadSpec && this.availableSupplimentalIndexes.isEmpty()) ?
             PRUNED_LOAD_SPEC : prepareLoadSpec(loadSpec);
 
     this.shardSpec = (shardSpec == null) ? new NumberedShardSpec(0, 1) : shardSpec;

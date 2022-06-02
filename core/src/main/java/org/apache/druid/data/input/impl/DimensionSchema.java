@@ -159,7 +159,7 @@ public abstract class DimensionSchema
   public int hashCode()
   {
     return Objects.hash(name, multiValueHandling, createBitmapIndex, createBloomFilterIndex, getTypeName(),
-                        getValueType());
+            getColumnType());
   }
 
   @Override

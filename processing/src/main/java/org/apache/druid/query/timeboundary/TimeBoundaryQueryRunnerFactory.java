@@ -26,15 +26,7 @@ import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.granularity.Granularities;
 import org.apache.druid.java.util.common.guava.BaseSequence;
 import org.apache.druid.java.util.common.guava.Sequence;
-import org.apache.druid.query.ChainedExecutionQueryRunner;
-import org.apache.druid.query.Query;
-import org.apache.druid.query.QueryPlus;
-import org.apache.druid.query.QueryRunner;
-import org.apache.druid.query.QueryRunnerFactory;
-import org.apache.druid.query.QueryRunnerHelper;
-import org.apache.druid.query.QueryToolChest;
-import org.apache.druid.query.QueryWatcher;
-import org.apache.druid.query.Result;
+import org.apache.druid.query.*;
 import org.apache.druid.query.context.ResponseContext;
 import org.apache.druid.segment.BaseLongColumnValueSelector;
 import org.apache.druid.segment.Cursor;
@@ -76,6 +68,11 @@ public class TimeBoundaryQueryRunnerFactory
   )
   {
     return new ChainedExecutionQueryRunner<>(queryExecutor, queryWatcher, queryRunners);
+  }
+
+  @Override
+  public QueryRunner<Result<TimeBoundaryResultValue>> mergeRunners(QueryProcessingPool queryProcessingPool, Iterable<QueryRunner<Result<TimeBoundaryResultValue>>> queryRunners) {
+    return null;
   }
 
   @Override

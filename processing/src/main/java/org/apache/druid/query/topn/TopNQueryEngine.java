@@ -35,6 +35,7 @@ import org.apache.druid.segment.SegmentMissingException;
 import org.apache.druid.segment.StorageAdapter;
 import org.apache.druid.segment.column.ColumnCapabilities;
 import org.apache.druid.segment.column.ColumnHolder;
+import org.apache.druid.segment.column.Types;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.filter.Filters;
 import org.joda.time.Interval;
@@ -58,7 +59,7 @@ public class TopNQueryEngine
   /**
    * Do the thing - process a {@link StorageAdapter} into a {@link Sequence} of {@link TopNResultValue}, with one of the
    * fine {@link TopNAlgorithm} available chosen based on the type of column being aggregated. The algorithm provides a
-   * mapping function to process rows from the adapter {@link org.apache.druid.segment.Cursor} to apply
+   * mapping function to process rows from the adapter {@links org.apache.druid.segment.Cursor} to apply
    * {@link AggregatorFactory} and create or update {@link TopNResultValue}
    */
   public Sequence<Result<TopNResultValue>> query(
@@ -140,23 +141,18 @@ public class TopNQueryEngine
                                                        .getColumnCapabilitiesWithFallback(adapter, dimension);
 
     final TopNAlgorithm topNAlgorithm;
-    if (
-        selector.isHasExtractionFn() &&
-        // TimeExtractionTopNAlgorithm can work on any single-value dimension of type long.
-        // Once we have arbitrary dimension types following check should be replaced by checking
-        // that the column is of type long and single-value.
-        dimension.equals(ColumnHolder.TIME_COLUMN_NAME)
-        ) {
+    if (canUsePooledAlgorithm(selector, query, columnCapabilities))
+    {
       // A special TimeExtractionTopNAlgorithm is required, since DimExtractionTopNAlgorithm
       // currently relies on the dimension cardinality to support lexicographic sorting
       topNAlgorithm = new TimeExtractionTopNAlgorithm(adapter, query);
     } else if (selector.isHasExtractionFn()) {
       topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
     } else if (columnCapabilities != null && !(columnCapabilities.getType() == ValueType.STRING
-                                               && columnCapabilities.isDictionaryEncoded())) {
+                                               && columnCapabilities.isDictionaryEncoded().isTrue())) {
       // Use DimExtraction for non-Strings and for non-dictionary-encoded Strings.
       topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
-    } else if (query.getDimensionSpec().getOutputType() != ValueType.STRING) {
+    } else if (query.getDimensionSpec().getOutputType().getType() != ValueType.STRING) {
       // Use DimExtraction when the dimension output type is a non-String. (It's like an extractionFn: there can be
       // a many-to-one mapping, since numeric types can't represent all possible values of other types.)
       topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);

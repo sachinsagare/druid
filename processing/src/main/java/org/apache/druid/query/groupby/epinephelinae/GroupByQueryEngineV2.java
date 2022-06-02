@@ -47,7 +47,7 @@ import org.apache.druid.query.groupby.epinephelinae.column.FloatGroupByColumnSel
 import org.apache.druid.query.groupby.epinephelinae.column.GroupByColumnSelectorPlus;
 import org.apache.druid.query.groupby.epinephelinae.column.GroupByColumnSelectorStrategy;
 import org.apache.druid.query.groupby.epinephelinae.column.LongGroupByColumnSelectorStrategy;
-import org.apache.druid.query.groupby.epinephelinae.column.NullableValueGroupByColumnSelectorStrategy;
+import org.apache.druid.query.groupby.epinephelinae.column.NullableNumericGroupByColumnSelectorStrategy;
 import org.apache.druid.query.groupby.epinephelinae.column.StringGroupByColumnSelectorStrategy;
 import org.apache.druid.query.groupby.epinephelinae.vector.VectorGroupByEngine;
 import org.apache.druid.query.groupby.strategy.GroupByStrategyV2;
@@ -58,6 +58,7 @@ import org.apache.druid.segment.DimensionHandlerUtils;
 import org.apache.druid.segment.DimensionSelector;
 import org.apache.druid.segment.StorageAdapter;
 import org.apache.druid.segment.column.ColumnCapabilities;
+import org.apache.druid.segment.column.TypeSignature;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.data.IndexedInts;
 import org.apache.druid.segment.filter.Filters;
@@ -325,7 +326,7 @@ public class GroupByQueryEngineV2
 
               // Now check column capabilities.
               final ColumnCapabilities columnCapabilities = capabilitiesFunction.apply(dimension.getDimension());
-              return columnCapabilities == null || !columnCapabilities.hasMultipleValues();
+              return columnCapabilities == null || columnCapabilities.hasMultipleValues().isFalse();
             });
   }
 
@@ -361,7 +362,7 @@ public class GroupByQueryEngineV2
     private GroupByColumnSelectorStrategy makeNullableStrategy(GroupByColumnSelectorStrategy delegate)
     {
       if (NullHandling.sqlCompatible()) {
-        return new NullableValueGroupByColumnSelectorStrategy(delegate);
+        return new NullableNumericGroupByColumnSelectorStrategy(delegate);
       } else {
         return delegate;
       }
@@ -519,8 +520,6 @@ public class GroupByQueryEngineV2
 
   private static class HashAggregateIterator extends GroupByEngineIterator<ByteBuffer>
   {
-    private static final Logger LOGGER = new Logger(HashAggregateIterator.class);
-
     private final int[] stack;
     private final Object[] valuess;
     private final ByteBuffer keyBuffer;
@@ -801,7 +800,7 @@ public class GroupByQueryEngineV2
     for (int i = 0; i < dimensionSpecs.size(); i++) {
       DimensionSpec dimSpec = dimensionSpecs.get(i);
       final int resultRowIndex = resultRowDimensionStart + i;
-      final ValueType outputType = dimSpec.getOutputType();
+      final TypeSignature<ValueType> outputType = dimSpec.getOutputType();
 
       resultRow.set(
           resultRowIndex,
