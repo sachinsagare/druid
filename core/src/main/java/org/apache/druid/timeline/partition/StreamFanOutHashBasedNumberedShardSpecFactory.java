@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
-public class StreamFanOutHashBasedNumberedShardSpecFactory
+public class StreamFanOutHashBasedNumberedShardSpecFactory implements ShardSpecFactory
 {
   private static final Logger log = new Logger(StreamFanOutHashBasedNumberedShardSpecFactory.class);
   private static final StreamFanOutHashBasedNumberedShardSpecFactory
@@ -97,7 +97,7 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory
     return fanOutSize;
   }
 
-  /*@Override*/
+  @Override
   public ShardSpec create(ObjectMapper objectMapper, @Nullable ShardSpec specOfPreviousMaxPartitionId)
   {
     if (specOfPreviousMaxPartitionId == null) {
@@ -130,7 +130,7 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory
     }
   }
 
-  /*@Override*/
+  @Override
   public ShardSpec create(ObjectMapper objectMapper, int partitionId)
   {
     return new StreamFanOutHashBasedNumberedShardSpec(
@@ -147,7 +147,7 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory
     );
   }
 
-  /*@Override*/
+  @Override
   public Class<? extends ShardSpec> getShardSpecClass()
   {
     return StreamFanOutHashBasedNumberedShardSpec.class;

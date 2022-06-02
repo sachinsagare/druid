@@ -336,7 +336,9 @@ public class BrokerServerView implements TimelineServerView
       synchronized (lock) {
         ServerSelector selector = selectors.get(segmentId);
         if (selector != null) {
-           Map<String, BloomFilter<CharSequence>> bloomFilters = ((BloomFilterShardSpec) selector.getSegment().getShardSpec()).getBloomFilter();
+          Map<String, BloomFilter<CharSequence>> bloomFilters = ((BloomFilterShardSpec) selector.getSegment()
+                  .getShardSpec())
+                  .getBloomFilters();
           if (bloomFilters != null) {
     	    ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);        
             log.info("Reused existing bloom filter for segment[%s] for server[%s]", segment, server);
