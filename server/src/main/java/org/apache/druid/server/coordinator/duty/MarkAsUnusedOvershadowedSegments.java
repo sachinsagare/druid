@@ -21,7 +21,6 @@ package org.apache.druid.server.coordinator.duty;
 
 import org.apache.druid.client.ImmutableDruidDataSource;
 import org.apache.druid.client.ImmutableDruidServer;
-import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.server.coordinator.CoordinatorStats;
 import org.apache.druid.server.coordinator.DruidCluster;
 import org.apache.druid.server.coordinator.DruidCoordinator;
@@ -38,8 +37,6 @@ import java.util.SortedSet;
 public class MarkAsUnusedOvershadowedSegments implements CoordinatorDuty
 {
   private final DruidCoordinator coordinator;
-  private static final EmittingLogger log = new EmittingLogger(
-      DruidCoordinatorCleanupOvershadowed.class);
 
   public MarkAsUnusedOvershadowedSegments(DruidCoordinator coordinator)
   {

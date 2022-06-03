@@ -57,15 +57,6 @@ public class NamedNumberedShardSpec extends NumberedShardSpec
     return this.partitionName;
   }
 
-  /*@Override*/
-  public boolean isCompatible(Class<? extends ShardSpec> other)
-  {
-    // only compatible with other named shardspec. NamedNumberedShardSpec has per-namespace overshadowing mechanism,
-    // it is very hard to reason how overshadow works when there are both named and non-named segments co-exist.
-    return other == NamedNumberedShardSpec.class ||
-           other == StreamFanOutNamedHashBasedNumberedShardSpec.class;
-  }
-
   @Override
   public <T> PartitionChunk<T> createChunk(T obj)
   {

@@ -202,7 +202,7 @@ public class BloomFilterNameNumberedOverwriteShardSpec extends NamedNumberedShar
   {
     return new BloomFilterNameNumberedOverwriteShardSpec(
         this.getPartitionNum(),
-        this.getPartitions(),
+        this.getNumCorePartitions(),
         this.getPartitionName(),
         this.getStartRootPartitionId(),
         this.getEndRootPartitionId(),
