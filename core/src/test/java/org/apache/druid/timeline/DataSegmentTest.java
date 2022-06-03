@@ -94,6 +94,12 @@ public class DataSegmentTest
         return true;
       }
 
+      @Override
+      public boolean isCompatible(Class<? extends ShardSpec> other)
+      {
+        return false;
+      }
+
     };
   }
 

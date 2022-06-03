@@ -48,8 +48,7 @@ public class SingleDimensionEvenSizeNamedV2ShardSpec extends SingleDimensionEven
       @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(dimension, start, end, partitionNum, partitions, partitionSize, largePartitionDimensionValues,
-          groupKeyDimensions, jsonMapper);
+    super(dimension, start, end, partitionNum, partitions, partitionSize, largePartitionDimensionValues, groupKeyDimensions, null, jsonMapper);
     Preconditions.checkArgument(partitionName != null && !partitionName.isEmpty(), "partitionName");
     this.partitionName = partitionName;
   }

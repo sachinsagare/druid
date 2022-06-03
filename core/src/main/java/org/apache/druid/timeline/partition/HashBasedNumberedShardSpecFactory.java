@@ -62,7 +62,10 @@ public class HashBasedNumberedShardSpecFactory implements ShardSpecFactory
     return new HashBasedNumberedShardSpec(
         prevSpec == null ? 0 : prevSpec.getPartitionNum() + 1,
         numPartitions,
+        null,
+        null,
         partitionDimensions,
+        null,
         objectMapper
     );
   }
@@ -70,7 +73,7 @@ public class HashBasedNumberedShardSpecFactory implements ShardSpecFactory
   @Override
   public ShardSpec create(ObjectMapper objectMapper, int partitionId)
   {
-    return new HashBasedNumberedShardSpec(partitionId, numPartitions, partitionDimensions, objectMapper);
+    return new HashBasedNumberedShardSpec(partitionId, numPartitions, null, null, partitionDimensions, null, objectMapper);
   }
 
   @Override

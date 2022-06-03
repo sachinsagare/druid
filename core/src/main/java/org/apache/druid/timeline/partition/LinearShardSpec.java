@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.druid.data.input.InputRow;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * An extendable linear shard spec.  {@link #partitionNum} represents an unique id of a partition.
@@ -64,6 +63,12 @@ public final class LinearShardSpec extends BloomFilterShardSpec
   public List<String> getDomainDimensions()
   {
     return ImmutableList.of();
+  }
+
+  @Override
+  public boolean isCompatible(Class<? extends ShardSpec> other)
+  {
+    return other == LinearShardSpec.class;
   }
 
   @Override

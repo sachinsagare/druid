@@ -109,6 +109,12 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
     return partitionDimensions;
   }
 
+  @Override
+  public boolean isCompatible(Class<? extends ShardSpec> other)
+  {
+    return other == HashBasedNumberedShardSpec.class;
+  }
+
   @JsonProperty
   public @Nullable HashPartitionFunction getPartitionFunction()
   {

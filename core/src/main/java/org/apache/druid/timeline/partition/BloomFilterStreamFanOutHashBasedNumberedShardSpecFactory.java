@@ -112,7 +112,7 @@ public class BloomFilterStreamFanOutHashBasedNumberedShardSpecFactory implements
       final NumberedShardSpec prevSpec = (NumberedShardSpec) specOfPreviousMaxPartitionId;
       return new BloomFilterStreamFanOutHashBasedNumberedShardSpec(
           prevSpec.getPartitionNum() + 1,
-          prevSpec.getPartitions(),
+          prevSpec.getNumCorePartitions(),
           partitionDimensions,
           streamPartitionIds,
           streamPartitions,

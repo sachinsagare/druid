@@ -77,7 +77,7 @@ public class StreamFanOutNamedHashBasedNumberedShardSpec extends StreamFanOutHas
   @Override
   public <T> PartitionChunk<T> createChunk(T obj)
   {
-    return NamedNumberedPartitionChunk.make(getPartitionNum(), getPartitions(), partitionName, obj);
+    return NamedNumberedPartitionChunk.make(getPartitionNum(), getNumCorePartitions(), partitionName, obj);
   }
 
   @Override
@@ -91,7 +91,7 @@ public class StreamFanOutNamedHashBasedNumberedShardSpec extends StreamFanOutHas
   {
     return "StreamFanOutHashBasedNumberedShardSpec{" +
            "partitionNum=" + getPartitionNum() +
-           ", partitions=" + getPartitions() +
+           ", partitions=" + getNumCorePartitions() +
            ", partitionDimensions=" + getPartitionDimensions() +
            ", streamPartitionIds=" + getStreamPartitionIds() +
            ", streamPartitions=" + getStreamPartitions() +
@@ -113,7 +113,7 @@ public class StreamFanOutNamedHashBasedNumberedShardSpec extends StreamFanOutHas
 
     final StreamFanOutNamedHashBasedNumberedShardSpec that = (StreamFanOutNamedHashBasedNumberedShardSpec) o;
     return (getPartitionNum() == that.getPartitionNum() &&
-            getPartitions() == that.getPartitions() &&
+            getNumCorePartitions() == that.getNumCorePartitions() &&
             getPartitionName().compareTo(that.getPartitionName()) == 0);
   }
 }

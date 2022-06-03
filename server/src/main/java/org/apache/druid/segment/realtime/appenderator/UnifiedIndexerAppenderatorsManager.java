@@ -48,7 +48,6 @@ import org.apache.druid.query.SegmentDescriptor;
 import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.planning.DataSourceAnalysis;
-import org.apache.druid.segment.BaseProgressIndicator;
 import org.apache.druid.segment.IndexIO;
 import org.apache.druid.segment.IndexMerger;
 import org.apache.druid.segment.IndexSpec;
@@ -96,7 +95,7 @@ import java.util.concurrent.Callable;
  * The per-datasource SinkQuerySegmentWalkers share a common queryExecutorService.
  *
  * Each task that requests an Appenderator from this AppenderatorsManager will receive a heap memory limit
- * equal to {@link WorkerConfig#globalIngestionHeapLimitBytes} evenly divided by {@link WorkerConfig#capacity}.
+ * equal to {@links WorkerConfig#globalIngestionHeapLimitBytes} evenly divided by {@links WorkerConfig#capacity}.
  * This assumes that each task will only ingest to one Appenderator simultaneously.
  *
  * The Appenderators created by this class share an executor pool for {@link IndexMerger} persist

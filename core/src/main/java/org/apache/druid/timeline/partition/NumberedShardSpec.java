@@ -83,6 +83,15 @@ public class NumberedShardSpec extends BloomFilterShardSpec
   }
 
   @Override
+  public boolean isCompatible(Class<? extends ShardSpec> other)
+  {
+    return other == NumberedShardSpec.class ||
+            other == NumberedOverwriteShardSpec.class ||
+            other == StreamHashBasedNumberedShardSpec.class ||
+            other == StreamFanOutHashBasedNumberedShardSpec.class;
+  }
+
+  @Override
   @JsonProperty("partitions")
   public int getNumCorePartitions()
   {

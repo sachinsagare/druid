@@ -65,7 +65,7 @@ public class StreamFanOutNamedHashBasedNumberedShardSpecTest
         ShardSpec.class
     );
     Assert.assertEquals(spec.getPartitionNum(), deserializedSpec.getPartitionNum());
-    Assert.assertEquals(spec.getPartitions(), ((StreamFanOutNamedHashBasedNumberedShardSpec) deserializedSpec).getPartitions());
+    Assert.assertEquals(spec.getNumCorePartitions(), ((StreamFanOutNamedHashBasedNumberedShardSpec) deserializedSpec).getNumCorePartitions());
     Assert.assertEquals(
         spec.getPartitionDimensions(),
         ((StreamFanOutNamedHashBasedNumberedShardSpec) deserializedSpec).getPartitionDimensions()

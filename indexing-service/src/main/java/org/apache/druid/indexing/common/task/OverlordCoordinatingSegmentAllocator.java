@@ -59,6 +59,7 @@ public class OverlordCoordinatingSegmentAllocator implements SegmentAllocatorFor
       final PartitionsSpec partitionsSpec
   )
   {
+    final boolean tmp = false;
     final TaskActionClient taskActionClient =
         supervisorTaskAccess == null
         ? toolbox.getTaskActionClient()
@@ -87,7 +88,8 @@ public class OverlordCoordinatingSegmentAllocator implements SegmentAllocatorFor
               skipSegmentLineageCheck,
               partialShardSpec,
               taskLockHelper.getLockGranularityToUse(),
-              taskLockHelper.getLockTypeToUse()
+              taskLockHelper.getLockTypeToUse(),
+              null
           );
         }
     );
@@ -100,10 +102,11 @@ public class OverlordCoordinatingSegmentAllocator implements SegmentAllocatorFor
       InputRow row,
       String sequenceName,
       String previousSegmentId,
-      boolean skipSegmentLineageCheck
+      boolean skipSegmentLineageCheck,
+      boolean allowMixedShardSpecType
   ) throws IOException
   {
-    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck);
+    return internalAllocator.allocate(row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType);
   }
 
   private static PartialShardSpec createPartialShardSpec(

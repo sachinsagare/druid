@@ -75,15 +75,8 @@ import org.junit.runners.Parameterized;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
@@ -377,6 +370,7 @@ public class IndexGeneratorJobTest
                           // There is no way to specify createBloomFilterIndex for schemaless dimensions spec
                           new DimensionsSpec(null, null, null),
                           null,
+                          null,
                           null
                       ),
                       null
@@ -421,6 +415,7 @@ public class IndexGeneratorJobTest
                               null,
                               null
                           ),
+                          null,
                           null,
                           null
                       ),

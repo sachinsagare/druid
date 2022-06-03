@@ -34,7 +34,6 @@ import org.apache.druid.segment.Cursor;
 import org.apache.druid.segment.SegmentMissingException;
 import org.apache.druid.segment.StorageAdapter;
 import org.apache.druid.segment.column.ColumnCapabilities;
-import org.apache.druid.segment.column.ColumnHolder;
 import org.apache.druid.segment.column.Types;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.filter.Filters;
@@ -146,16 +145,17 @@ public class TopNQueryEngine
       // A special TimeExtractionTopNAlgorithm is required, since DimExtractionTopNAlgorithm
       // currently relies on the dimension cardinality to support lexicographic sorting
       topNAlgorithm = new TimeExtractionTopNAlgorithm(adapter, query);
-    } else if (selector.isHasExtractionFn()) {
-      topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
-    } else if (columnCapabilities != null && !(columnCapabilities.getType() == ValueType.STRING
-                                               && columnCapabilities.isDictionaryEncoded().isTrue())) {
+      //Commented below code as DimExtractionTopNAlgorithm not avaialbe in 0.23 - might need to revist again
+    //} else if (selector.isHasExtractionFn()) {
+      //topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
+    //} else if (columnCapabilities != null && !(columnCapabilities.getType() == ValueType.STRING
+    //                                           && columnCapabilities.isDictionaryEncoded().isTrue())) {
       // Use DimExtraction for non-Strings and for non-dictionary-encoded Strings.
-      topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
-    } else if (query.getDimensionSpec().getOutputType().getType() != ValueType.STRING) {
+     // topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
+    //} else if (query.getDimensionSpec().getOutputType().getType() != ValueType.STRING) {
       // Use DimExtraction when the dimension output type is a non-String. (It's like an extractionFn: there can be
       // a many-to-one mapping, since numeric types can't represent all possible values of other types.)
-      topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
+      //topNAlgorithm = new DimExtractionTopNAlgorithm(adapter, query);
     } else if (selector.isAggregateAllMetrics()) {
       topNAlgorithm = new PooledTopNAlgorithm(adapter, query, bufferPool);
     } else if (selector.isAggregateTopNMetricFirst() || query.getContextBoolean("doAggregateTopNMetricFirst", false)) {

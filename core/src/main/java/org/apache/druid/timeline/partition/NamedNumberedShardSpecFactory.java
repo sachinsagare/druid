@@ -67,7 +67,7 @@ public class NamedNumberedShardSpecFactory implements ShardSpecFactory
       return new NamedNumberedShardSpec(0, 0, partitionName);
     } else {
       final NamedNumberedShardSpec prevSpec = (NamedNumberedShardSpec) specOfPreviousMaxPartitionId;
-      return new NamedNumberedShardSpec(prevSpec.getPartitionNum() + 1, prevSpec.getPartitions(), prevSpec.getPartitionName());
+      return new NamedNumberedShardSpec(prevSpec.getPartitionNum() + 1, prevSpec.getNumCorePartitions(), prevSpec.getPartitionName());
     }
   }
 

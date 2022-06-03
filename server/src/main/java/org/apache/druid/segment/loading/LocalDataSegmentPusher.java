@@ -68,7 +68,7 @@ public class LocalDataSegmentPusher implements DataSegmentPusher
     return pushToPath(dataSegmentFile, segment, this.getStorageDir(segment, useUniquePath));
   }
 
-  @Override
+  //@Override
   public DataSegment pushToPath(File dataSegmentFile, DataSegment segment, String storageDirSuffix) throws IOException
   {
     final File baseStorageDir = config.getStorageDirectory();

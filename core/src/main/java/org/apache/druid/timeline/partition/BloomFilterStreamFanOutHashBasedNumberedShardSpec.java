@@ -89,13 +89,13 @@ public class BloomFilterStreamFanOutHashBasedNumberedShardSpec extends StreamFan
       this.partitionDimensionValuesSet = new THashSet<>();
     }
 
-    try {
+    /*try {
       List<Object> groupKey = getGroupKey(0, inputRow);
       partitionDimensionValuesSet.add(jsonMapper.writeValueAsBytes(groupKey));
     }
     catch (JsonProcessingException e) {
       throw new RuntimeException(e);
-    }
+    }*/
   }
 
   /**
@@ -193,7 +193,7 @@ public class BloomFilterStreamFanOutHashBasedNumberedShardSpec extends StreamFan
   {
     return "BloomFilterStreamFanOutHashBasedNumberedShardSpec{" +
            "partitionNum=" + getPartitionNum() +
-           ", partitions=" + getPartitions() +
+           ", partitions=" + getNumCorePartitions() +
            ", partitionDimensions=" + getPartitionDimensions() +
            ", streamPartitionIds=" + getStreamPartitionIds() +
            ", streamPartitions=" + getStreamPartitions() +

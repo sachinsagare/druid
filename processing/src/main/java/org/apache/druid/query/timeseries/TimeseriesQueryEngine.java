@@ -91,14 +91,14 @@ public class TimeseriesQueryEngine
     final Granularity gran = query.getGranularity();
     final boolean descending = query.isDescending();
 
-    final boolean doVectorize = QueryContexts.getVectorize(query).shouldVectorize(
+    final boolean doVectorized = QueryContexts.getVectorize(query).shouldVectorize(
         adapter.canVectorize(filter, query.getVirtualColumns(), descending)
-        && query.getAggregatorSpecs().stream().allMatch(AggregatorFactory::canVectorize)
+        && query.getAggregatorSpecs().stream().allMatch(aggregatorFactory -> aggregatorFactory.canVectorize(query.getVirtualColumns().wrapInspector(adapter)))
     );
 
     final Sequence<Result<TimeseriesResultValue>> result;
 
-    if (doVectorize) {
+    if (doVectorized) {
       result = processVectorized(query, adapter, filter, interval, gran, descending);
     } else {
       result = processNonVectorized(query, adapter, filter, interval, gran, descending);

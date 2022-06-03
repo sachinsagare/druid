@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+
 public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumberedShardSpec
 {
   private static final Logger log = new Logger(StreamFanOutHashBasedNumberedShardSpec.class);
@@ -47,17 +48,14 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
   public StreamFanOutHashBasedNumberedShardSpec(
       @JsonProperty("partitionNum") int partitionNum,
       @JsonProperty("partitions") int partitions,
-      @JsonProperty("bucketId") @Nullable Integer bucketId,
-      @JsonProperty("numBuckets") @Nullable Integer numBuckets,
       @JsonProperty("partitionDimensions") @Nullable List<String> partitionDimensions,
       @JsonProperty("streamPartitionIds") @Nullable Set<Integer> streamPartitionIds,
       @JsonProperty("streamPartitions") @Nullable Integer streamPartitions,
-      @JsonProperty("partitionFunction") @Nullable HashPartitionFunction partitionFunction,
       @JsonProperty("fanOutSize") @Nullable Integer fanOutSize,
       @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(partitionNum, partitions, bucketId, numBuckets, partitionDimensions, streamPartitionIds, partitionFunction, streamPartitions,
+    super(partitionNum, partitions, partitionDimensions, streamPartitionIds, streamPartitions,
         jsonMapper);
     this.jsonMapper = jsonMapper;
     this.fanOutSize = fanOutSize == null ? DEFAULT_FAN_OUT_SIZE : fanOutSize;
@@ -73,10 +71,10 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
   @Override
   public boolean isCompatible(Class<? extends ShardSpec> other)
   {
-    return  other == NumberedShardSpec.class ||
-            other == NumberedOverwriteShardSpec.class ||
-            other == StreamHashBasedNumberedShardSpec.class ||
-            other == StreamFanOutHashBasedNumberedShardSpec.class;
+    return other == NumberedShardSpec.class ||
+           other == NumberedOverwriteShardSpec.class ||
+           other == StreamHashBasedNumberedShardSpec.class ||
+           other == StreamFanOutHashBasedNumberedShardSpec.class;
   }
 
   @Override
@@ -118,24 +116,19 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
     return Objects.hash(getPartitionNum(), getNumCorePartitions());
   }
 
-  /*@Override*/
+  @Override
   protected boolean groupKeyIsInChunk(List<Object> groupKey)
   {
-    try {
-      Integer streamPartitions = getStreamPartitions();
-      Set streamPartitionIds = getStreamPartitionIds();
-      Integer fanOutSize = getFanOutSize();
-      int basePartitionId = Math.abs(Objects.hash(jsonMapper, groupKey) % streamPartitions);
+    Integer streamPartitions = getStreamPartitions();
+    Set streamPartitionIds = getStreamPartitionIds();
+    Integer fanOutSize = getFanOutSize();
+    int basePartitionId = Math.abs(Objects.hash(jsonMapper, groupKey) % streamPartitions);
 
-      for (int i = 0; i < fanOutSize; i++) {
-        if (streamPartitionIds.contains((basePartitionId + i) % streamPartitions)) {
-          return true;
-        }
+    for (int i = 0; i < fanOutSize; i++) {
+      if (streamPartitionIds.contains((basePartitionId + i) % streamPartitions)) {
+        return true;
       }
-      return false;
     }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return false;
   }
 }

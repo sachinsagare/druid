@@ -89,11 +89,8 @@ public class StreamHashBasedNumberedShardSpecFactory implements ShardSpecFactory
       return new StreamHashBasedNumberedShardSpec(
           0,
           0,
-          1,
-          1,
           partitionDimensions,
           streamPartitionIds,
-          null,
           streamPartitions,
           objectMapper
       );
@@ -102,11 +99,8 @@ public class StreamHashBasedNumberedShardSpecFactory implements ShardSpecFactory
       return new StreamHashBasedNumberedShardSpec(
           prevSpec.getPartitionNum() + 1,
           prevSpec.getNumCorePartitions(),
-          prevSpec.getPartitionNum() + 1,
-          0,
           partitionDimensions,
           streamPartitionIds,
-          null,
           streamPartitions,
           objectMapper
       );
@@ -119,11 +113,8 @@ public class StreamHashBasedNumberedShardSpecFactory implements ShardSpecFactory
     return new StreamHashBasedNumberedShardSpec(
         partitionId,
         0,
-        1,
-        1,
         partitionDimensions,
         streamPartitionIds,
-        null,
         streamPartitions,
         objectMapper
     );

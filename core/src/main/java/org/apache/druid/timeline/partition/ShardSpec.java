@@ -55,7 +55,8 @@ import java.util.Map;
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_FANOUT_NAMED_HASHED, value = StreamFanOutNamedHashBasedNumberedShardSpec.class)
 })
-public interface  ShardSpec
+
+public interface ShardSpec
 {
   @JsonIgnore
   <T> PartitionChunk<T> createChunk(T obj);
@@ -154,6 +155,11 @@ public interface  ShardSpec
   {
     return !partialShardSpec.useNonRootGenerationPartitionSpace();
   }
+
+  /**
+   * Returns true if two segments of this and other shardSpecs can exist in the same timeChunk.
+   */
+  boolean isCompatible(Class<? extends ShardSpec> other);
 
   /**
    * ShardSpec type names.

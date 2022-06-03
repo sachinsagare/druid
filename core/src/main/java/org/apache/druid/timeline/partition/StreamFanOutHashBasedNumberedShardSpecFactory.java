@@ -104,12 +104,9 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory implements ShardSpecF
       return new StreamFanOutHashBasedNumberedShardSpec(
           0,
           0,
-          0,
-          0,
           partitionDimensions,
           streamPartitionIds,
           streamPartitions,
-          null,
           fanOutSize,
           objectMapper
       );
@@ -118,12 +115,9 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory implements ShardSpecF
       return new StreamFanOutHashBasedNumberedShardSpec(
           prevSpec.getPartitionNum() + 1,
           prevSpec.getNumCorePartitions(),
-          prevSpec.getPartitionNum() + 1,
-          prevSpec.getNumCorePartitions(),
           partitionDimensions,
           streamPartitionIds,
           streamPartitions,
-          null,
           fanOutSize,
           objectMapper
       );
@@ -136,12 +130,9 @@ public class StreamFanOutHashBasedNumberedShardSpecFactory implements ShardSpecF
     return new StreamFanOutHashBasedNumberedShardSpec(
         partitionId,
         0,
-        partitionId,
-        0,
         partitionDimensions,
         streamPartitionIds,
         streamPartitions,
-        null,
         fanOutSize,
         objectMapper
     );

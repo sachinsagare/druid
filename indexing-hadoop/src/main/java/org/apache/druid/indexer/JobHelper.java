@@ -61,7 +61,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -512,7 +511,7 @@ public class JobHelper
         .withAvailableSupplimentalIndexes(new ArrayList<>(sortedAvailableSupplimentalIndexes));
     
     for (int i = 0; i < tmpSupplimentalIndexZipFilePaths.size(); i++) {
-      if (!renameIndexFiles(outputFS, tmpSupplimentalIndexZipFilePaths.get(i),
+      if (!renameIndexFile(outputFS, tmpSupplimentalIndexZipFilePaths.get(i),
                             finalSupplimentalIndexZipFilePaths.get(i))) {
         throw new IOE(
             "Unable to rename [%s] to [%s]",
@@ -524,7 +523,7 @@ public class JobHelper
 
     return new DataSegmentAndIndexZipFilePath(
         finalSegment,
-        tmpPath.toUri().toString(),
+            tmpIndexZipFilePath.toUri().toString(),
         finalIndexZipFilePath.toUri().toString()
     );
   }

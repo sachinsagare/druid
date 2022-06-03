@@ -779,11 +779,11 @@ public class IndexGeneratorJob implements Jobby
           if (index.isEmpty()) {
             throw new IAE("If you try to persist empty indexes you are going to have a bad time");
           }
-
-          IndexMerger.setHasBloomFilterIndexesInColumnCapabilities(
-              dimensionNamesHasBloomFilterIndexes,
-              index::getCapabilities
-          );
+          // commented below link to fix compile time error ..need to revisit this part
+         // IndexMerger.setHasBloomFilterIndexesInColumnCapabilities(
+           //   dimensionNamesHasBloomFilterIndexes,
+             // indexes::getCapabilities
+         // );
           Pair<File, File> p = persist(index, interval, new File(baseFlushFile, "merged"),
                                        mergedSupplimentalIndexBase, progressIndicator);
           mergedIndexOutDir = p.lhs;

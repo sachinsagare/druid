@@ -147,7 +147,7 @@ public class StreamFanOutNamedHashBasedNumberedShardSpecFactory implements Shard
       final NumberedShardSpec prevSpec = (NumberedShardSpec) specOfPreviousMaxPartitionId;
       return new StreamFanOutNamedHashBasedNumberedShardSpec(
           prevSpec.getPartitionNum() + 1,
-          prevSpec.getPartitions(),
+          prevSpec.getNumCorePartitions(),
           partitionDimensions,
           streamPartitionIds,
           streamPartitions,

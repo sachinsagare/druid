@@ -45,7 +45,7 @@ public class BloomFilterShardSpecTest
       return null;
     }
 
-    @Override
+    //@Override
     public boolean isInChunk(long timestamp, InputRow inputRow)
     {
       return false;
@@ -58,7 +58,10 @@ public class BloomFilterShardSpecTest
     }
 
     @Override
-    public ShardSpecLookup getLookup(List<ShardSpec> shardSpecs)
+    public int getNumCorePartitions() { return 0; }
+
+    @Override
+    public ShardSpecLookup getLookup(List<? extends ShardSpec> shardSpecs)
     {
       return null;
     }

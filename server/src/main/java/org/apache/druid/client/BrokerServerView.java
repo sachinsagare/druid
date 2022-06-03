@@ -25,7 +25,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.BloomFilter;
 import com.google.common.io.Files;
-import com.google.common.primitives.Ints;
 import com.google.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.druid.client.selector.QueryableDruidServer;
@@ -53,7 +52,6 @@ import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.planning.DataSourceAnalysis;
 import org.apache.druid.segment.loading.LoadSpec;
 
-import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
@@ -61,11 +59,9 @@ import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
 import org.apache.druid.timeline.partition.BloomFilterShardSpec;
-import org.apache.druid.timeline.partition.BloomFilterStreamFanOutHashBasedNumberedShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.utils.CollectionUtils;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;

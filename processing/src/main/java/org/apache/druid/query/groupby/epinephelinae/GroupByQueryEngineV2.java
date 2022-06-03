@@ -330,6 +330,24 @@ public class GroupByQueryEngineV2
             });
   }
 
+  /**
+   * check if a column will operate correctly with {@link LimitedBufferHashGrouper} for query limit pushdown
+   */
+  public static boolean canPushDownLimit(ColumnSelectorFactory columnSelectorFactory, String columnName)
+  {
+    ColumnCapabilities capabilities = columnSelectorFactory.getColumnCapabilities(columnName);
+    if (capabilities != null) {
+      // strings can be pushed down if dictionaries are sorted and unique per id
+      if (capabilities.is(ValueType.STRING)) {
+        return capabilities.areDictionaryValuesSorted().and(capabilities.areDictionaryValuesUnique()).isTrue();
+      }
+      // party on
+      return true;
+    }
+    // we don't know what we don't know, don't assume otherwise
+    return false;
+  }
+
   private static class GroupByStrategyFactory
       implements ColumnSelectorStrategyFactory<GroupByColumnSelectorStrategy>
   {

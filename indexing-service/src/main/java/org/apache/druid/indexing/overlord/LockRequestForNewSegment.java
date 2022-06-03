@@ -88,7 +88,8 @@ public class LockRequestForNewSegment implements LockRequest
       String sequenceName,
       @Nullable String previsousSegmentId,
       boolean skipSegmentLineageCheck,
-      @Nullable String nameSpace
+      @Nullable String nameSpace,
+      boolean allowMixedShardSpecType
   )
   {
     this(

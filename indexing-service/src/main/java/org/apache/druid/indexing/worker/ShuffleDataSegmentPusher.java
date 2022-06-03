@@ -19,6 +19,7 @@
 
 package org.apache.druid.indexing.worker;
 
+import org.apache.druid.indexing.worker.shuffle.IntermediaryDataManager;
 import org.apache.druid.segment.SegmentUtils;
 import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.timeline.DataSegment;

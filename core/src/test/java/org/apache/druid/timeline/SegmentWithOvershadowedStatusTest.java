@@ -118,9 +118,8 @@ public class SegmentWithOvershadowedStatusTest
     Assert.assertEquals(dataSegment.getShardSpec(), deserializedSegment.getShardSpec());
     Assert.assertEquals(dataSegment.getSize(), deserializedSegment.getSize());
     Assert.assertEquals(dataSegment.getId(), deserializedSegment.getId());
-    Assert.assertEquals(segment.getDataSegment().getAvailableSupplimentalIndexes(),
+    Assert.assertEquals(dataSegment.getAvailableSupplimentalIndexes(),
                         deserializedSegment.getAvailableSupplimentalIndexes());
-  }
   }
 
   // Previously, the implementation of SegmentWithOvershadowedStatus had @JsonCreator/@JsonProperty and @JsonUnwrapped
