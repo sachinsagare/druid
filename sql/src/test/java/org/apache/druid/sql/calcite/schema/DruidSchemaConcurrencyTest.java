@@ -368,7 +368,8 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
             return null;
           }
         },
-        new BrokerDataSourceLifetimeConfig()
+        new BrokerDataSourceLifetimeConfig(),
+       null
     );
   }
 
@@ -398,7 +399,9 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
         null,
         1,
         100L,
+        null,
         PruneSpecsHolder.DEFAULT
+
     );
   }
 

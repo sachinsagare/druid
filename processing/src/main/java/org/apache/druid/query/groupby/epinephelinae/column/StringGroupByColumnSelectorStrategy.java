@@ -48,6 +48,11 @@ public class StringGroupByColumnSelectorStrategy implements GroupByColumnSelecto
     this.capabilities = capabilities;
   }
 
+  public StringGroupByColumnSelectorStrategy() {
+    this.dictionaryLookup = null;
+    this.capabilities = null;
+  }
+
   @Override
   public int getGroupingKeySize()
   {

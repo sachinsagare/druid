@@ -36,6 +36,7 @@ public class FireDepartmentMetrics
   private final AtomicLong dedupCount = new AtomicLong(0);
   private final AtomicLong rowOutputCount = new AtomicLong(0);
   private final AtomicLong numPersists = new AtomicLong(0);
+  private final AtomicLong pendingPersistSubmissions = new AtomicLong(0);
   private final AtomicLong numPersistSegment = new AtomicLong(0);
   private final AtomicLong numPersistAll = new AtomicLong(0);
   private final AtomicLong persistTimeMillis = new AtomicLong(0);
@@ -90,6 +91,10 @@ public class FireDepartmentMetrics
   {
     numPersists.incrementAndGet();
   }
+
+  public void incrementPendingPersistSubmissions() { pendingPersistSubmissions.incrementAndGet(); }
+
+  public void decrementPendingPersistSubmissions() { pendingPersistSubmissions.decrementAndGet(); }
 
   public void incrementPersistSegment()
   {
@@ -242,6 +247,8 @@ public class FireDepartmentMetrics
   {
     return persistTimeMillis.get();
   }
+
+  public long pendingPersistSubmissions() { return pendingPersistSubmissions.get(); }
 
   public long persistBackPressureMillis()
   {

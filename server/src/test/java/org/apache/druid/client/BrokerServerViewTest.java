@@ -168,7 +168,8 @@ public class BrokerServerViewTest extends CuratorTestBase
             return null;
           }
         },
-        new BrokerDataSourceLifetimeConfig()
+        new BrokerDataSourceLifetimeConfig(),
+        new ObjectMapper()
     );
 
     baseView.start();
@@ -802,7 +803,8 @@ public class BrokerServerViewTest extends CuratorTestBase
             return null;
           }
         },
-        new BrokerDataSourceLifetimeConfig()
+        new BrokerDataSourceLifetimeConfig(),
+        new ObjectMapper()
     );
 
     baseView.start();
