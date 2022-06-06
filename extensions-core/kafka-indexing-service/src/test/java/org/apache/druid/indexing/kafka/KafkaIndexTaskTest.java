@@ -2800,6 +2800,7 @@ public class KafkaIndexTaskTest extends SeekableStreamIndexTaskTestBase
         1000,
         null,
         null,
+        null,
         maxRowsPerSegment,
         maxTotalRows,
         new Period("P1Y"),
