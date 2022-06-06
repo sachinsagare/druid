@@ -421,6 +421,11 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportSegmentAfterFilteringCount(int segmentCount);
 
   /**
+   * Reports the host that has timeout
+   */
+  QueryMetrics<QueryType> reportTimeout(String host);
+
+  /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.
    */
   void emit(ServiceEmitter emitter);

@@ -43,7 +43,7 @@ public class FileRequestLoggerProvider implements RequestLoggerProvider
 
   @JsonProperty
   @NotNull
-  private String filePattern = "yyyy-MM-dd'.log'";
+  private String filePattern = "yyyy-MM-dd_HH'.log'";
 
   @JacksonInject
   @NotNull

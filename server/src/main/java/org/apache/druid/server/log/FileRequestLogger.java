@@ -77,19 +77,19 @@ public class FileRequestLogger implements RequestLogger
       FileUtils.mkdirp(baseDir);
 
       MutableDateTime mutableDateTime = DateTimes.nowUtc().toMutableDateTime(ISOChronology.getInstanceUTC());
-      mutableDateTime.setMillisOfDay(0);
+      mutableDateTime.setMinuteOfHour(0);
       synchronized (lock) {
         currentDay = mutableDateTime.toDateTime(ISOChronology.getInstanceUTC());
 
         fileWriter = getFileWriter();
       }
-      long nextDay = currentDay.plusDays(1).getMillis();
-      Duration initialDelay = new Duration(nextDay - System.currentTimeMillis());
+      long nextHour = currentDay.plusHours(1).getMillis();
+      Duration initialDelay = new Duration(nextHour - System.currentTimeMillis());
 
       ScheduledExecutors.scheduleWithFixedDelay(
           exec,
           initialDelay,
-          Duration.standardDays(1),
+          Duration.standardHours(1),
           new Callable<ScheduledExecutors.Signal>()
           {
             @Override

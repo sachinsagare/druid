@@ -351,6 +351,12 @@ public final class SegmentId implements Comparable<SegmentId>
     return partitionNum;
   }
 
+  @Nullable
+  public String getIdentifier()
+  {
+    return identifier;
+  }
+
   public SegmentId withInterval(Interval newInterval)
   {
     return of(dataSource, newInterval, version, partitionNum);

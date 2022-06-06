@@ -28,6 +28,7 @@ import org.apache.druid.segment.vector.VectorColumnSelectorFactory;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +48,7 @@ public class AggregatorAdapters implements Closeable
   private static final Logger log = new Logger(AggregatorAdapters.class);
 
   private final List<Adapter> adapters;
+  private final List<Integer> nonNoopAdapterPositions;
   private final List<AggregatorFactory> factories;
   private final int[] aggregatorPositions;
   private final int spaceNeeded;
@@ -54,6 +56,12 @@ public class AggregatorAdapters implements Closeable
   private AggregatorAdapters(final List<Adapter> adapters)
   {
     this.adapters = adapters;
+    this.nonNoopAdapterPositions = new ArrayList<>();
+    for (int i = 0; i < adapters.size(); i++) {
+      if (!(adapters.get(i).getFactory() instanceof NoopNumberAggregatorFactory)) {
+        nonNoopAdapterPositions.add(i);
+      }
+    }
     this.factories = adapters.stream().map(Adapter::getFactory).collect(Collectors.toList());
     this.aggregatorPositions = new int[adapters.size()];
 
@@ -159,9 +167,10 @@ public class AggregatorAdapters implements Closeable
    */
   public void aggregateBuffered(final ByteBuffer buf, final int position)
   {
-    for (int i = 0; i < adapters.size(); i++) {
-      final Adapter adapter = adapters.get(i);
-      adapter.asBufferAggregator().aggregate(buf, position + aggregatorPositions[i]);
+    for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asBufferAggregator().aggregate(buf, position + aggregatorPositions[pos]);
     }
   }
 
@@ -177,9 +186,10 @@ public class AggregatorAdapters implements Closeable
       final int end
   )
   {
-    for (int i = 0; i < adapters.size(); i++) {
-      final Adapter adapter = adapters.get(i);
-      adapter.asVectorAggregator().aggregate(buf, position + aggregatorPositions[i], start, end);
+    for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asVectorAggregator().aggregate(buf, position + aggregatorPositions[pos], start, end);
     }
   }
 
@@ -195,9 +205,10 @@ public class AggregatorAdapters implements Closeable
       @Nullable final int[] rows
   )
   {
-    for (int i = 0; i < adapters.size(); i++) {
-      final Adapter adapter = adapters.get(i);
-      adapter.asVectorAggregator().aggregate(buf, numRows, positions, rows, aggregatorPositions[i]);
+    for (int i = 0; i < nonNoopAdapterPositions.size(); i++) {
+      int pos = nonNoopAdapterPositions.get(i);
+      final Adapter adapter = adapters.get(pos);
+      adapter.asVectorAggregator().aggregate(buf, numRows, positions, rows, aggregatorPositions[pos]);
     }
   }
 
