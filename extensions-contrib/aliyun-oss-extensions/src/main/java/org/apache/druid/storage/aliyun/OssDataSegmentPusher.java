@@ -61,7 +61,8 @@ public class OssDataSegmentPusher implements DataSegmentPusher
   }
 
   @Override
-  public DataSegment push(File indexFilesDir, File supplimentalIndexFilesDir, DataSegment segment, boolean useUniquePath) throws IOException {
+  public DataSegment push(File indexFilesDir, File supplimentalIndexFilesDir, DataSegment segment, boolean useUniquePath) throws IOException
+  {
     return null;
   }
 

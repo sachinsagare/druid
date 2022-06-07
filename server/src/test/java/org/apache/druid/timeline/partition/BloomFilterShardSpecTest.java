@@ -58,7 +58,10 @@ public class BloomFilterShardSpecTest
     }
 
     @Override
-    public int getNumCorePartitions() { return 0; }
+    public int getNumCorePartitions()
+    {
+      return 0;
+    }
 
     @Override
     public ShardSpecLookup getLookup(List<? extends ShardSpec> shardSpecs)

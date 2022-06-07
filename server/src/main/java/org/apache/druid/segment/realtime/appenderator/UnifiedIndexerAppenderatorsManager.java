@@ -598,12 +598,14 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
@@ -668,11 +670,12 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
     {
       ListenableFuture<Pair<File, File>> mergeFuture = mergeExecutor.submit(
               new Callable<Pair<File, File>>()
+            {
+              @Override
+              public Pair<File, File> call()
               {
-                @Override
-                public Pair<File, File> call() {
-                  try {
-                    return baseMerger.mergeQueryableIndex(
+                try {
+                  return baseMerger.mergeQueryableIndex(
                             indexes,
                             rollup,
                             metricAggs,
@@ -680,13 +683,13 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
                             supplimentalIndexDir,
                             indexSpec,
                             segmentWriteOutMediumFactory
-                    );
-                  }
-                  catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
-                  }
+                  );
+                }
+                catch (IOException ioe) {
+                  throw new RuntimeException(ioe);
                 }
               }
+            }
       );
 
       try {
@@ -697,7 +700,7 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
       }
     }
 
-  @Override
+    @Override
   public File mergeQueryableIndex(
           List<QueryableIndex> indexes,
           boolean rollup,
@@ -705,9 +708,9 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
           File indexOutDir,
           IndexSpec indexSpec,
           @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
-  ) throws IOException
-  {
-    return mergeQueryableIndex(
+    ) throws IOException
+    {
+      return mergeQueryableIndex(
             indexes,
             rollup,
             metricAggs,
@@ -716,10 +719,10 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
             indexSpec,
             segmentWriteOutMediumFactory
     ).lhs;
-  }
+    }
 
-  @Override
-  public File mergeQueryableIndex(
+    @Override
+    public File mergeQueryableIndex(
           List<QueryableIndex> indexes,
           boolean rollup,
           AggregatorFactory[] metricAggs,
@@ -727,29 +730,33 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
           IndexSpec indexSpec,
           ProgressIndicator progress,
           @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
-  ) throws IOException
-  {
-    return mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, null, indexSpec, progress,
+    ) throws IOException
+    {
+      return mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, null, indexSpec, progress,
             segmentWriteOutMediumFactory).lhs;
-  }
+    }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       throw new UOE(ERROR_MSG);
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       throw new UOE(ERROR_MSG);
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       throw new UOE(ERROR_MSG);
     }
 
     @Override
-    public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+    public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException
+    {
       throw new UOE(ERROR_MSG);
     }
   }

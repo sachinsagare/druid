@@ -63,7 +63,7 @@ public class TestModifiedKafkaIndexTaskTuningConfig extends KafkaIndexTaskTuning
     super(
         appendableIndexSpec,
         maxRowsInMemory,
-       null,
+            null,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,

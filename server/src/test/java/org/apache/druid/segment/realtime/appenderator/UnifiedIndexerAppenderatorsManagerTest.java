@@ -177,7 +177,7 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
 
     // Three forms of persist.
 
-    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file,file, null, null, null));
+    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, file, null, null, null));
     Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, file, null, null));
 
     // Need a mocked index for this test, since getInterval is called on it.
@@ -299,12 +299,14 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
@@ -326,17 +328,20 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     }
 
     @Override
-    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
       return null;
     }
 
@@ -362,7 +367,8 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, @Nullable File supplimentalIndexDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, @Nullable File supplimentalIndexDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException
+    {
       return null;
     }
 
