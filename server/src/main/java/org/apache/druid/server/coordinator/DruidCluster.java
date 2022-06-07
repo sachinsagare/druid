@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Contains a representation of the current state of the cluster by tier.
@@ -163,6 +164,18 @@ public class DruidCluster
   public Iterable<NavigableSet<ServerHolder>> getSortedHistoricalsByTier()
   {
     return historicals.values();
+  }
+
+  public Iterable<NavigableSet<ServerHolder>> getSortedHistoricalsByTierWithSkip(String skipTier)
+  {
+    if (!historicals.containsKey(skipTier)) {
+      return historicals.values();
+    } else {
+      return historicals.entrySet().stream()
+          .filter(entry -> !entry.getKey().equals(skipTier))
+          .map(entry -> entry.getValue())
+          .collect(Collectors.toList());
+    }
   }
 
   public boolean isEmpty()

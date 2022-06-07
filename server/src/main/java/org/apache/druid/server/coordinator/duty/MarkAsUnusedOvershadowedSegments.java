@@ -56,7 +56,8 @@ public class MarkAsUnusedOvershadowedSegments implements CoordinatorDuty
     DruidCluster cluster = params.getDruidCluster();
     Map<String, NamespacedVersionedIntervalTimeline<String, DataSegment>> timelines = new HashMap<>();
 
-    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTier()) {
+    String tierToSkip = params.getCoordinatorDynamicConfig().getSkipCoordinatorRunOnTier();
+    for (SortedSet<ServerHolder> serverHolders : cluster.getSortedHistoricalsByTierWithSkip(tierToSkip)) {
       for (ServerHolder serverHolder : serverHolders) {
         addSegmentsFromServer(serverHolder, timelines);
       }
