@@ -281,7 +281,8 @@ public class LocalIntermediaryDataManagerManualAddAndDeleteTest
     }
 
     @Override
-    public boolean isCompatible(Class<? extends ShardSpec> other) {
+    public boolean isCompatible(Class<? extends ShardSpec> other)
+    {
       return false;
     }
   }

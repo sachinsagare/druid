@@ -849,8 +849,8 @@ public class IndexGeneratorJob implements Jobby
             -1,
             0
         );
-	
-	final List<File> mergedSupplimentalIndexOutDirs = new ArrayList<>();
+
+        final List<File> mergedSupplimentalIndexOutDirs = new ArrayList<>();
         final List<Path> finalSupplimentalIndexZipFilePaths = new ArrayList<>();
         final List<Path> tmpSupplimentalIndexZipFilePaths = new ArrayList<>();
 
@@ -897,10 +897,10 @@ public class IndexGeneratorJob implements Jobby
                 context.getTaskAttemptID(),
                 HadoopDruidIndexerConfig.DATA_SEGMENT_PUSHER
             ),
-	    mergedSupplimentalIndexOutDirs,
+            mergedSupplimentalIndexOutDirs,
             finalSupplimentalIndexZipFilePaths,
-            tmpSupplimentalIndexZipFilePaths,            
-	     HadoopDruidIndexerConfig.DATA_SEGMENT_PUSHER
+            tmpSupplimentalIndexZipFilePaths,
+            HadoopDruidIndexerConfig.DATA_SEGMENT_PUSHER
         );
 
         Path descriptorPath = config.makeDescriptorInfoPath(segmentAndIndexZipFilePath.getSegment());

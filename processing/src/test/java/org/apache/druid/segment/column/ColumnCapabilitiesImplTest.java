@@ -39,7 +39,7 @@ public class ColumnCapabilitiesImplTest
                                                 .setType(ColumnType.UNKNOWN_COMPLEX)
                                                 .setHasNulls(true)
                                                 .setFilterable(true)
-						   .setHasBloomFilterIndexes(true));
+            .setHasBloomFilterIndexes(true));
 
     Assert.assertFalse(json.contains("filterable"));
     
@@ -68,7 +68,7 @@ public class ColumnCapabilitiesImplTest
                   + "  \"hasBitmapIndexes\":true,\n"
                   + "  \"hasNulls\":true,\n"
                   + "  \"filterable\":true\n"
-		   + "  \"hasBloomFilterIndexes\":true\n"
+                  + "  \"hasBloomFilterIndexes\":true\n"
                   + "}";
 
 

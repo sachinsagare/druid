@@ -894,7 +894,7 @@ public class AppenderatorImpl implements Appenderator
       List<QueryableIndex> indexes = new ArrayList<>();
       Closer closer = Closer.create();
       try {
-	DimensionsSpec dimensionsSpec = schema.getParser() == null ? null : schema.getParser()
+        DimensionsSpec dimensionsSpec = schema.getParser() == null ? null : schema.getParser()
                                                                                   .getParseSpec()
                                                                                   .getDimensionsSpec();
         boolean hasSupplimentalIndex = IndexMerger.hasSupplimentalIndex(dimensionsSpec);
@@ -912,8 +912,7 @@ public class AppenderatorImpl implements Appenderator
 
         List<String> dimensionNamesHasBloomFilterIndexes = IndexMerger.getDimensionNamesHasBloomFilterIndexes(
             dimensionsSpec);
-        
-	for (FireHydrant fireHydrant : sink) {
+        for (FireHydrant fireHydrant : sink) {
 
           // if batch, swap/persist did not memory map the incremental index, we need it mapped now:
           if (!isOpenSegments()) {

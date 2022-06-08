@@ -92,9 +92,15 @@ public class FireDepartmentMetrics
     numPersists.incrementAndGet();
   }
 
-  public void incrementPendingPersistSubmissions() { pendingPersistSubmissions.incrementAndGet(); }
+  public void incrementPendingPersistSubmissions()
+  {
+    pendingPersistSubmissions.incrementAndGet();
+  }
 
-  public void decrementPendingPersistSubmissions() { pendingPersistSubmissions.decrementAndGet(); }
+  public void decrementPendingPersistSubmissions()
+  {
+    pendingPersistSubmissions.decrementAndGet();
+  }
 
   public void incrementPersistSegment()
   {
@@ -248,7 +254,10 @@ public class FireDepartmentMetrics
     return persistTimeMillis.get();
   }
 
-  public long pendingPersistSubmissions() { return pendingPersistSubmissions.get(); }
+  public long pendingPersistSubmissions()
+  {
+    return pendingPersistSubmissions.get();
+  }
 
   public long persistBackPressureMillis()
   {

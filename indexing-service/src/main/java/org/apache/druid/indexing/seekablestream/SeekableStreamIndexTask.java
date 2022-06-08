@@ -52,7 +52,13 @@ import org.apache.druid.segment.realtime.appenderator.Appenderator;
 import org.apache.druid.segment.realtime.appenderator.StreamAppenderatorDriver;
 import org.apache.druid.segment.realtime.firehose.ChatHandler;
 import org.apache.druid.server.security.AuthorizerMapper;
-import org.apache.druid.timeline.partition.*;
+import org.apache.druid.timeline.partition.NamedNumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.NumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.PartialShardSpec;
+import org.apache.druid.timeline.partition.ShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamFanOutHashBasedNumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamFanOutNamedHashBasedNumberedShardSpecFactory;
+import org.apache.druid.timeline.partition.StreamHashBasedNumberedShardSpecFactory;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 import javax.annotation.Nullable;
@@ -289,7 +295,7 @@ public abstract class SeekableStreamIndexTask<PartitionIdType, SequenceOffsetTyp
                 (PartialShardSpec) effectiveShardSpecFactory,
                 lockGranularityToUse,
                 lockTypeToUse,
-		        allowMixedShardSpecType
+                allowMixedShardSpecType
             )
         ),
 

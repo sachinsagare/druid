@@ -808,7 +808,7 @@ public class AppenderatorDriverRealtimeIndexTask extends AbstractTask implements
                 NumberedPartialShardSpec.instance(),
                 LockGranularity.TIME_CHUNK,
                 lockType,
-		 allowMixedShardSpecType
+                allowMixedShardSpecType
             )
         ),
         toolbox.getSegmentHandoffNotifierFactory(),

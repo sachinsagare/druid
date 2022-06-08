@@ -140,8 +140,7 @@ public class TopNQueryEngine
                                                        .getColumnCapabilitiesWithFallback(adapter, dimension);
 
     final TopNAlgorithm topNAlgorithm;
-    if (canUsePooledAlgorithm(selector, query, columnCapabilities))
-    {
+    if (canUsePooledAlgorithm(selector, query, columnCapabilities)) {
       // A special TimeExtractionTopNAlgorithm is required, since DimExtractionTopNAlgorithm
       // currently relies on the dimension cardinality to support lexicographic sorting
       topNAlgorithm = new TimeExtractionTopNAlgorithm(adapter, query);

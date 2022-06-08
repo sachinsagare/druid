@@ -44,14 +44,13 @@ import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.QueryRunner;
 import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
+import org.apache.druid.query.TableDataSource;
+import org.apache.druid.query.planning.DataSourceAnalysis;
 import org.apache.druid.segment.BloomFilterMetadata;
 import org.apache.druid.segment.BloomFilterObjectStrategy;
 import org.apache.druid.segment.IndexMergerV9;
 import org.apache.druid.segment.data.GenericIndexed;
-import org.apache.druid.query.TableDataSource;
-import org.apache.druid.query.planning.DataSourceAnalysis;
 import org.apache.druid.segment.loading.LoadSpec;
-
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
@@ -319,8 +318,8 @@ public class BrokerServerView implements TimelineServerView
   protected void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
   {
     SegmentId segmentId = segment.getId();
-     if (segment.getAvailableSupplimentalIndexes().contains(IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getTypeName())
-        && server.getType().equals(ServerType.HISTORICAL)) {
+    if (segment.getAvailableSupplimentalIndexes().contains(IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getTypeName())
+         && server.getType().equals(ServerType.HISTORICAL)) {
       // Load bloom filter only if the server is a historical. The bloom filter is not finalized until the segment is
       // finalized and handed off to historicals by real time tasks so we can skip if server is a real time server
 
@@ -336,7 +335,7 @@ public class BrokerServerView implements TimelineServerView
                   .getShardSpec())
                   .getBloomFilters();
           if (bloomFilters != null) {
-    	    ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);        
+            ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);
             log.info("Reused existing bloom filter for segment[%s] for server[%s]", segment, server);
           } else {
             needsDownload = true;
@@ -351,22 +350,21 @@ public class BrokerServerView implements TimelineServerView
         loadSegmentSupplimentalIndexIntoShardSpecExec.submit(() -> {
           log.info("Adding bloom filter for segment[%s] for server[%s]", segment, server);
           final LoadSpec loadSpec = jsonMapper.convertValue(segment.getLoadSpec(), LoadSpec.class);
-          
-	   // According to documentation, this method will work fine as long as it will not be called thousands of times
+          // According to documentation, this method will work fine as long as it will not be called thousands of times
           // per second, we probably won't have such throughput considering the time spent downloading from deep storage
-          // and loading into memory. 
-	  File tmpDir = Files.createTempDir();
+          // and loading into memory.
+          File tmpDir = Files.createTempDir();
           try {
             loadSpec.loadSupplimentalIndexFile(
                     tmpDir,
                    IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getZipFile()
             );
 
-             BloomFilterMetadata bloomFilterMetadata = jsonMapper.readValue(
-                new File(tmpDir, IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getMetaFile()),
+            BloomFilterMetadata bloomFilterMetadata = jsonMapper.readValue(
+                 new File(tmpDir, IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getMetaFile()),
                 BloomFilterMetadata.class
 
-            );
+             );
             final GenericIndexed<BloomFilter> bloomFiltersIndexed = GenericIndexed.read(
                 ByteBuffer.wrap(Files.toByteArray(new File(
                     tmpDir,
@@ -399,7 +397,8 @@ public class BrokerServerView implements TimelineServerView
                     server,
                     e
             );
-          } finally {
+          }
+          finally {
             try {
               FileUtils.deleteDirectory(tmpDir);
             }

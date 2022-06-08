@@ -67,7 +67,7 @@ public class OverlordCoordinatingSegmentAllocator implements SegmentAllocatorFor
     this.internalAllocator = new ActionBasedSegmentAllocator(
         taskActionClient,
         dataSchema,
-        (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck,allowMixedShardSpecType) -> {
+        (schema, row, sequenceName, previousSegmentId, skipSegmentLineageCheck, allowMixedShardSpecType) -> {
           final GranularitySpec granularitySpec = schema.getGranularitySpec();
           final Interval interval = granularitySpec
               .bucketInterval(row.getTimestamp())
