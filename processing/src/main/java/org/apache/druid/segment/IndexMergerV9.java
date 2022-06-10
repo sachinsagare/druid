@@ -1064,7 +1064,7 @@ public class IndexMergerV9 implements IndexMerger
         index.getMetricAggs(),
         null,
         indexOutDir,
-        null,
+        supplimentalIndexOutDir,
         indexSpec,
         indexSpec,
         progress,
@@ -1214,18 +1214,20 @@ public class IndexMergerV9 implements IndexMerger
 
     List<File> tempDirs = new ArrayList<>();
   //Need to have relook for this code and fix
-    /*
-   if (maxColumnsToMerge == IndexMerger.UNLIMITED_MAX_COLUMNS_TO_MERGE) {
+
+    if (maxColumnsToMerge == IndexMerger.UNLIMITED_MAX_COLUMNS_TO_MERGE) {
       return merge(
-          IndexMerger.toIndexableAdapters(indexes),
-          rollup,
-          metricAggs,
-          indexOutDir,
-          indexSpec,
-          maxColumnsToMerge
+              indexes,
+              rollup,
+              metricAggs,
+              dimensionsSpec,
+              indexOutDir,
+              supplimentalIndexOutDir,
+              indexSpec,
+              progress,
+              segmentWriteOutMediumFactory
       );
     }
-     */
 
     List<List<IndexableAdapter>> currentPhases = getMergePhases(indexes, maxColumnsToMerge);
     List<File> currentOutputs = new ArrayList<>();
@@ -1520,6 +1522,79 @@ public class IndexMergerV9 implements IndexMerger
         true,
         indexSpec,
         segmentWriteOutMediumFactory
+    );
+  }
+
+  private Pair<File, File> merge(
+          List<IndexableAdapter> indexes,
+          final boolean rollup,
+          final AggregatorFactory[] metricAggs,
+          @Nullable DimensionsSpec dimensionsSpec,
+          File indexOutDir,
+          @Nullable File supplimentalIndexOutDir,
+          IndexSpec indexSpec,
+          ProgressIndicator progress,
+          @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+  ) throws IOException
+  {
+    final List<String> mergedDimensions = IndexMerger.getMergedDimensions(indexes, dimensionsSpec);
+
+    final List<String> mergedMetrics = IndexMerger.mergeIndexed(
+            indexes.stream().map(IndexableAdapter::getMetricNames).collect(Collectors.toList())
+    );
+
+    final AggregatorFactory[] sortedMetricAggs = new AggregatorFactory[mergedMetrics.size()];
+    for (AggregatorFactory metricAgg : metricAggs) {
+      int metricIndex = mergedMetrics.indexOf(metricAgg.getName());
+      /*
+        If metricIndex is negative, one of the metricAggs was not present in the union of metrics from the indices
+        we are merging
+       */
+      if (metricIndex > -1) {
+        sortedMetricAggs[metricIndex] = metricAgg;
+      }
+    }
+
+    /*
+      If there is nothing at sortedMetricAggs[i], then we did not have a metricAgg whose name matched the name
+      of the ith element of mergedMetrics. I.e. There was a metric in the indices to merge that we did not ask for.
+     */
+    for (int i = 0; i < sortedMetricAggs.length; i++) {
+      if (sortedMetricAggs[i] == null) {
+        throw new IAE("Indices to merge contained metric[%s], but requested metrics did not", mergedMetrics.get(i));
+      }
+    }
+
+    for (int i = 0; i < mergedMetrics.size(); i++) {
+      if (!sortedMetricAggs[i].getName().equals(mergedMetrics.get(i))) {
+        throw new IAE(
+                "Metric mismatch, index[%d] [%s] != [%s]",
+                i,
+                sortedMetricAggs[i].getName(),
+                mergedMetrics.get(i)
+        );
+      }
+    }
+
+    Function<List<TransformableRowIterator>, TimeAndDimsIterator> rowMergerFn;
+    if (rollup) {
+      rowMergerFn = rowIterators -> new RowCombiningTimeAndDimsIterator(rowIterators, sortedMetricAggs, mergedMetrics);
+    } else {
+      rowMergerFn = MergingRowIterator::new;
+    }
+
+    return makeIndexFiles(
+            indexes,
+            sortedMetricAggs,
+            indexOutDir,
+            supplimentalIndexOutDir,
+            progress,
+            mergedDimensions,
+            mergedMetrics,
+            rowMergerFn,
+            true,
+            indexSpec,
+            segmentWriteOutMediumFactory
     );
   }
 
