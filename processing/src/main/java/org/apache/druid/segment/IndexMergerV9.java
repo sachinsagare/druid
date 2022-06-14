@@ -1124,12 +1124,14 @@ public class IndexMergerV9 implements IndexMerger
   }
 
   @Override
-  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+  {
     return IndexMerger.super.mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, indexSpec, segmentWriteOutMediumFactory);
   }
 
   @Override
-  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException {
+  public File mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+  {
     return IndexMerger.super.mergeQueryableIndex(indexes, rollup, metricAggs, indexOutDir, indexSpec, progress, segmentWriteOutMediumFactory);
   }
 
@@ -1162,7 +1164,8 @@ public class IndexMergerV9 implements IndexMerger
   }
 
   @Override
-  public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, @Nullable File supplimentalIndexDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+  public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File outDir, @Nullable File supplimentalIndexDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException
+  {
     return null;
   }
 
@@ -1268,21 +1271,7 @@ public class IndexMergerV9 implements IndexMerger
         if (currentOutputs.size() == 1) {
           // we're done, we made a single File output
          // return currentOutputs.get(0);
-
-         /* return makeIndexFiles(
-                  indexes,
-                  metricAggs,
-                  indexOutDir,
-                  supplimentalIndexOutDir,
-                  progress,
-                  dimensionsSpec,
-                  currentOutputs.get(0),
-                  rowMergerFn,
-                  true,
-                  indexSpec,
-                  segmentWriteOutMediumFactory
-          ); */
-
+            return new Pair<> (currentOutputs.get(0), null);
         } else {
           // convert Files to QueryableIndexIndexableAdapter and do another merge phase
           List<IndexableAdapter> qIndexAdapters = new ArrayList<>();
