@@ -72,7 +72,8 @@
               "type": "string",
               "name": "userId_str"
             },
-            "apiVersion"
+            "apiVersion",
+            "dataSourceNames"
           ],
           "dimensionExclusions": [
             "requestReceivedTimestamp"
