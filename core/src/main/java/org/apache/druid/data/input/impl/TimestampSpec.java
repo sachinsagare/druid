@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import org.apache.druid.guice.annotations.PublicApi;
+import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.parsers.TimestampParser;
 import org.joda.time.DateTime;
 
@@ -114,7 +115,7 @@ public class TimestampSpec
   public DateTime extractTimestamp(@Nullable Map<String, Object> input)
   {
     if (useServerTimestamp) {
-      return DateTime.now();
+      return DateTimes.nowUtc();
     }
     return parseDateTime(getRawTimestamp(input));
   }
