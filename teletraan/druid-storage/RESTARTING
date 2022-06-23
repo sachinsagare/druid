@@ -50,6 +50,9 @@ case "${DEPLOY_TYPE}" in
     fgac)
         configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.fgac.conf
         ;;
+    pinalytics)
+        configure-serviceset -c teletraan/${ENV_NAME}/telefig/serviceset.pinalytics.conf
+        ;;
     *)
         echo "Unsupported DEPLOY_TYPE: '${DEPLOY_TYPE}'"
         exit 1
