@@ -43,8 +43,10 @@ import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.java.util.common.guava.Sequences;
 import org.apache.druid.query.BaseQuery;
 import org.apache.druid.query.DataSource;
+import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.Queries;
 import org.apache.druid.query.Query;
+import org.apache.druid.query.QueryContexts;
 import org.apache.druid.query.QueryDataSource;
 import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.aggregation.AggregatorFactory;
@@ -423,6 +425,14 @@ public class GroupByQuery extends BaseQuery<ResultRow>
   }
 
   /**
+   * Returns the position of the first dimension in ResultRows for this query.
+   */
+  public int getResultRowDimensionEnd()
+  {
+    return getResultRowDimensionStart() + dimensions.size();
+  }
+
+  /**
    * Returns the position of the first aggregator in ResultRows for this query.
    */
   public int getResultRowAggregatorStart()
@@ -493,6 +503,19 @@ public class GroupByQuery extends BaseQuery<ResultRow>
           }
         }
     );
+  }
+
+  @Override
+  public GroupByQuery optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
+  {
+    if (QueryContexts.isGroupByOptimizeAggregator(this)) {
+      List<AggregatorFactory> optimizedAggs = new ArrayList<>();
+      for (AggregatorFactory aggregatorFactory : aggregatorSpecs) {
+        optimizedAggs.add(aggregatorFactory.optimizeForSegment(optimizationContext));
+      }
+      return new Builder(this).setAggregatorSpecs(optimizedAggs).build();
+    }
+    return this;
   }
 
   private boolean validateAndGetForceLimitPushDown()

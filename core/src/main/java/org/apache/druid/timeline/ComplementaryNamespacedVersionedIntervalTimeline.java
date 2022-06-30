@@ -265,7 +265,7 @@ public class ComplementaryNamespacedVersionedIntervalTimeline<VersionType, Objec
 
   }
 
-  private static String getRootNamespace(String namespace)
+  public static String getRootNamespace(String namespace)
   {
     int index = namespace.indexOf('_');
     if (index <= 0) {

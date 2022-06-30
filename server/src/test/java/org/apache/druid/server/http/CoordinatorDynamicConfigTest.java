@@ -60,6 +60,7 @@ public class CoordinatorDynamicConfigTest
                      + "  \"pauseCoordination\": false,\n"
                      + "  \"replicateAfterLoadTimeout\": false,\n"
                      + "  \"maxNonPrimaryReplicantsToLoad\": 2147483647\n"
+                     + "  \"skipCoordinatorRunOnTier\": \"data\"\n"
                      + "}\n";
 
     CoordinatorDynamicConfig actual = mapper.readValue(
@@ -92,7 +93,8 @@ public class CoordinatorDynamicConfigTest
         9,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withDecommissioningNodes(ImmutableSet.of("host1")).build(actual);
@@ -115,7 +117,8 @@ public class CoordinatorDynamicConfigTest
         9,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withDecommissioningMaxPercentOfMaxSegmentsToMove(5).build(actual);
@@ -138,7 +141,8 @@ public class CoordinatorDynamicConfigTest
         5,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withPauseCoordination(true).build(actual);
@@ -161,7 +165,8 @@ public class CoordinatorDynamicConfigTest
         5,
         true,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withPercentOfSegmentsToConsiderPerMove(10).build(actual);
@@ -184,7 +189,8 @@ public class CoordinatorDynamicConfigTest
         5,
         true,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withReplicateAfterLoadTimeout(true).build(actual);
@@ -207,7 +213,8 @@ public class CoordinatorDynamicConfigTest
         5,
         true,
         true,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withMaxNonPrimaryReplicantsToLoad(10).build(actual);
@@ -230,7 +237,8 @@ public class CoordinatorDynamicConfigTest
         5,
         true,
         true,
-        10
+        10,
+        ""
     );
 
   }
@@ -282,7 +290,8 @@ public class CoordinatorDynamicConfigTest
         0,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withDecommissioningNodes(ImmutableSet.of("host1")).build(actual);
@@ -305,7 +314,8 @@ public class CoordinatorDynamicConfigTest
         0,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     actual = CoordinatorDynamicConfig.builder().withDecommissioningMaxPercentOfMaxSegmentsToMove(5).build(actual);
@@ -328,7 +338,8 @@ public class CoordinatorDynamicConfigTest
         5,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
   }
 
@@ -347,7 +358,8 @@ public class CoordinatorDynamicConfigTest
                      + "  \"skipCoordinatorRun\": true,\n"
                      + "  \"emitBalancingStats\": true,\n"
                      + "  \"killDataSourceWhitelist\": \"test1, test2\", \n"
-                     + "  \"maxSegmentsInNodeLoadingQueue\": 1\n"
+                     + "  \"maxSegmentsInNodeLoadingQueue\": 1,\n"
+                     + "  \"skipCoordinatorRunOnTier\": \"data\"\n"
                      + "}\n";
 
     CoordinatorDynamicConfig actual = mapper.readValue(
@@ -378,7 +390,8 @@ public class CoordinatorDynamicConfigTest
         0,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
   }
 
@@ -498,7 +511,8 @@ public class CoordinatorDynamicConfigTest
         9,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
   }
 
@@ -517,7 +531,8 @@ public class CoordinatorDynamicConfigTest
                      + "  \"skipCoordinatorRun\": true,\n"
                      + "  \"emitBalancingStats\": true,\n"
                      + "  \"killAllDataSources\": true,\n"
-                     + "  \"maxSegmentsInNodeLoadingQueue\": 1\n"
+                     + "  \"maxSegmentsInNodeLoadingQueue\": 1,\n"
+                     + "  \"skipCoordinatorRunOnTier\": \" \"\n"
                      + "}\n";
 
     CoordinatorDynamicConfig actual = mapper.readValue(
@@ -549,7 +564,8 @@ public class CoordinatorDynamicConfigTest
         0,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
 
     //ensure whitelist is empty when killAllDataSources is true
@@ -617,7 +633,8 @@ public class CoordinatorDynamicConfigTest
         0,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
   }
 
@@ -645,7 +662,8 @@ public class CoordinatorDynamicConfigTest
         70,
         false,
         false,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        ""
     );
   }
 
@@ -679,7 +697,8 @@ public class CoordinatorDynamicConfigTest
             null,
             null,
             null,
-                null
+            null,
+            null
         ).build(current)
     );
   }
@@ -737,7 +756,8 @@ public class CoordinatorDynamicConfigTest
       int decommissioningMaxPercentOfMaxSegmentsToMove,
       boolean pauseCoordination,
       boolean replicateAfterLoadTimeout,
-      int maxNonPrimaryReplicantsToLoad
+      int maxNonPrimaryReplicantsToLoad,
+      String expectedSkipCoordinatorRunOnTier
   )
   {
     Assert.assertEquals(
@@ -767,5 +787,6 @@ public class CoordinatorDynamicConfigTest
     Assert.assertEquals(pauseCoordination, config.getPauseCoordination());
     Assert.assertEquals(replicateAfterLoadTimeout, config.getReplicateAfterLoadTimeout());
     Assert.assertEquals(maxNonPrimaryReplicantsToLoad, config.getMaxNonPrimaryReplicantsToLoad());
+    Assert.assertEquals(expectedSkipCoordinatorRunOnTier, config.getSkipCoordinatorRunOnTier());
   }
 }

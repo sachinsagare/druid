@@ -374,6 +374,13 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public QueryMetrics<QueryType> reportTimeout(String host)
+  {
+    setDimension("node", host);
+    return reportMetric("query/node/timeout", 1);
+  }
+
+  @Override
   public void emit(ServiceEmitter emitter)
   {
     checkModifiedFromOwnerThread();
