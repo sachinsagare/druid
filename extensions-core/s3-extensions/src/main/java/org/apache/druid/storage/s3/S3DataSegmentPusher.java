@@ -33,6 +33,7 @@ import org.apache.druid.utils.CompressionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,8 @@ public class S3DataSegmentPusher implements DataSegmentPusher
   }
 
   @Override
-  public DataSegment push(final File indexFilesDir, final DataSegment inSegment, final boolean useUniquePath)
+  public DataSegment push(final File indexFilesDir, final File supplimentalIndexFilesDir, final DataSegment inSegment,
+                          final boolean useUniquePath)
       throws IOException
   {
     return pushToPath(indexFilesDir, inSegment, getStorageDir(inSegment, useUniquePath));
@@ -86,6 +88,7 @@ public class S3DataSegmentPusher implements DataSegmentPusher
   public DataSegment pushToPath(File indexFilesDir, DataSegment inSegment, String storageDirSuffix) throws IOException
   {
     final String s3Path = S3Utils.constructSegmentPath(config.getBaseKey(), storageDirSuffix);
+    final File supplimentalIndexFilesDir = null; // Curretly it pass null calling function so not modifing code to support this
     log.debug("Copying segment[%s] to S3 at location[%s]", inSegment.getId(), s3Path);
 
     final File zipOutFile = File.createTempFile("druid", "index.zip");
@@ -95,10 +98,34 @@ public class S3DataSegmentPusher implements DataSegmentPusher
                                             .withLoadSpec(makeLoadSpec(config.getBucket(), s3Path))
                                             .withBinaryVersion(SegmentUtils.getVersionFromDir(indexFilesDir));
 
+    List<File> zipOutSupplimentalIndexFiles = new ArrayList<>();
     try {
       return S3Utils.retryS3Operation(
           () -> {
             S3Utils.uploadFileIfPossible(s3Client, config.getDisableAcl(), config.getBucket(), s3Path, zipOutFile);
+
+            // Upload supplimental indexes
+            if (supplimentalIndexFilesDir != null && supplimentalIndexFilesDir.exists()) {
+              String supplimentalIndexS3PathBase = String.join("/", s3Path.substring(0, s3Path.lastIndexOf('/')), S3LoadSpec.SEGMENT_SUPPLIMENTAL_INDEX_KEY_PREFIX);
+              // Upload each supplimental index individually
+              for (File dir : supplimentalIndexFilesDir.listFiles()) {
+                final File zipOutSupplimentalIndexFile = File.createTempFile(
+                    "druid",
+                    dir.getName() + ".zip"
+                );
+                zipOutSupplimentalIndexFiles.add(zipOutSupplimentalIndexFile);
+                CompressionUtils.zip(
+                    dir,
+                    zipOutSupplimentalIndexFile
+                );
+
+                String supplimentalIndexFileS3Path = String.join("/", supplimentalIndexS3PathBase, dir.getName() + ".zip");
+
+                S3Utils.uploadFileIfPossible(s3Client, config.getDisableAcl(), config.getBucket(),
+                                             supplimentalIndexFileS3Path, zipOutSupplimentalIndexFile
+                );
+              }
+            }
 
             return outSegment;
           }
@@ -113,7 +140,18 @@ public class S3DataSegmentPusher implements DataSegmentPusher
     finally {
       log.debug("Deleting temporary cached index.zip");
       zipOutFile.delete();
+
+      for (File f : zipOutSupplimentalIndexFiles) {
+        log.info("Deleting temporary cached supplimental index file " + f.getName());
+        f.delete();
+      }
     }
+  }
+
+  @Override
+  public DataSegment push(File file, DataSegment segment, boolean useUniquePath) throws IOException
+  {
+    return push(file, null, segment, useUniquePath);
   }
 
   @Override
