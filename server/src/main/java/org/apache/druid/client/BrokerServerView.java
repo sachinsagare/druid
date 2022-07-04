@@ -84,8 +84,10 @@ public class BrokerServerView implements TimelineServerView
   private final ServiceEmitter emitter;
   private final BrokerSegmentWatcherConfig segmentWatcherConfig;
   private final Predicate<Pair<DruidServerMetadata, DataSegment>> segmentFilter;
+  private final ObjectMapper jsonMapper;
 
   private final CountDownLatch initialized = new CountDownLatch(1);
+  private final ExecutorService loadSegmentSupplimentalIndexIntoShardSpecExec;
 
   @Inject
   public BrokerServerView(
@@ -96,7 +98,8 @@ public class BrokerServerView implements TimelineServerView
       final FilteredServerInventoryView baseView,
       final TierSelectorStrategy tierSelectorStrategy,
       final ServiceEmitter emitter,
-      final BrokerSegmentWatcherConfig segmentWatcherConfig
+      final BrokerSegmentWatcherConfig segmentWatcherConfig,
+      final ObjectMapper jsonMapper
   )
   {
     this.warehouse = warehouse;
@@ -109,6 +112,7 @@ public class BrokerServerView implements TimelineServerView
     this.clients = new ConcurrentHashMap<>();
     this.selectors = new HashMap<>();
     this.timelines = new HashMap<>();
+    this.jsonMapper = jsonMapper;
 
     // Validate and set the segment watcher config
     validateSegmentWatcherConfig(segmentWatcherConfig);
@@ -139,6 +143,11 @@ public class BrokerServerView implements TimelineServerView
              || segmentWatcherConfig.isWatchRealtimeTasks();
     };
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
+
+    this.loadSegmentSupplimentalIndexIntoShardSpecExec = Execs.multiThreaded(
+        segmentWatcherConfig.getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec(),
+        "BrokerServerView-Load-Segment-Supplimental-Index-Into-Shard-Spec-Exec-%s");
+
     baseView.registerSegmentCallback(
         exec,
         new ServerView.SegmentCallback()
@@ -262,6 +271,7 @@ public class BrokerServerView implements TimelineServerView
   private void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
   {
     SegmentId segmentId = segment.getId();
+
     synchronized (lock) {
       // in theory we could probably just filter this to ensure we don't put ourselves in here, to make broker tree
       // query topologies, but for now just skip all brokers, so we don't create some sort of wild infinite query

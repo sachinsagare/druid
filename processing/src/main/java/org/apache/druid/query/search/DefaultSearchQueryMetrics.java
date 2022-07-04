@@ -208,6 +208,24 @@ public class DefaultSearchQueryMetrics implements SearchQueryMetrics
   }
 
   @Override
+  public QueryMetrics reportSegmentFilteringTime(long timeNs)
+  {
+    return delegateQueryMetrics.reportSegmentFilteringTime(timeNs);
+  }
+
+  @Override
+  public QueryMetrics reportSegmentBeforeFilteringCount(int segmentCount)
+  {
+    return delegateQueryMetrics.reportSegmentBeforeFilteringCount(segmentCount);
+  }
+
+  @Override
+  public QueryMetrics reportSegmentAfterFilteringCount(int segmentCount)
+  {
+    return delegateQueryMetrics.reportSegmentAfterFilteringCount(segmentCount);
+  }
+
+  @Override
   public QueryMetrics reportCpuTime(long timeNs)
   {
     return delegateQueryMetrics.reportCpuTime(timeNs);

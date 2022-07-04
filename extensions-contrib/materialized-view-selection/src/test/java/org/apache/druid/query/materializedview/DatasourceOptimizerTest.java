@@ -298,7 +298,8 @@ public class DatasourceOptimizerTest extends CuratorTestBase
         baseView,
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
-        new BrokerSegmentWatcherConfig()
+        new BrokerSegmentWatcherConfig(),
+        new ObjectMapper()
     );
     baseView.start();
   }

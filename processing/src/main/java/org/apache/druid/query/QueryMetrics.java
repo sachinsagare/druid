@@ -385,6 +385,21 @@ public interface QueryMetrics<QueryType extends Query<?>>
   QueryMetrics<QueryType> reportParallelMergeTotalCpuTime(long timeNs);
 
   /**
+   * Reports the time taken to filter segments based on shard spec in broker
+   */
+  QueryMetrics<QueryType> reportSegmentFilteringTime(long timeNs);
+
+  /**
+   * Reports the number of segments to query before filtering based on shard spec in broker
+   */
+  QueryMetrics<QueryType> reportSegmentBeforeFilteringCount(int segmentCount);
+
+  /**
+   * Reports the number of segments to query after filtering based on shard spec in broker
+   */
+  QueryMetrics<QueryType> reportSegmentAfterFilteringCount(int segmentCount);
+
+  /**
    * Emits all metrics, registered since the last {@code emit()} call on this QueryMetrics object.
    */
   void emit(ServiceEmitter emitter);

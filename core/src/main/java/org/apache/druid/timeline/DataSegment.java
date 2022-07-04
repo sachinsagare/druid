@@ -211,7 +211,8 @@ public class DataSegment implements Comparable<DataSegment>, Overshadowable<Data
   )
   {
     this.id = SegmentId.of(dataSource, interval, version, shardSpec);
-    this.loadSpec = pruneSpecsHolder.pruneLoadSpec ? PRUNED_LOAD_SPEC : prepareLoadSpec(loadSpec);
+    this.loadSpec = pruneSpecsHolder.pruneLoadSpec ? PRUNED_LOAD_SPEC :
+            prepareLoadSpec(loadSpec);
     // Deduplicating dimensions and metrics lists as a whole because they are very likely the same for the same
     // dataSource
     this.dimensions = prepareDimensionsOrMetrics(dimensions, DIMENSIONS_INTERNER);

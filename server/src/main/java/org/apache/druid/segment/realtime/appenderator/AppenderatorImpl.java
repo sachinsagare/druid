@@ -836,6 +836,7 @@ public class AppenderatorImpl implements Appenderator
     // Use a descriptor file to indicate that pushing has completed.
     final File persistDir = computePersistDir(identifier);
     final File mergedTarget = new File(persistDir, "merged");
+    final File mergedSupplimentalIndexTarget = new File(persistDir, "merged_supplimental_index");
     final File descriptorFile = computeDescriptorFile(identifier);
 
     // Sanity checks
@@ -869,9 +870,15 @@ public class AppenderatorImpl implements Appenderator
       }
 
       removeDirectory(mergedTarget);
+      removeDirectory(mergedSupplimentalIndexTarget);
 
       if (mergedTarget.exists()) {
         throw new ISE("Merged target[%s] exists after removing?!", mergedTarget);
+      }
+
+      if (mergedSupplimentalIndexTarget.exists()) {
+        throw new ISE("Merged supplimental index target[%s] exists after removing?!",
+                      mergedSupplimentalIndexTarget);
       }
 
       final File mergedFile;
@@ -932,6 +939,7 @@ public class AppenderatorImpl implements Appenderator
         mergeFinishTime = System.nanoTime();
 
         log.debug("Segment[%s] built in %,dms.", identifier, (mergeFinishTime - startTime) / 1000000);
+
       }
       catch (Throwable t) {
         throw closer.rethrow(t);

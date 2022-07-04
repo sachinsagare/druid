@@ -271,6 +271,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
     private final DataSourceAnalysis dataSourceAnalysis;
     private final List<Interval> intervals;
     private final CacheKeyManager<T> cacheKeyManager;
+    private final QueryMetrics<? super Query<T>> queryMetrics;
 
     SpecificQueryRunnable(final QueryPlus<T> queryPlus, final ResponseContext responseContext)
     {
@@ -280,6 +281,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
       this.toolChest = warehouse.getToolChest(query);
       this.strategy = toolChest.getCacheStrategy(query);
       this.dataSourceAnalysis = DataSourceAnalysis.forDataSource(query.getDataSource());
+
+      this.queryMetrics = toolChest.makeMetrics(query);
+      this.queryMetrics.query(query);
 
       this.useCache = CacheUtil.isUseSegmentCache(query, strategy, cacheConfig, CacheUtil.ServerType.BROKER);
       this.populateCache = CacheUtil.isPopulateSegmentCache(query, strategy, cacheConfig, CacheUtil.ServerType.BROKER);
@@ -432,8 +436,15 @@ public class CachingClusteredClient implements QuerySegmentWalker
 
       final Set<SegmentServerSelector> segments = new LinkedHashSet<>();
       final Map<String, Optional<RangeSet<String>>> dimensionRangeCache = new HashMap<>();
+
       // Filter unneeded chunks based on partition dimension
+      int numSegmentsBeforeFiltering = 0;
       for (TimelineObjectHolder<String, ServerSelector> holder : serversLookup) {
+        numSegmentsBeforeFiltering += holder.getObject()
+               .stream()
+               .count();
+
+        final long startNs = System.nanoTime();
         final Set<PartitionChunk<ServerSelector>> filteredChunks;
         if (QueryContexts.isSecondaryPartitionPruningEnabled(query)) {
           filteredChunks = DimFilterUtils.filterShards(
@@ -442,6 +453,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
               partitionChunk -> partitionChunk.getObject().getSegment().getShardSpec(),
               dimensionRangeCache
           );
+
+          final long segmentFilteringTime = System.nanoTime() - startNs;
+          queryMetrics.reportSegmentFilteringTime(segmentFilteringTime);
         } else {
           filteredChunks = Sets.newHashSet(holder.getObject());
         }
@@ -455,6 +469,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
           segments.add(new SegmentServerSelector(server, segment));
         }
       }
+      queryMetrics.reportSegmentBeforeFilteringCount(numSegmentsBeforeFiltering);
+      queryMetrics.reportSegmentAfterFilteringCount(segments.size());
+
       return segments;
     }
 

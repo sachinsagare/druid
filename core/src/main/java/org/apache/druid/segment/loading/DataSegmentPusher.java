@@ -47,6 +47,7 @@ public interface DataSegmentPusher
   /**
    * Pushes index files and segment descriptor to deep storage.
    * @param file directory containing index files
+   * @param supplimentalIndexFilesDir directory containing supplimental index files
    * @param segment segment descriptor
    * @param useUniquePath if true, pushes to a unique file path. This prevents situations where task failures or replica
    *                      tasks can either overwrite or fail to overwrite existing segments leading to the possibility
@@ -66,7 +67,14 @@ public interface DataSegmentPusher
    * @return segment descriptor
    * @throws IOException
    */
-  DataSegment push(File file, DataSegment segment, boolean useUniquePath) throws IOException;
+  default DataSegment push(File file, final File supplimentalIndexFilesDir, DataSegment segment, boolean useUniquePath)
+      throws IOException
+  {
+    return push(file, segment, useUniquePath);
+  }
+
+  DataSegment push(File file, DataSegment segment, boolean useUniquePath)
+      throws IOException;
 
   default DataSegment pushToPath(File indexFilesDir, DataSegment segment, String storageDirSuffix) throws IOException
   {
