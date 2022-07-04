@@ -90,11 +90,13 @@ public class BrokerServerView implements TimelineServerView
   private final Predicate<Pair<DruidServerMetadata, DataSegment>> segmentFilter;
   private final Map<String, List<String>> dataSourceComplementaryMapToQueryOrder;
   private final Map<String, List<String>> dataSourceComplementaryAllowedNamespacesMap;
+  private final ObjectMapper jsonMapper;
 
   private final DruidProcessingConfig processingConfig;
   private final Set<String> lifetimeDataSource;
 
   private final CountDownLatch initialized = new CountDownLatch(1);
+  private final ExecutorService loadSegmentSupplimentalIndexIntoShardSpecExec;
 
   @Inject
   public BrokerServerView(
@@ -108,7 +110,8 @@ public class BrokerServerView implements TimelineServerView
       final BrokerSegmentWatcherConfig segmentWatcherConfig,
       final BrokerDataSourceMultiComplementConfig dataSourceMultiComplementConfig,
       final DruidProcessingConfig processingConfig,
-      final BrokerDataSourceLifetimeConfig lifetimeConfig)
+      final BrokerDataSourceLifetimeConfig lifetimeConfig,
+      final ObjectMapper jsonMapper)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -131,6 +134,7 @@ public class BrokerServerView implements TimelineServerView
     this.clients = new ConcurrentHashMap<>();
     this.selectors = new HashMap<>();
     this.timelines = new HashMap<>();
+    this.jsonMapper = jsonMapper;
 
     // Validate and set the segment watcher config
     validateSegmentWatcherConfig(segmentWatcherConfig);
@@ -167,6 +171,11 @@ public class BrokerServerView implements TimelineServerView
               || segmentWatcherConfig.isWatchRealtimeTasks();
     };
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
+
+    this.loadSegmentSupplimentalIndexIntoShardSpecExec = Execs.multiThreaded(
+        segmentWatcherConfig.getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec(),
+        "BrokerServerView-Load-Segment-Supplimental-Index-Into-Shard-Spec-Exec-%s");
+
     baseView.registerSegmentCallback(
         exec,
         new ServerView.SegmentCallback()
