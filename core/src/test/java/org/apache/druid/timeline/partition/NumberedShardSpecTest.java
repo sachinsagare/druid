@@ -45,7 +45,7 @@ public class NumberedShardSpecTest
   @Test
   public void testEquals()
   {
-    EqualsVerifier.forClass(NumberedShardSpec.class).usingGetClass().verify();
+    EqualsVerifier.forClass(NumberedShardSpec.class).withIgnoredFields("bloomFilters").usingGetClass().verify();
   }
 
   @Test

@@ -48,7 +48,6 @@ public class FireDepartmentMetrics
   private final AtomicLong persistCpuTime = new AtomicLong(0);
   private final AtomicLong handOffCount = new AtomicLong(0);
   private final AtomicLong sinkCount = new AtomicLong(0);
-  private final AtomicLong updateBloomFilterMillis = new AtomicLong(0);
   private final AtomicLong messageMaxTimestamp = new AtomicLong(0);
   private final AtomicLong messageGap = new AtomicLong(0);
   private final AtomicLong messageProcessingCompletionTime = new AtomicLong(DEFAULT_PROCESSING_COMPLETION_TIME);
@@ -156,11 +155,6 @@ public class FireDepartmentMetrics
   public void setSinkCount(long sinkCount)
   {
     this.sinkCount.set(sinkCount);
-  }
-
-  public void setUpdateBloomFilterMillis(long updateBloomFilterMillis)
-  {
-    this.updateBloomFilterMillis.set(updateBloomFilterMillis);
   }
 
   public void reportMessageMaxTimestamp(long messageMaxTimestamp)
@@ -305,11 +299,6 @@ public class FireDepartmentMetrics
     return sinkCount.get();
   }
 
-  public long updateBloomFilterMillis()
-  {
-    return updateBloomFilterMillis.get();
-  }
-
   public long rowsInMemory()
   {
     return rowsInMemory.get();
@@ -376,7 +365,6 @@ public class FireDepartmentMetrics
     retVal.messageProcessingCompletionTime.set(messageProcessingCompletionTime.get());
     retVal.messageProcessingCompletionTime.compareAndSet(DEFAULT_PROCESSING_COMPLETION_TIME, System.currentTimeMillis());
     retVal.messageGap.set(retVal.messageProcessingCompletionTime.get() - messageMaxTimestamp.get());
-    retVal.updateBloomFilterMillis.set(updateBloomFilterMillis.get());
     return retVal;
   }
 }

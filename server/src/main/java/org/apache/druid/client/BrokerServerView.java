@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Ordering;
+import com.google.common.hash.BloomFilter;
+import com.google.common.io.Files;
 import com.google.inject.Inject;
 import org.apache.druid.client.selector.QueryableDruidServer;
 import org.apache.druid.client.selector.ServerSelector;
@@ -30,6 +32,7 @@ import org.apache.druid.client.selector.TierSelectorStrategy;
 import org.apache.druid.guice.ManageLifecycle;
 import org.apache.druid.guice.annotations.EscalatedClient;
 import org.apache.druid.guice.annotations.Smile;
+import org.apache.druid.java.util.common.FileUtils;
 import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.concurrent.Execs;
@@ -43,14 +46,24 @@ import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
 import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.planning.DataSourceAnalysis;
+import org.apache.druid.segment.BloomFilterMetadata;
+import org.apache.druid.segment.BloomFilterObjectStrategy;
+import org.apache.druid.segment.IndexMergerV9;
+import org.apache.druid.segment.data.GenericIndexed;
+import org.apache.druid.segment.loading.LoadSpec;
+import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
+import org.apache.druid.timeline.partition.BloomFilterShardSpec;
 import org.apache.druid.timeline.partition.PartitionChunk;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,18 +113,18 @@ public class BrokerServerView implements TimelineServerView
 
   @Inject
   public BrokerServerView(
-      final QueryToolChestWarehouse warehouse,
-      final QueryWatcher queryWatcher,
-      final @Smile ObjectMapper smileMapper,
-      final @EscalatedClient HttpClient httpClient,
-      final FilteredServerInventoryView baseView,
-      final TierSelectorStrategy tierSelectorStrategy,
-      final ServiceEmitter emitter,
-      final BrokerSegmentWatcherConfig segmentWatcherConfig,
-      final BrokerDataSourceMultiComplementConfig dataSourceMultiComplementConfig,
-      final DruidProcessingConfig processingConfig,
-      final BrokerDataSourceLifetimeConfig lifetimeConfig,
-      final ObjectMapper jsonMapper)
+          final QueryToolChestWarehouse warehouse,
+          final QueryWatcher queryWatcher,
+          final @Smile ObjectMapper smileMapper,
+          final @EscalatedClient HttpClient httpClient,
+          final FilteredServerInventoryView baseView,
+          final TierSelectorStrategy tierSelectorStrategy,
+          final ServiceEmitter emitter,
+          final BrokerSegmentWatcherConfig segmentWatcherConfig,
+          final BrokerDataSourceMultiComplementConfig dataSourceMultiComplementConfig,
+          final DruidProcessingConfig processingConfig,
+          final BrokerDataSourceLifetimeConfig lifetimeConfig,
+          final ObjectMapper jsonMapper)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -173,43 +186,43 @@ public class BrokerServerView implements TimelineServerView
     ExecutorService exec = Execs.singleThreaded("BrokerServerView-%s");
 
     this.loadSegmentSupplimentalIndexIntoShardSpecExec = Execs.multiThreaded(
-        segmentWatcherConfig.getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec(),
-        "BrokerServerView-Load-Segment-Supplimental-Index-Into-Shard-Spec-Exec-%s");
+            segmentWatcherConfig.getNumThreadsToLoadSegmentSupplimentalIndexIntoShardSpec(),
+            "BrokerServerView-Load-Segment-Supplimental-Index-Into-Shard-Spec-Exec-%s");
 
     baseView.registerSegmentCallback(
-        exec,
-        new ServerView.SegmentCallback()
-        {
-          @Override
-          public ServerView.CallbackAction segmentAdded(DruidServerMetadata server, DataSegment segment)
+            exec,
+          new ServerView.SegmentCallback()
           {
-            serverAddedSegment(server, segment);
-            return ServerView.CallbackAction.CONTINUE;
-          }
+            @Override
+            public ServerView.CallbackAction segmentAdded(DruidServerMetadata server, DataSegment segment)
+            {
+              serverAddedSegment(server, segment);
+              return ServerView.CallbackAction.CONTINUE;
+            }
 
-          @Override
-          public ServerView.CallbackAction segmentRemoved(final DruidServerMetadata server, DataSegment segment)
-          {
-            serverRemovedSegment(server, segment);
-            return ServerView.CallbackAction.CONTINUE;
-          }
+            @Override
+            public ServerView.CallbackAction segmentRemoved(final DruidServerMetadata server, DataSegment segment)
+            {
+              serverRemovedSegment(server, segment);
+              return ServerView.CallbackAction.CONTINUE;
+            }
 
-          @Override
-          public CallbackAction segmentViewInitialized()
-          {
-            initialized.countDown();
-            runTimelineCallbacks(TimelineCallback::timelineInitialized);
-            return ServerView.CallbackAction.CONTINUE;
-          }
-        },
-        segmentFilter
+            @Override
+            public CallbackAction segmentViewInitialized()
+            {
+              initialized.countDown();
+              runTimelineCallbacks(TimelineCallback::timelineInitialized);
+              return ServerView.CallbackAction.CONTINUE;
+            }
+          },
+            segmentFilter
     );
 
     baseView.registerServerRemovedCallback(
             exec,
         server -> {
-        removeServer(server);
-        return CallbackAction.CONTINUE;
+            removeServer(server);
+            return CallbackAction.CONTINUE;
         }
     );
   }
@@ -305,6 +318,94 @@ public class BrokerServerView implements TimelineServerView
   protected void serverAddedSegment(final DruidServerMetadata server, final DataSegment segment)
   {
     SegmentId segmentId = segment.getId();
+    if (segment.getAvailableSupplimentalIndexes().contains(IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getTypeName())
+            && server.getType().equals(ServerType.HISTORICAL)) {
+      // Load bloom filter only if the server is a historical. The bloom filter is not finalized until the segment is
+      // finalized and handed off to historicals by real time tasks so we can skip if server is a real time server
+
+      // It's possible multiple historicals have been assigned to load the same segment when using multiple replicas,
+      // which means we potentially have already loaded the bloom filter index for one of the replica loaded earlier.
+      // Because the bloom filter doesn't change once set, we can reuse the same reference to avoid downloading again.
+
+      boolean needsDownload = false;
+      synchronized (lock) {
+        ServerSelector selector = selectors.get(segmentId);
+        if (selector != null) {
+          Map<String, BloomFilter<CharSequence>> bloomFilters = ((BloomFilterShardSpec) selector.getSegment()
+                  .getShardSpec())
+                  .getBloomFilters();
+          if (bloomFilters != null) {
+            ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);
+            log.info("Reused existing bloom filter for segment[%s] for server[%s]", segment, server);
+          } else {
+            needsDownload = true;
+          }
+        } else {
+          needsDownload = true;
+        }
+      }
+
+      if (needsDownload) {
+        // Download and load bloom filter into shard spec asyncly in a thread pool
+        loadSegmentSupplimentalIndexIntoShardSpecExec.submit(() -> {
+          log.info("Adding bloom filter for segment[%s] for server[%s]", segment, server);
+          final LoadSpec loadSpec = jsonMapper.convertValue(segment.getLoadSpec(), LoadSpec.class);
+
+          // According to documentation, this method will work fine as long as it will not be called thousands of times
+          // per second, we probably won't have such throughput considering the time spent downloading from deep storage
+          // and loading into memory.
+
+          File tmpDir = FileUtils.createTempDir();
+          try {
+            loadSpec.loadSupplimentalIndexFile(
+                    tmpDir,
+                    IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getZipFile()
+            );
+            BloomFilterMetadata bloomFilterMetadata = jsonMapper.readValue(
+                    new File(tmpDir, IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getMetaFile()),
+                    BloomFilterMetadata.class
+
+            );
+
+            final GenericIndexed<BloomFilter> bloomFiltersIndexed = GenericIndexed.read(
+                    ByteBuffer.wrap(Files.toByteArray(new File(
+                            tmpDir,
+                            IndexMergerV9.SupplimentalIndex.BLOOM_FILTERS.getBinFile()
+                    ))),
+                    BloomFilterObjectStrategy.STRATEGY
+            );
+            Map<String, BloomFilter<CharSequence>> bloomFilters = new HashMap<>();
+            for (int i = 0; i < bloomFilterMetadata.getDimensions().size(); i++) {
+              bloomFilters.put(bloomFilterMetadata.getDimensions().get(i), bloomFiltersIndexed.get(i));
+            }
+            ((BloomFilterShardSpec) segment.getShardSpec()).setBloomFilters(bloomFilters);
+
+            log.info(
+                    "Loaded bloom filters of [%d] bytes for segment[%s] for server[%s]",
+                    bloomFiltersIndexed.size(),
+                    segment,
+                    server
+            );
+          }
+          catch (SegmentLoadingException | IOException e) {
+            // In the worst case, bloom filter index is not loaded and pruning efficiency is affected but the segment
+            // can still function without it so we choose not to further propagate the exception.
+            // TODO (jwang): However, adding a metric in the future to get visibility of the failure will be useful.
+
+            log.error(e.getMessage());
+          }
+          finally {
+            try {
+              FileUtils.deleteDirectory(tmpDir);
+            }
+            catch (IOException e) {
+              log.error(e.getMessage());
+            }
+          }
+        });
+      }
+    }
+
     synchronized (lock) {
       // in theory we could probably just filter this to ensure we don't put ourselves in here, to make broker tree
       // query topologies, but for now just skip all brokers, so we don't create some sort of wild infinite query
@@ -341,6 +442,7 @@ public class BrokerServerView implements TimelineServerView
   {
 
     SegmentId segmentId = segment.getId();
+
     final ServerSelector selector;
 
     synchronized (lock) {
@@ -440,10 +542,10 @@ public class BrokerServerView implements TimelineServerView
     for (Map.Entry<TimelineCallback, Executor> entry : timelineCallbacks.entrySet()) {
       entry.getValue().execute(
           () -> {
-          if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
-            timelineCallbacks.remove(entry.getKey());
+              if (CallbackAction.UNREGISTER == function.apply(entry.getKey())) {
+                timelineCallbacks.remove(entry.getKey());
+              }
           }
-        }
       );
     }
   }

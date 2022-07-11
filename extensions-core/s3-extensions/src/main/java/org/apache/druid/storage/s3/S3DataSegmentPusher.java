@@ -36,6 +36,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class S3DataSegmentPusher implements DataSegmentPusher
 {
@@ -98,7 +100,8 @@ public class S3DataSegmentPusher implements DataSegmentPusher
                                             .withLoadSpec(makeLoadSpec(config.getBucket(), s3Path))
                                             .withBinaryVersion(SegmentUtils.getVersionFromDir(indexFilesDir));
 
-    List<File> zipOutSupplimentalIndexFiles = new ArrayList<>();
+    final List<File> zipOutSupplimentalIndexFiles = new ArrayList<>();
+    final Set<String> sortedAvailableSupplimentalIndexes = new TreeSet<>();
     try {
       return S3Utils.retryS3Operation(
           () -> {
@@ -124,10 +127,12 @@ public class S3DataSegmentPusher implements DataSegmentPusher
                 S3Utils.uploadFileIfPossible(s3Client, config.getDisableAcl(), config.getBucket(),
                                              supplimentalIndexFileS3Path, zipOutSupplimentalIndexFile
                 );
+
+                sortedAvailableSupplimentalIndexes.add(dir.getName());
               }
             }
 
-            return outSegment;
+            return outSegment.withAvailableSupplimentalIndexes(new ArrayList<>(sortedAvailableSupplimentalIndexes));
           }
       );
     }

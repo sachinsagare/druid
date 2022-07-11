@@ -69,6 +69,18 @@ public class LocalDataSegmentPusher implements DataSegmentPusher
   }
 
   @Override
+  public DataSegment push(
+          File indexFilesDir,
+          File supplimentalIndexFilesDir,
+          DataSegment segment,
+          boolean useUniquePath
+  ) throws IOException
+  {
+    // TODO (add logic to use supplimentalIndexFilesDir)
+    return push(indexFilesDir, segment, useUniquePath);
+  }
+
+  @Override
   public DataSegment pushToPath(File dataSegmentFile, DataSegment segment, String storageDirSuffix) throws IOException
   {
     final File baseStorageDir = config.getStorageDirectory();

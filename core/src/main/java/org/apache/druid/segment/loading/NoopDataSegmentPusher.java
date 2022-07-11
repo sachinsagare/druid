@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.druid.timeline.DataSegment;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
@@ -46,6 +47,17 @@ public class NoopDataSegmentPusher implements DataSegmentPusher
 
   @Override
   public DataSegment push(File file, DataSegment segment, boolean replaceExisting)
+  {
+    return segment;
+  }
+
+  @Override
+  public DataSegment push(
+      File indexFilesDir,
+      File supplimentalIndexFilesDir,
+      DataSegment segment,
+      boolean useUniquePath
+  ) throws IOException
   {
     return segment;
   }

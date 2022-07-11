@@ -17,29 +17,37 @@
  * under the License.
  */
 
-package org.apache.druid.data.input.impl;
+package org.apache.druid.segment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.druid.segment.column.ColumnType;
 
-public class DoubleDimensionSchema extends DimensionSchema
+import java.util.List;
+
+public class BloomFilterMetadata
 {
+  private final int version;
+  private final List<String> dimensions;
+
   @JsonCreator
-  public DoubleDimensionSchema(@JsonProperty("name") String name)
+  public BloomFilterMetadata(
+      @JsonProperty("version") int version,
+      @JsonProperty("dimensions") List<String> dimensions
+  )
   {
-    super(name, null, false, false);
+    this.version = version;
+    this.dimensions = dimensions;
   }
 
-  @Override
-  public String getTypeName()
+  @JsonProperty
+  public int getVersion()
   {
-    return DimensionSchema.DOUBLE_TYPE_NAME;
+    return version;
   }
 
-  @Override
-  public ColumnType getColumnType()
+  @JsonProperty
+  public List<String> getDimensions()
   {
-    return ColumnType.DOUBLE;
+    return dimensions;
   }
 }

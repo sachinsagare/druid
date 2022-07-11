@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.apache.druid.segment.TestHelper;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -142,7 +143,7 @@ public class UnionDataSourceTest
   @Test
   public void test_equals()
   {
-    EqualsVerifier.forClass(UnionDataSource.class).usingGetClass().withNonnullFields("dataSources").verify();
+    EqualsVerifier.forClass(UnionDataSource.class).usingGetClass().suppress(Warning.NONFINAL_FIELDS).withNonnullFields("dataSources").verify();
   }
 
   @Test

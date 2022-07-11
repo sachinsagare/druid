@@ -40,6 +40,7 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.druid.client.cache.Cache;
 import org.apache.druid.data.input.Committer;
 import org.apache.druid.data.input.InputRow;
+import org.apache.druid.data.input.impl.DimensionsSpec;
 import org.apache.druid.java.util.common.DateTimes;
 import org.apache.druid.java.util.common.FileUtils;
 import org.apache.druid.java.util.common.IAE;
@@ -62,6 +63,7 @@ import org.apache.druid.segment.QueryableIndex;
 import org.apache.druid.segment.QueryableIndexSegment;
 import org.apache.druid.segment.ReferenceCountingSegment;
 import org.apache.druid.segment.Segment;
+import org.apache.druid.segment.column.ColumnHolder;
 import org.apache.druid.segment.incremental.IncrementalIndexAddResult;
 import org.apache.druid.segment.incremental.IndexSizeExceededException;
 import org.apache.druid.segment.incremental.ParseExceptionHandler;
@@ -847,8 +849,6 @@ public class AppenderatorImpl implements Appenderator
 
     // Use a descriptor file to indicate that pushing has completed.
     final File persistDir = computePersistDir(identifier);
-    final File mergedTarget = new File(persistDir, "merged");
-    final File mergedSupplimentalIndexTarget = new File(persistDir, "merged_supplimental_index");
     final File descriptorFile = computeDescriptorFile(identifier);
 
     // Sanity checks
@@ -881,29 +881,42 @@ public class AppenderatorImpl implements Appenderator
         }
       }
 
-      removeDirectory(mergedTarget);
-      removeDirectory(mergedSupplimentalIndexTarget);
-
-      if (mergedTarget.exists()) {
-        throw new ISE("Merged target[%s] exists after removing?!", mergedTarget);
+      final File mergedIndexTarget = new File(persistDir, "merged");
+      removeDirectory(mergedIndexTarget);
+      if (mergedIndexTarget.exists()) {
+        throw new ISE("Merged target[%s] exists after removing?!", mergedIndexTarget);
       }
 
-      if (mergedSupplimentalIndexTarget.exists()) {
-        throw new ISE("Merged supplimental index target[%s] exists after removing?!",
-                      mergedSupplimentalIndexTarget);
-      }
+      final File mergedIndexFile;
+      final File mergedSupplimentalIndexFile;
 
-      final File mergedFile;
       final long mergeFinishTime;
       final long startTime = System.nanoTime();
       List<QueryableIndex> indexes = new ArrayList<>();
       Closer closer = Closer.create();
       try {
-        for (FireHydrant fireHydrant : sink) {
+        DimensionsSpec dimensionsSpec = schema.getParser() == null ? null : schema.getParser()
+                .getParseSpec()
+                .getDimensionsSpec();
+        boolean hasSupplimentalIndex = IndexMerger.hasSupplimentalIndex(dimensionsSpec);
+        final File mergedSupplimentalIndexTarget = hasSupplimentalIndex ?
+                new File(persistDir, "merged_supplimental_index") : null;
+        if (hasSupplimentalIndex) {
+          removeDirectory(mergedSupplimentalIndexTarget);
+          if (mergedSupplimentalIndexTarget.exists()) {
+            throw new ISE(
+                    "Merged supplimental index target[%s] exists after removing?!",
+                    mergedSupplimentalIndexTarget
+            );
+          }
+        }
 
+        List<String> dimensionNamesHasBloomFilterIndexes = IndexMerger.getDimensionNamesHasBloomFilterIndexes(
+                dimensionsSpec);
+
+        for (FireHydrant fireHydrant : sink) {
           // if batch, swap/persist did not memory map the incremental index, we need it mapped now:
           if (!isOpenSegments()) {
-
             // sanity
             Pair<File, SegmentId> persistedMetadata = persistedHydrantMetadata.get(fireHydrant);
             if (persistedMetadata == null) {
@@ -931,23 +944,32 @@ public class AppenderatorImpl implements Appenderator
           Pair<ReferenceCountingSegment, Closeable> segmentAndCloseable = fireHydrant.getAndIncrementSegment();
           final QueryableIndex queryableIndex = segmentAndCloseable.lhs.asQueryableIndex();
           log.debug("Segment[%s] adding hydrant[%s]", identifier, fireHydrant);
+          IndexMerger.setHasBloomFilterIndexesInColumnCapabilities(
+              dimensionNamesHasBloomFilterIndexes,
+              dimension -> {
+              ColumnHolder columnHolder = queryableIndex.getColumnHolder(dimension);
+              return columnHolder == null ? null : columnHolder.getCapabilities();
+            }
+          );
           indexes.add(queryableIndex);
           closer.register(segmentAndCloseable.rhs);
         }
 
-        mergedFile = indexMerger.mergeQueryableIndex(
+        Pair<File, File> p = indexMerger.mergeQueryableIndex(
             indexes,
             schema.getGranularitySpec().isRollup(),
             schema.getAggregators(),
             schema.getDimensionsSpec(),
-            mergedTarget,
+            mergedIndexTarget,
+            mergedSupplimentalIndexTarget,
             tuningConfig.getIndexSpec(),
             tuningConfig.getIndexSpecForIntermediatePersists(),
             new BaseProgressIndicator(),
             tuningConfig.getSegmentWriteOutMediumFactory(),
             tuningConfig.getMaxColumnsToMerge()
         );
-
+        mergedIndexFile = p.lhs;
+        mergedSupplimentalIndexFile = p.rhs;
         mergeFinishTime = System.nanoTime();
 
         log.debug("Segment[%s] built in %,dms.", identifier, (mergeFinishTime - startTime) / 1000000);
@@ -969,7 +991,8 @@ public class AppenderatorImpl implements Appenderator
           // Kafka indexing task, pushers must use unique file paths in deep storage in order to maintain exactly-once
           // semantics.
           () -> dataSegmentPusher.push(
-              mergedFile,
+              mergedIndexFile,
+              mergedSupplimentalIndexFile,
               segmentToPush,
               useUniquePath
           ),
