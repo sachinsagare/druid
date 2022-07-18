@@ -37,6 +37,7 @@ import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
 import org.apache.druid.query.TableDataSource;
@@ -46,7 +47,9 @@ import org.apache.druid.server.coordination.DruidServerMetadata;
 import org.apache.druid.server.coordination.ServerType;
 import org.apache.druid.server.initialization.ZkPathsConfig;
 import org.apache.druid.server.metrics.NoopServiceEmitter;
+import org.apache.druid.timeline.ComplementaryNamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.TimelineLookup;
 import org.apache.druid.timeline.TimelineObjectHolder;
 import org.apache.druid.timeline.partition.NoneShardSpec;
@@ -61,7 +64,9 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -78,6 +83,7 @@ public class BrokerServerViewTest extends CuratorTestBase
   private BatchServerInventoryView baseView;
   private BrokerServerView brokerServerView;
 
+
   public BrokerServerViewTest()
   {
     jsonMapper = TestHelper.makeJsonMapper();
@@ -90,6 +96,124 @@ public class BrokerServerViewTest extends CuratorTestBase
     setupServerAndCurator();
     curator.start();
     curator.blockUntilConnected();
+  }
+
+  @Test
+  public void testInitialization() throws Exception
+  {
+    segmentViewInitLatch = new CountDownLatch(1);
+    segmentAddedLatch = new CountDownLatch(1);
+    segmentRemovedLatch = new CountDownLatch(1);
+
+    setupViews();
+
+    final DruidServer druidServer = new DruidServer(
+            "localhost:1234",
+            "localhost:1234",
+            null,
+            10000000L,
+            ServerType.HISTORICAL,
+            "default_tier",
+            0
+    );
+
+    setupZNodeForServer(druidServer, zkPathsConfig, jsonMapper);
+
+    Map<String, List<String>> dataSourceMultiComplimentMap = new HashMap<>();
+    dataSourceMultiComplimentMap.put("monthly", Arrays.asList("daily", "hourly"));
+    dataSourceMultiComplimentMap.put("daily", Arrays.asList("hourly", "uniques"));
+
+    DataSegment monthlySegment1 = dataSegmentWithIntervalAndDataSource("2020-01-01T00:00:00Z/P1M", "monthly");
+    DataSegment monthlySegment2 = dataSegmentWithIntervalAndDataSource("2020-02-01T00:00:00Z/P1M", "monthly");
+
+    DataSegment dailySegment1 = dataSegmentWithIntervalAndDataSource("2020-01-01T00:00:00Z/P1D", "daily");
+    DataSegment dailySegment2 = dataSegmentWithIntervalAndDataSource("2020-01-02T00:00:00Z/P1D", "daily");
+    DataSegment dailySegment3 = dataSegmentWithIntervalAndDataSource("2020-03-01T00:00:00Z/P1D", "daily");
+    DataSegment dailySegment4 = dataSegmentWithIntervalAndDataSource("2020-03-02T00:00:00Z/P1D", "daily");
+
+    DataSegment hourlySegment1 = dataSegmentWithIntervalAndDataSource("2020-01-01T00:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment2 = dataSegmentWithIntervalAndDataSource("2020-01-01T10:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment3 = dataSegmentWithIntervalAndDataSource("2020-01-02T00:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment4 = dataSegmentWithIntervalAndDataSource("2020-01-02T10:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment5 = dataSegmentWithIntervalAndDataSource("2020-03-01T00:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment6 = dataSegmentWithIntervalAndDataSource("2020-03-01T10:0:00Z/PT1H", "hourly");
+    DataSegment hourlySegment7 = dataSegmentWithIntervalAndDataSource("2020-03-02T00:00:00Z/PT1H", "hourly");
+    DataSegment hourlySegment8 = dataSegmentWithIntervalAndDataSource("2020-03-02T10:00:00Z/PT1H", "hourly");
+
+    DataSegment uniquesSegment1 = dataSegmentWithIntervalAndDataSource("2020-01-01T00:00:00Z/P1M", "uniques");
+    DataSegment uniquesSegment2 = dataSegmentWithIntervalAndDataSource("2020-02-01T00:00:00Z/P1M", "uniques");
+
+    BrokerServerView brokerServerView = new BrokerServerView(
+        EasyMock.createMock(QueryToolChestWarehouse.class),
+        EasyMock.createMock(QueryWatcher.class),
+        getSmileMapper(),
+        EasyMock.createMock(HttpClient.class),
+        baseView,
+        new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
+        new NoopServiceEmitter(),
+        new BrokerSegmentWatcherConfig(),
+        new BrokerDataSourceMultiComplementConfig()
+        {
+          @Override
+          public Map<String, List<String>> getMapping()
+          {
+            return dataSourceMultiComplimentMap;
+          }
+        },
+        new DruidProcessingConfig() {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        },
+        new BrokerDataSourceLifetimeConfig()
+    );
+
+    baseView.start();
+
+    // Timelines should contain only dataSources in MultiComplimentMap until segments have been added
+    Assert.assertEquals(
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("monthly"))).get().getClass(),
+            ComplementaryNamespacedVersionedIntervalTimeline.class);
+    Assert.assertEquals(
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("daily"))).get().getClass(),
+            ComplementaryNamespacedVersionedIntervalTimeline.class);
+    Assert.assertEquals(
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("hourly"))).get().getClass(),
+            NamespacedVersionedIntervalTimeline.class);
+    Assert.assertEquals(
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))).get().getClass(),
+            NamespacedVersionedIntervalTimeline.class);
+
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment1);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), dailySegment1);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), monthlySegment1);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment2);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), dailySegment2);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), monthlySegment2);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment3);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), dailySegment3);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment4);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), dailySegment4);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment5);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment6);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment7);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), hourlySegment8);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), uniquesSegment1);
+    brokerServerView.serverAddedSegment(druidServer.getMetadata(), uniquesSegment2);
+
+    Assert.assertEquals(
+            ((ComplementaryNamespacedVersionedIntervalTimeline) brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("monthly"))).get())
+                    .getSupportTimelinesByDataSource().size(),
+            3);
+    Assert.assertEquals(
+            ((ComplementaryNamespacedVersionedIntervalTimeline) brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("daily"))).get())
+                    .getSupportTimelinesByDataSource().size(),
+            3);
+    Assert.assertEquals(
+            brokerServerView.getTimeline(DataSourceAnalysis.forDataSource(new TableDataSource("uniques"))).get().getClass(),
+            NamespacedVersionedIntervalTimeline.class);
   }
 
   @Test
@@ -109,7 +233,7 @@ public class BrokerServerViewTest extends CuratorTestBase
     Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
     Assert.assertTrue(timing.forWaiting().awaitLatch(segmentAddedLatch));
 
-    TimelineLookup<String, ServerSelector> timeline = brokerServerView.getTimeline(
+    NamespacedVersionedIntervalTimeline<String, ServerSelector> timeline = brokerServerView.getTimeline(
         DataSourceAnalysis.forDataSource(new TableDataSource("test_broker_server_view"))
     ).get();
     List<TimelineObjectHolder<String, ServerSelector>> serverLookupRes = timeline.lookup(intervals);
@@ -127,7 +251,8 @@ public class BrokerServerViewTest extends CuratorTestBase
     Assert.assertFalse(selector.isEmpty());
     Assert.assertEquals(segment, selector.getSegment());
     Assert.assertEquals(druidServer, selector.pick(null).getServer());
-    Assert.assertNotNull(timeline.findChunk(intervals, "v1", partition));
+    Assert.assertNotNull(timeline.findChunk(NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+            intervals, "v1", partition));
 
     unannounceSegmentForServer(druidServer, segment, zkPathsConfig);
     Assert.assertTrue(timing.forWaiting().awaitLatch(segmentRemovedLatch));
@@ -136,7 +261,8 @@ public class BrokerServerViewTest extends CuratorTestBase
         0,
         timeline.lookup(intervals).size()
     );
-    Assert.assertNull(timeline.findChunk(intervals, "v1", partition));
+    Assert.assertNull(timeline.findChunk(NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+            intervals, "v1", partition));
   }
 
   @Test
@@ -665,7 +791,16 @@ public class BrokerServerViewTest extends CuratorTestBase
           {
             return ignoredTiers;
           }
-        }
+        },
+        new BrokerDataSourceMultiComplementConfig(),
+        new DruidProcessingConfig() {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
 
     baseView.start();
@@ -691,6 +826,29 @@ public class BrokerServerViewTest extends CuratorTestBase
                       .binaryVersion(9)
                       .size(0)
                       .build();
+  }
+
+  private DataSegment dataSegmentWithIntervalAndDataSource(String intervalStr,
+                                                           String dataSource)
+  {
+    return DataSegment.builder()
+            .dataSource(dataSource)
+            .interval(Intervals.of(intervalStr))
+            .loadSpec(
+                    ImmutableMap.of(
+                            "type",
+                            "local",
+                            "path",
+                            "somewhere"
+                    )
+            )
+            .version("v1")
+            .dimensions(ImmutableList.of())
+            .metrics(ImmutableList.of())
+            .shardSpec(NoneShardSpec.instance())
+            .binaryVersion(9)
+            .size(0)
+            .build();
   }
 
   public ObjectMapper getSmileMapper()

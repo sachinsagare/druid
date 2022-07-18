@@ -563,13 +563,13 @@ public class IndexGeneratorJobTest
       for (Integer[] shardInfo : (Integer[][]) shardInfoForEachShard) {
         specs.add(
             new HashBasedNumberedShardSpec(
-                shardInfo[0],
-                shardInfo[1],
-                shardInfo[0],
-                shardInfo[1],
-                null,
-                HashPartitionFunction.MURMUR3_32_ABS,
-                HadoopDruidIndexerConfig.JSON_MAPPER
+                    shardInfo[0],
+                    shardInfo[1],
+                    shardInfo[0],
+                    shardInfo[1],
+                    null,
+                    HashPartitionFunction.MURMUR3_32_ABS,
+                    HadoopDruidIndexerConfig.JSON_MAPPER
             )
         );
       }

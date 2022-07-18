@@ -31,7 +31,7 @@ public class NoopVectorAggregator implements VectorAggregator
     return INSTANCE;
   }
 
-  private NoopVectorAggregator()
+  protected NoopVectorAggregator()
   {
     // Singleton.
   }

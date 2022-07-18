@@ -55,6 +55,7 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
 
   private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final boolean skipBytesInMemoryOverheadCheck;
   private final DynamicPartitionsSpec partitionsSpec;
@@ -78,6 +79,7 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
   public RealtimeAppenderatorTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
@@ -99,6 +101,7 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
   {
     this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
     this.maxRowsInMemory = maxRowsInMemory == null ? DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     // initializing this to 0, it will be lazily initialized to a value
     // @see #getMaxBytesInMemoryOrDefault()
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -158,6 +161,12 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
 
   @Override
   @JsonProperty
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
+  }
+
+  @Override
   public long getMaxBytesInMemory()
   {
     return maxBytesInMemory;
@@ -239,6 +248,12 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
     return reportParseExceptions;
   }
 
+  @Override
+  public boolean isEnableInMemoryBitmap()
+  {
+    return false;
+  }
+
   @JsonProperty
   public long getPublishAndHandoffTimeout()
   {
@@ -283,6 +298,7 @@ public class RealtimeAppenderatorTuningConfig implements AppenderatorConfig
     return new RealtimeAppenderatorTuningConfig(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         partitionsSpec.getMaxRowsPerSegment(),

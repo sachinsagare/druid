@@ -60,6 +60,11 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
+      <groupId>net.sf.trove4j</groupId>
+      <artifactId>core</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
@@ -120,7 +125,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-smile</artifactId>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -287,6 +291,12 @@
       <artifactId>netty</artifactId>
     </dependency>
 
+    <!-- Extra dependencies for SpeculativeExecutedSequence -->
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>util-core_2.11</artifactId>
+      <version>6.42.0</version>
+    </dependency>
 
     <!-- Tests -->
     <dependency>

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import org.apache.druid.java.util.common.ISE;
 import org.apache.druid.java.util.common.logger.Logger;
 
@@ -41,6 +42,11 @@ public class DimensionConverter
   private static final Logger log = new Logger(DimensionConverter.class);
   private Map<String, StatsDMetric> metricMap;
 
+  private static final String METRICS_AGENT_TAG_PREFIX = "_t_";
+  private static final String METRICS_AGENT_TAG_DELIMITER = ".";
+  private static final String METRICS_AGENT_TAG_HOST = "host";
+  private static final String METRICS_AGENT_TAG_PORT = "port";
+
   public DimensionConverter(ObjectMapper mapper, String dimensionMapPath)
   {
     metricMap = readMap(mapper, dimensionMapPath);
@@ -49,7 +55,9 @@ public class DimensionConverter
   @Nullable
   public StatsDMetric addFilteredUserDims(
       String service,
+      String hostAndPort,
       String metric,
+      Number value,
       Map<String, Object> userDims,
       ImmutableMap.Builder<String, String> builder
   )
@@ -65,15 +73,35 @@ public class DimensionConverter
       statsDMetric = metricMap.get(service + "-" + metric);
     }
     if (statsDMetric != null) {
+      if (hostAndPort != null) {
+        HostAndPort hp = HostAndPort.fromString(hostAndPort);
+        builder.put(METRICS_AGENT_TAG_HOST, getTag(METRICS_AGENT_TAG_HOST, hp.getHostText()));
+        if (hp.hasPort()) {
+          builder.put(METRICS_AGENT_TAG_PORT, getTag(METRICS_AGENT_TAG_PORT, String.valueOf(hp.getPort())));
+        }
+      }
+
       for (String dim : statsDMetric.dimensions) {
-        if (userDims.containsKey(dim)) {
-          builder.put(dim, userDims.get(dim).toString());
+        if (userDims.containsKey(dim) && (statsDMetric.dimensionThresholdMap == null
+                                          || !statsDMetric.dimensionThresholdMap.containsKey(dim)
+                                          || statsDMetric.dimensionThresholdMap.get(dim) <= value.longValue())) {
+          builder.put(dim, getTag(dim, userDims.get(dim).toString()));
         }
       }
       return statsDMetric;
     } else {
       return null;
     }
+  }
+
+  private String getTag(String key, String value)
+  {
+    return new StringBuilder()
+        .append(METRICS_AGENT_TAG_PREFIX)
+        .append(key)
+        .append(METRICS_AGENT_TAG_DELIMITER)
+        .append(value)
+        .toString();
   }
 
   private Map<String, StatsDMetric> readMap(ObjectMapper mapper, String dimensionMapPath)

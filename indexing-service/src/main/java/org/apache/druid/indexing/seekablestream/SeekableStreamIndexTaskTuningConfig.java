@@ -40,6 +40,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
 
   private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
+  private final Integer maxRowsInMemoryPerSegment;
   private final long maxBytesInMemory;
   private final boolean skipBytesInMemoryOverheadCheck;
   private final DynamicPartitionsSpec partitionsSpec;
@@ -60,10 +61,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   private final boolean logParseExceptions;
   private final int maxParseExceptions;
   private final int maxSavedParseExceptions;
+  private final boolean ignoreOutOfOrderSequenceNumber;
+  private final boolean enableInMemoryBitmap;
 
   public SeekableStreamIndexTaskTuningConfig(
       @Nullable AppendableIndexSpec appendableIndexSpec,
       @Nullable Integer maxRowsInMemory,
+      @Nullable Integer maxRowsInMemoryPerSegment,
       @Nullable Long maxBytesInMemory,
       @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @Nullable Integer maxRowsPerSegment,
@@ -81,7 +85,9 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
       @Nullable Period intermediateHandoffPeriod,
       @Nullable Boolean logParseExceptions,
       @Nullable Integer maxParseExceptions,
-      @Nullable Integer maxSavedParseExceptions
+      @Nullable Integer maxSavedParseExceptions,
+      @Nullable Boolean ignoreOutOfOrderSequenceNumber,
+      @Nullable Boolean enableInMemoryBitmap
   )
   {
     // Cannot be a static because default basePersistDirectory is unique per-instance
@@ -89,6 +95,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
 
     this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
     this.maxRowsInMemory = maxRowsInMemory == null ? defaults.getMaxRowsInMemory() : maxRowsInMemory;
+    this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
     this.partitionsSpec = new DynamicPartitionsSpec(maxRowsPerSegment, maxTotalRows);
     // initializing this to 0, it will be lazily initialized to a value
     // @see #getMaxBytesInMemoryOrDefault()
@@ -134,6 +141,10 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     this.logParseExceptions = logParseExceptions == null
                               ? TuningConfig.DEFAULT_LOG_PARSE_EXCEPTIONS
                               : logParseExceptions;
+    this.ignoreOutOfOrderSequenceNumber = ignoreOutOfOrderSequenceNumber == null ?
+        TuningConfig.DEFAULT_IGNORE_OUT_OF_ORDER_SEQUENCE_NUMBER : ignoreOutOfOrderSequenceNumber;
+    this.enableInMemoryBitmap = enableInMemoryBitmap == null ? TuningConfig.DEFAULT_ENABLE_IN_MEMORY_BITMAP :
+                                enableInMemoryBitmap;
   }
 
   @Override
@@ -148,6 +159,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   public int getMaxRowsInMemory()
   {
     return maxRowsInMemory;
+  }
+
+  @Override
+  @JsonProperty
+  public int getMaxRowsInMemoryPerSegment()
+  {
+    return maxRowsInMemoryPerSegment;
   }
 
   @Override
@@ -221,6 +239,16 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     return indexSpecForIntermediatePersists;
   }
 
+  /**
+   * Always returns true, doesn't affect the version being built.
+   */
+  @Deprecated
+  @JsonProperty
+  public boolean getBuildV9Directly()
+  {
+    return true;
+  }
+
   @Override
   @JsonProperty
   public boolean isReportParseExceptions()
@@ -273,9 +301,22 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
   }
 
   @JsonProperty
+  public boolean isIgnoreOutOfOrderSequenceNumber()
+  {
+    return ignoreOutOfOrderSequenceNumber;
+  }
+
+  @JsonProperty
   public boolean isSkipSequenceNumberAvailabilityCheck()
   {
     return skipSequenceNumberAvailabilityCheck;
+  }
+
+  @Override
+  @JsonProperty
+  public boolean isEnableInMemoryBitmap()
+  {
+    return enableInMemoryBitmap;
   }
 
   @Override
@@ -300,10 +341,12 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
            handoffConditionTimeout == that.handoffConditionTimeout &&
            resetOffsetAutomatically == that.resetOffsetAutomatically &&
            skipSequenceNumberAvailabilityCheck == that.skipSequenceNumberAvailabilityCheck &&
+           enableInMemoryBitmap == that.enableInMemoryBitmap &&
            logParseExceptions == that.logParseExceptions &&
            maxParseExceptions == that.maxParseExceptions &&
            maxSavedParseExceptions == that.maxSavedParseExceptions &&
            Objects.equals(partitionsSpec, that.partitionsSpec) &&
+           ignoreOutOfOrderSequenceNumber == that.ignoreOutOfOrderSequenceNumber &&
            Objects.equals(intermediatePersistPeriod, that.intermediatePersistPeriod) &&
            Objects.equals(basePersistDirectory, that.basePersistDirectory) &&
            Objects.equals(indexSpec, that.indexSpec) &&
@@ -318,6 +361,7 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
     return Objects.hash(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         partitionsSpec,
@@ -332,9 +376,11 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements Appenderato
         segmentWriteOutMediumFactory,
         intermediateHandoffPeriod,
         skipSequenceNumberAvailabilityCheck,
+        enableInMemoryBitmap,
         logParseExceptions,
         maxParseExceptions,
-        maxSavedParseExceptions
+        maxSavedParseExceptions,
+        ignoreOutOfOrderSequenceNumber
     );
   }
 

@@ -20,11 +20,13 @@
 package org.apache.druid.query.topn;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.primitives.Ints;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.query.aggregation.Aggregator;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.BufferAggregator;
+import org.apache.druid.query.aggregation.NoopNumberAggregatorFactory;
 import org.apache.druid.segment.Cursor;
 import org.apache.druid.segment.DimensionSelector;
 import org.apache.druid.segment.IdLookup;
@@ -32,6 +34,7 @@ import org.apache.druid.segment.StorageAdapter;
 import org.apache.druid.segment.column.ColumnCapabilities;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -41,6 +44,18 @@ import java.util.List;
 public abstract class BaseTopNAlgorithm<DimValSelector, DimValAggregateStore, Parameters extends TopNParams>
     implements TopNAlgorithm<DimValSelector, Parameters>
 {
+
+  public static int[] getNonNoopAggregators(List<AggregatorFactory> aggregatorSpecs)
+  {
+    List<Integer> indexes = new ArrayList<>();
+    for (int i = 0; i < aggregatorSpecs.size(); i++) {
+      if (!(aggregatorSpecs.get(i) instanceof NoopNumberAggregatorFactory)) {
+        indexes.add(i);
+      }
+    }
+    return Ints.toArray(indexes);
+  }
+
   public static Aggregator[] makeAggregators(Cursor cursor, List<AggregatorFactory> aggregatorSpecs)
   {
     Aggregator[] aggregators = new Aggregator[aggregatorSpecs.size()];

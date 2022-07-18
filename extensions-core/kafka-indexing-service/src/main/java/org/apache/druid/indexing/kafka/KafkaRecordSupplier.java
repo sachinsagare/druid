@@ -131,6 +131,7 @@ public class KafkaRecordSupplier implements RecordSupplier<Integer, Long, KafkaR
           record.topic(),
           record.partition(),
           record.offset(),
+          record.timestamp(),
           record.value() == null ? null : ImmutableList.of(new KafkaRecordEntity(record))
       ));
     }
@@ -201,7 +202,8 @@ public class KafkaRecordSupplier implements RecordSupplier<Integer, Long, KafkaR
       if (!KafkaSupervisorIOConfig.DRUID_DYNAMIC_CONFIG_PROVIDER_KEY.equals(propertyKey)) {
         if (propertyKey.equals(KafkaSupervisorIOConfig.TRUST_STORE_PASSWORD_KEY)
             || propertyKey.equals(KafkaSupervisorIOConfig.KEY_STORE_PASSWORD_KEY)
-            || propertyKey.equals(KafkaSupervisorIOConfig.KEY_PASSWORD_KEY)) {
+            || propertyKey.equals(KafkaSupervisorIOConfig.KEY_PASSWORD_KEY)
+            || propertyKey.equals(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY)) {
           PasswordProvider configPasswordProvider = configMapper.convertValue(
               entry.getValue(),
               PasswordProvider.class

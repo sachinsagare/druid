@@ -98,6 +98,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
   private final String scheme;
   private final String host;
   private final ServiceEmitter emitter;
+  private final boolean skipDataOnException;
 
   private final AtomicInteger openConnections;
   private final boolean isSmile;
@@ -126,8 +127,8 @@ public class DirectDruidClient<T> implements QueryRunner<T>
       HttpClient httpClient,
       String scheme,
       String host,
-      ServiceEmitter emitter
-  )
+      ServiceEmitter emitter,
+      boolean skipDataOnException)
   {
     this.warehouse = warehouse;
     this.queryWatcher = queryWatcher;
@@ -136,6 +137,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
     this.scheme = scheme;
     this.host = host;
     this.emitter = emitter;
+    this.skipDataOnException = skipDataOnException;
 
     this.isSmile = this.objectMapper.getFactory() instanceof SmileFactory;
     this.openConnections = new AtomicInteger();
@@ -181,6 +183,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
 
         private QueryMetrics<? super Query<T>> queryMetrics;
         private long responseStartTimeNs;
+        private long poolAcquireTimeNs;
 
         private QueryMetrics<? super Query<T>> acquireResponseMetrics()
         {
@@ -189,6 +192,12 @@ public class DirectDruidClient<T> implements QueryRunner<T>
             queryMetrics.server(host);
           }
           return queryMetrics;
+        }
+
+        @Override
+        public boolean skipDataOnException()
+        {
+          return skipDataOnException;
         }
 
         /**
@@ -221,6 +230,13 @@ public class DirectDruidClient<T> implements QueryRunner<T>
           }
 
           return holder.getStream();
+        }
+
+        @Override
+        public void handleHttpConnectionAcquired()
+        {
+          log.debug("Acquired an http connection", url, query.getId());
+          poolAcquireTimeNs = System.nanoTime();
         }
 
         @Override
@@ -355,6 +371,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
               totalByteCount.get() / (0.001 * nodeTimeMs)
           );
           QueryMetrics<? super Query<T>> responseMetrics = acquireResponseMetrics();
+          responseMetrics.reportTimeToAcquireHttpResource(poolAcquireTimeNs - requestStartTimeNs);
           responseMetrics.reportNodeTime(nodeTimeNs);
           responseMetrics.reportNodeBytes(totalByteCount.get());
 
@@ -441,6 +458,14 @@ public class DirectDruidClient<T> implements QueryRunner<T>
             setupResponseReadFailure(msg, null);
             throw new ResourceLimitExceededException(msg);
           }
+        }
+
+        @Override
+        public void reportExceptionMetric(String exceptionName)
+        {
+          QueryMetrics<? super Query<T>> exceptionMetrics = acquireResponseMetrics();
+          exceptionMetrics.exceptionName(exceptionName);
+          exceptionMetrics.reportNodeException(1).emit(emitter);
         }
       };
 

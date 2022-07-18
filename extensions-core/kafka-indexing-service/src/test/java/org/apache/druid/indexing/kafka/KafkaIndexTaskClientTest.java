@@ -38,6 +38,7 @@ import org.apache.druid.java.util.common.StringUtils;
 import org.apache.druid.java.util.http.client.HttpClient;
 import org.apache.druid.java.util.http.client.Request;
 import org.apache.druid.java.util.http.client.response.ObjectOrErrorResponseHandler;
+import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
 import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
@@ -352,6 +353,37 @@ public class KafkaIndexTaskClientTest extends EasyMockSupport
 
     client.getCurrentOffsets(TEST_ID, true);
     verifyAll();
+  }
+
+  @Test
+  public void testGetAndClearTimestampGaps() throws Exception
+  {
+    Capture<Request> captured = Capture.newInstance();
+    EasyMock.expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK);
+    EasyMock.expect(responseHolder.getContent()).andReturn("{\"0\":1, \"1\":10}");
+    EasyMock.expect(httpClient.go(
+        EasyMock.capture(captured),
+        EasyMock.anyObject(StringFullResponseHandler.class),
+        EasyMock.eq(TEST_HTTP_TIMEOUT)
+    )).andReturn(
+        Futures.immediateFuture(responseHolder)
+    );
+    replayAll();
+
+    Map<Integer, Long> results = client.getAndClearTimestampGaps(TEST_ID, true);
+    verifyAll();
+
+    Request request = captured.getValue();
+    Assert.assertEquals(HttpMethod.POST, request.getMethod());
+    Assert.assertEquals(
+        new URL("http://test-host:1234/druid/worker/v1/chat/test-id/timestamp/gaps?clear=true"),
+        request.getUrl()
+    );
+    Assert.assertTrue(request.getHeaders().get("X-Druid-Task-Id").contains("test-id"));
+
+    Assert.assertEquals(2, results.size());
+    Assert.assertEquals(1, (long) results.get(0));
+    Assert.assertEquals(10, (long) results.get(1));
   }
 
   @Test

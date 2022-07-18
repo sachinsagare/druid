@@ -1012,6 +1012,9 @@ public class SeekableStreamSupervisorStateTest extends EasyMockSupport
             null,
             null,
             null,
+            null,
+            null,
+            false,
             null
         )
         {
@@ -1148,6 +1151,7 @@ public class SeekableStreamSupervisorStateTest extends EasyMockSupport
         String baseSequenceName,
         ObjectMapper sortingMapper,
         TreeMap<Integer, Map<String, String>> sequenceOffsets,
+        Integer streamPartitions,
         SeekableStreamIndexTaskIOConfig taskIoConfig,
         SeekableStreamIndexTaskTuningConfig taskTuningConfig,
         RowIngestionMetersFactory rowIngestionMetersFactory
@@ -1284,6 +1288,12 @@ public class SeekableStreamSupervisorStateTest extends EasyMockSupport
   private class TestSeekableStreamSupervisor extends BaseTestSeekableStreamSupervisor
   {
     @Override
+    protected void updateLatestSequenceFromStream()
+    {
+
+    }
+
+    @Override
     protected void scheduleReporting(ScheduledExecutorService reportingExec)
     {
       // do nothing
@@ -1325,6 +1335,12 @@ public class SeekableStreamSupervisorStateTest extends EasyMockSupport
     protected Map<String, Long> getPartitionTimeLag()
     {
       return partitionsTimeLag;
+    }
+
+    @Override
+    protected void updateLatestSequenceFromStream()
+    {
+
     }
 
     @Override

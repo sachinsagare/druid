@@ -70,17 +70,14 @@ public class NumberedShardSpec implements ShardSpec
   {
     return createNumberedLookup(shardSpecs);
   }
-
   static ShardSpecLookup createNumberedLookup(List<? extends ShardSpec> shardSpecs)
   {
     return createLookup(shardSpecs);
   }
-
   static ShardSpecLookup createLookup(List<? extends ShardSpec> shardSpecs)
   {
     return (long timestamp, InputRow row) -> shardSpecs.get(0);
   }
-
   @Override
   public List<String> getDomainDimensions()
   {
@@ -132,7 +129,7 @@ public class NumberedShardSpec implements ShardSpec
     }
     NumberedShardSpec that = (NumberedShardSpec) o;
     return partitionNum == that.partitionNum &&
-           partitions == that.partitions;
+            partitions == that.partitions;
   }
 
   @Override

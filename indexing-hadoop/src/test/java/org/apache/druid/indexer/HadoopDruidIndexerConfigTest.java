@@ -66,13 +66,13 @@ public class HadoopDruidIndexerConfigTest
       shardSpecs.add(
           new HadoopyShardSpec(
               new HashBasedNumberedShardSpec(
-                  i,
-                  partitionCount,
-                  i,
-                  partitionCount,
-                  null,
-                  HashPartitionFunction.MURMUR3_32_ABS,
-                  new DefaultObjectMapper()
+                      i,
+                      partitionCount,
+                      i,
+                      partitionCount,
+                      null,
+                      HashPartitionFunction.MURMUR3_32_ABS,
+                      new DefaultObjectMapper()
               ),
               i
           )

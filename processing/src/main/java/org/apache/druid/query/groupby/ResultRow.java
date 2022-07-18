@@ -56,6 +56,11 @@ import java.util.Map;
  */
 public final class ResultRow
 {
+  public static final Double ZERO_DOUBLE = 0.0d;
+  public static final Float ZERO_FLOAT = 0.0f;
+  public static final Long ZERO_LONG = 0L;
+  public static final Integer ZERO_INTEGER = 0;
+
   private final Object[] row;
 
   private ResultRow(final Object[] row)
@@ -167,6 +172,14 @@ public final class ResultRow
     }
 
     return map;
+  }
+
+  private static boolean isZero(Object obj)
+  {
+    return (obj instanceof Integer && obj == ZERO_INTEGER)
+           || (obj instanceof Long && obj == ZERO_LONG)
+           || (obj instanceof Float && obj == ZERO_FLOAT)
+           || (obj instanceof Double && obj == ZERO_DOUBLE);
   }
 
   /**

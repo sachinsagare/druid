@@ -24,12 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.apache.druid.client.BrokerInternalQueryConfig;
-import org.apache.druid.client.BrokerSegmentWatcherConfig;
-import org.apache.druid.client.BrokerServerView;
-import org.apache.druid.client.DruidServer;
-import org.apache.druid.client.FilteredServerInventoryView;
-import org.apache.druid.client.FilteringSegmentCallback;
+import org.apache.druid.client.*;
 import org.apache.druid.client.ServerView.CallbackAction;
 import org.apache.druid.client.ServerView.SegmentCallback;
 import org.apache.druid.client.ServerView.ServerRemovedCallback;
@@ -42,6 +37,7 @@ import org.apache.druid.java.util.common.NonnullPair;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.concurrent.Execs;
 import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.QueryToolChestWarehouse;
 import org.apache.druid.query.QueryWatcher;
 import org.apache.druid.query.TableDataSource;
@@ -351,7 +347,7 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
     }
   }
 
-  private static BrokerServerView newBrokerServerView(FilteredServerInventoryView baseView)
+  private static BrokerServerView newBrokerServerView(TestServerInventoryView baseView)
   {
     return new BrokerServerView(
         EasyMock.createMock(QueryToolChestWarehouse.class),
@@ -361,7 +357,17 @@ public class DruidSchemaConcurrencyTest extends DruidSchemaTestCommon
         baseView,
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
-        new BrokerSegmentWatcherConfig()
+        new BrokerSegmentWatcherConfig(),
+        new BrokerDataSourceMultiComplementConfig(),
+        new DruidProcessingConfig()
+        {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
   }
 

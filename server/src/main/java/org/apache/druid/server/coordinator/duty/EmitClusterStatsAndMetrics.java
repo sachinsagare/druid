@@ -34,7 +34,7 @@ import org.apache.druid.server.coordinator.LoadQueuePeon;
 import org.apache.druid.server.coordinator.ServerHolder;
 import org.apache.druid.server.coordinator.rules.LoadRule;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 
 /**
  * Emits stats of the cluster and metrics of the coordination (including segment balancing) process.
@@ -445,7 +445,7 @@ public class EmitClusterStatsAndMetrics implements CoordinatorDuty
 
     // Emit segment metrics
     params.getUsedSegmentsTimelinesPerDataSource().forEach(
-        (String dataSource, VersionedIntervalTimeline<String, DataSegment> dataSourceWithUsedSegments) -> {
+        (String dataSource, NamespacedVersionedIntervalTimeline<String, DataSegment> dataSourceWithUsedSegments) -> {
           long totalSizeOfUsedSegments = dataSourceWithUsedSegments
               .iterateAllObjects()
               .stream()
@@ -468,5 +468,18 @@ public class EmitClusterStatsAndMetrics implements CoordinatorDuty
     emitDutyStats(emitter, "coordinator/time", stats, "runtime");
 
     return params;
+  }
+
+  public static String getNamespace(Object identifier)
+  {
+    if (identifier == null) {
+      return "";
+    }
+    String identifierStr = identifier.toString();
+    int index = identifierStr.indexOf('_');
+    if (index <= 0) {
+      return "";
+    }
+    return identifierStr.substring(0, index);
   }
 }

@@ -49,7 +49,7 @@ import org.apache.druid.segment.SegmentReference;
 import org.apache.druid.segment.join.JoinableFactory;
 import org.apache.druid.server.SegmentManager;
 import org.apache.druid.server.initialization.ServerConfig;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -116,14 +116,14 @@ public class ServerManagerForQueryErrorTest extends ServerManager
 
   @Override
   protected <T> QueryRunner<T> buildQueryRunnerForSegment(
-      Query<T> query,
-      SegmentDescriptor descriptor,
-      QueryRunnerFactory<T, Query<T>> factory,
-      QueryToolChest<T, Query<T>> toolChest,
-      VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline,
-      Function<SegmentReference, SegmentReference> segmentMapFn,
-      AtomicLong cpuTimeAccumulator,
-      Optional<byte[]> cacheKeyPrefix
+          Query<T> query,
+          SegmentDescriptor descriptor,
+          QueryRunnerFactory<T, Query<T>> factory,
+          QueryToolChest<T, Query<T>> toolChest,
+          NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> timeline,
+          Function<SegmentReference, SegmentReference> segmentMapFn,
+          AtomicLong cpuTimeAccumulator,
+          Optional<byte[]> cacheKeyPrefix
   )
   {
     if (query.getContextBoolean(QUERY_RETRY_TEST_CONTEXT_KEY, false)) {

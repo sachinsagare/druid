@@ -16,9 +16,22 @@
   "query/node/ttfb": [
     "server"
   ],
+  "query/node/exception": [
+    "server",
+    "exceptionName"
+  ],
+  "query/node/count": [
+    "dataSource"
+  ],
+  "query/intervalChunk/time": [
+    "chunkInterval"
+  ],
   "query/success/count": [],
   "query/failed/count": [],
   "query/interrupted/count": [],
+  "query/speculativeExecutionBackupFired/count": [],
+  "query/speculativeExecutionPrimaryWon/count": [],
+  "query/speculativeExecutionPrimaryLost/count": [],
   "query/timeout/count": [],
   "query/wait/time": [
     "segment"
@@ -53,6 +66,9 @@
   "query/cache/total/averageBytes": [],
   "query/cache/total/timeouts": [],
   "query/cache/total/errors": [],
+  "query/mergeBufferMaxNum": [],
+  "query/mergeBufferAvailNum": [],
+  "query/intermResultBufferAvailNum": [],
   "ingest/events/thrownAway": [
     "dataSource"
   ],
@@ -68,7 +84,28 @@
   "ingest/rows/output": [
     "dataSource"
   ],
+  "ingest/rows/inMemory": [
+    "dataSource"
+  ],
+  "ingest/rows/maxInMemory": [
+    "dataSource"
+  ],
+  "ingest/rows/maxInMemoryPerSegment": [
+    "dataSource"
+  ],
+  "ingest/bytes/inMemory": [
+    "dataSource"
+  ],
+  "ingest/bytes/maxInMemory": [
+    "dataSource"
+  ],
   "ingest/persists/count": [
+    "dataSource"
+  ],
+  "ingest/persists/segment": [
+    "dataSource"
+  ],
+  "ingest/persists/all": [
     "dataSource"
   ],
   "ingest/persists/time": [
@@ -108,6 +145,15 @@
     "dataSource"
   ],
   "ingest/kafka/avgLag": [
+    "dataSource"
+  ],
+  "ingest/kafka/timeLag": [
+    "dataSource"
+  ],
+  "ingest/kafka/maxTimeLag": [
+    "dataSource"
+  ],
+  "ingest/kafka/avgTimeLag": [
     "dataSource"
   ],
   "task/run/time": [
@@ -179,6 +225,9 @@
     "dataSource"
   ],
   "segment/pendingDelete": [],
+  "thread/active": [],
+  "thread/task/pending": [],
+  "thread/maxCount" : [],
   "jvm/pool/committed": [],
   "jvm/pool/init": [],
   "jvm/pool/max": [],

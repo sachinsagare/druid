@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.druid.client.BatchServerInventoryView;
+import org.apache.druid.client.BrokerDataSourceLifetimeConfig;
+import org.apache.druid.client.BrokerDataSourceMultiComplementConfig;
 import org.apache.druid.client.BrokerSegmentWatcherConfig;
 import org.apache.druid.client.BrokerServerView;
 import org.apache.druid.client.DruidServer;
@@ -41,6 +43,7 @@ import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.java.util.http.client.HttpClient;
 import org.apache.druid.metadata.IndexerSQLMetadataStorageCoordinator;
 import org.apache.druid.metadata.TestDerbyConnector;
+import org.apache.druid.query.DruidProcessingConfig;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.QueryRunnerTestHelper;
 import org.apache.druid.query.QueryToolChestWarehouse;
@@ -298,7 +301,17 @@ public class DatasourceOptimizerTest extends CuratorTestBase
         baseView,
         new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()),
         new NoopServiceEmitter(),
-        new BrokerSegmentWatcherConfig()
+        new BrokerSegmentWatcherConfig(),
+        new BrokerDataSourceMultiComplementConfig(),
+        new DruidProcessingConfig()
+        {
+          @Override
+          public String getFormatString()
+          {
+            return null;
+          }
+        },
+        new BrokerDataSourceLifetimeConfig()
     );
     baseView.start();
   }

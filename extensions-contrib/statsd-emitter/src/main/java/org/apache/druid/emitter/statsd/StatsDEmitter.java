@@ -54,6 +54,8 @@ public class StatsDEmitter implements Emitter
   private static final String TAG_SERVICE = "druid_service";
   private static final String TAG_FEED = "feed";
   private static final String TAG_SEVERITY = "severity";
+  private static final Pattern DENY_CHAR_PATTERN = Pattern.compile("[\\[\\]]");
+  private static final String DENY_CHAR_REPLACEMENT = "-";
 
   static StatsDEmitter of(StatsDEmitterConfig config, ObjectMapper mapper)
   {
@@ -126,7 +128,10 @@ public class StatsDEmitter implements Emitter
     }
     nameBuilder.add(metric);
 
-    StatsDMetric statsDMetric = converter.addFilteredUserDims(service, metric, userDims, dimsBuilder);
+    if (!config.getIncludeHost()) {
+      host = null;
+    }
+    StatsDMetric statsDMetric = converter.addFilteredUserDims(service, host, metric, value, userDims, dimsBuilder);
 
     if (statsDMetric != null) {
       List<String> fullNameList;
@@ -140,9 +145,6 @@ public class StatsDEmitter implements Emitter
         tags = tagsFromMap(dimsBuilder.build());
       } else {
         ImmutableList.Builder<String> fullNameBuilder = new ImmutableList.Builder<>();
-        if (config.getIncludeHost()) {
-          fullNameBuilder.add(host);
-        }
         fullNameBuilder.addAll(nameBuilder.build());
         fullNameBuilder.addAll(dimsBuilder.build().values());
 
@@ -154,6 +156,7 @@ public class StatsDEmitter implements Emitter
       fullName = StringUtils.replaceChar(fullName, DRUID_METRIC_SEPARATOR, config.getSeparator());
       fullName = STATSD_SEPARATOR.matcher(fullName).replaceAll(config.getSeparator());
       fullName = BLANK.matcher(fullName).replaceAll(config.getBlankHolder());
+      fullName = DENY_CHAR_PATTERN.matcher(fullName).replaceAll(DENY_CHAR_REPLACEMENT);
 
       if (config.isDogstatsd() && (value instanceof Float || value instanceof Double)) {
         switch (statsDMetric.type) {

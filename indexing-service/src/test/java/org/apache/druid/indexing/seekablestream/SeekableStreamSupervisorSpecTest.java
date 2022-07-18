@@ -19,6 +19,7 @@
 
 package org.apache.druid.indexing.seekablestream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -197,7 +198,7 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
       };
     }
 
-    @Override
+    /*@Override*/
     protected List<SeekableStreamIndexTask<String, String, ByteEntity>> createIndexTasks(
             int replicas,
             String baseSequenceName,
@@ -354,6 +355,18 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
     {
       return partitionNumbers;
     }
+
+    @Override
+    protected void updateLatestSequenceFromStream()
+    {
+
+    }
+
+    @Override
+    protected List<SeekableStreamIndexTask<String, String, ByteEntity>> createIndexTasks(int replicas, String baseSequenceName, ObjectMapper sortingMapper, TreeMap<Integer, Map<String, String>> sequenceOffsets, Integer streamPartitions, SeekableStreamIndexTaskIOConfig taskIoConfig, SeekableStreamIndexTaskTuningConfig taskTuningConfig, RowIngestionMetersFactory rowIngestionMetersFactory) throws JsonProcessingException
+    {
+      return null;
+    }
   }
 
 
@@ -501,6 +514,9 @@ public class SeekableStreamSupervisorSpecTest extends EasyMockSupport
                 null,
                 null,
                 null,
+                null,
+                null,
+                false,
                 null
         )
         {

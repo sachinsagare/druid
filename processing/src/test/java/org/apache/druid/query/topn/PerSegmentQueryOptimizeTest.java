@@ -19,6 +19,7 @@
 
 package org.apache.druid.query.topn;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.druid.java.util.common.Intervals;
 import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.SegmentDescriptor;
@@ -105,7 +106,28 @@ public class PerSegmentQueryOptimizeTest
   private PerSegmentQueryOptimizationContext getOptimizationContext(Interval segmentInterval)
   {
     return new PerSegmentQueryOptimizationContext(
-        new SegmentDescriptor(segmentInterval, "0", 0)
+        new SegmentDescriptor(segmentInterval, "0", 0), ImmutableSet.of("test")
     );
   }
+
+  @Test
+  public void testFilteredAggregatorOptimizeNoMetricsAvailable()
+  {
+    LongSumAggregatorFactory longSumAggregatorFactory = new LongSumAggregatorFactory("test", "test");
+    FilteredAggregatorFactory aggregatorFactory = new FilteredAggregatorFactory(
+        longSumAggregatorFactory,
+        new IntervalDimFilter(
+            "not_time",
+            Collections.singletonList(Intervals.utc(1000, 2000)),
+            null
+        )
+    );
+    Interval include = Intervals.utc(1500, 1600);
+    PerSegmentQueryOptimizationContext context = new PerSegmentQueryOptimizationContext(
+        new SegmentDescriptor(include, "0", 0), ImmutableSet.of("dontexist")
+    );
+    AggregatorFactory noopAgg = aggregatorFactory.optimizeForSegment(context);
+    Assert.assertTrue(noopAgg instanceof FilteredAggregatorFactory);
+  }
+
 }

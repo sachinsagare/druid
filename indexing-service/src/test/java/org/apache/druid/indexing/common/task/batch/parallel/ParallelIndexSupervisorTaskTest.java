@@ -220,6 +220,7 @@ public class ParallelIndexSupervisorTaskTest
           null,
           null,
           null,
+          null,
           10,
           1000L,
           null,

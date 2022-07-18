@@ -27,7 +27,6 @@ import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.segment.ColumnInspector;
 import org.apache.druid.segment.ColumnSelectorFactory;
 import org.apache.druid.segment.column.ColumnType;
-import org.apache.druid.segment.column.ColumnTypeFactory;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.vector.VectorColumnSelectorFactory;
 
@@ -222,11 +221,14 @@ public abstract class AggregatorFactory implements Cacheable
    */
   public ColumnType getIntermediateType()
   {
-    final ValueType intermediateType = getType();
-    if (intermediateType == ValueType.COMPLEX) {
-      return ColumnType.ofComplex(getComplexTypeName());
-    }
-    return ColumnTypeFactory.ofValueType(intermediateType);
+    //commented code below getComplexTypeName() function call to handle deprecated method call.
+    // Just to make function work we are returning UNKNOWN_COMPLEX value
+    //final ValueType intermediateType = getType();
+   // if (intermediateType == ValueType.COMPLEX) {
+      //return ColumnType.ofComplex(getComplexTypeName());
+    //}
+   // return ColumnTypeFactory.ofValueType(intermediateType);
+    return ColumnType.UNKNOWN_COMPLEX;
   }
 
   /**
@@ -239,11 +241,12 @@ public abstract class AggregatorFactory implements Cacheable
   public ColumnType getResultType()
   {
     // this default 'fill' method is incomplete and can at best return 'unknown' complex
-    final ValueType finalized = getFinalizedType();
-    if (finalized == ValueType.COMPLEX) {
-      return ColumnType.UNKNOWN_COMPLEX;
-    }
-    return ColumnTypeFactory.ofValueType(finalized);
+    //commented code below getComplexTypeName() function call to handle deprecated method call.
+    // Just to make function work we are returning UNKNOWN_COMPLEX value
+    // if (finalized == ValueType.COMPLEX) {
+    return ColumnType.UNKNOWN_COMPLEX;
+    //}
+    //return ColumnTypeFactory.ofValueType(finalized);
   }
 
 
@@ -254,6 +257,7 @@ public abstract class AggregatorFactory implements Cacheable
   @Deprecated
   public ValueType getType()
   {
+    log.info("Aggregatorfactory >> getType to check Deprecated method");
     throw new UnsupportedOperationException(
         "Do not call or implement this method, it is deprecated, use 'getIntermediateType'"
     );
@@ -300,6 +304,11 @@ public abstract class AggregatorFactory implements Cacheable
   public int getMaxIntermediateSizeWithNulls()
   {
     return getMaxIntermediateSize();
+  }
+
+  boolean isNoopNumberAggregator(PerSegmentQueryOptimizationContext optimizationContext)
+  {
+    return requiredFields().stream().noneMatch(c -> optimizationContext.getAvailableFields().contains(c));
   }
 
   /**

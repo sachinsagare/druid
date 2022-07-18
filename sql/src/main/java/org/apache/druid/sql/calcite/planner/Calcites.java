@@ -131,7 +131,7 @@ public class Calcites
    * Convert {@link RelDataType} to the most appropriate {@link ValueType}, coercing all ARRAY types to STRING (until
    * the time is right and we are more comfortable handling Druid ARRAY types in all parts of the engine).
    *
-   * Callers who are not scared of ARRAY types should isntead call {@link #getValueTypeForRelDataTypeFull(RelDataType)},
+     * Callers who are not scared of ARRAY types should isntead call {@link #getValueTypeForRelDataTypeFull(RelDataType)},
    * which returns the most accurate conversion of {@link RelDataType} to {@link ValueType}.
    */
   @Nullable
@@ -173,6 +173,29 @@ public class Calcites
         return ColumnType.LONG_ARRAY;
       }
       return ColumnType.STRING_ARRAY;
+    } else {
+      return null;
+    }
+  }
+
+  public static ValueType getValueTypeForSqlTypeName(SqlTypeName sqlTypeName)
+  {
+    if (SqlTypeName.FLOAT == sqlTypeName) {
+      return ValueType.FLOAT;
+    } else if (SqlTypeName.FRACTIONAL_TYPES.contains(sqlTypeName)) {
+      return ValueType.DOUBLE;
+    } else if (SqlTypeName.TIMESTAMP == sqlTypeName
+            || SqlTypeName.DATE == sqlTypeName
+            || SqlTypeName.BOOLEAN == sqlTypeName
+            || SqlTypeName.INT_TYPES.contains(sqlTypeName)) {
+      return ValueType.LONG;
+    } else if (SqlTypeName.CHAR_TYPES.contains(sqlTypeName)) {
+      return ValueType.STRING;
+    } else if (SqlTypeName.OTHER == sqlTypeName) {
+      return ValueType.COMPLEX;
+    } else if (sqlTypeName == SqlTypeName.ARRAY) {
+      // until we have array ValueType, this will let us have array constants and use them at least
+      return ValueType.STRING;
     } else {
       return null;
     }

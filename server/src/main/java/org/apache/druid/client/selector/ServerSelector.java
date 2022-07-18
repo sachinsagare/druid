@@ -19,6 +19,7 @@
 
 package org.apache.druid.client.selector;
 
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
 import org.apache.druid.client.DataSegmentInterner;
 import org.apache.druid.query.Query;
@@ -29,6 +30,7 @@ import org.apache.druid.timeline.DataSegment;
 import org.apache.druid.timeline.Overshadowable;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -170,6 +172,23 @@ public class ServerSelector implements Overshadowable<ServerSelector>
       }
       return strategy.pick(query, realtimeServers, segment.get());
     }
+  }
+
+  @NotNull
+  public List<QueryableDruidServer> pickForPriority(int queryPriority, int numServersToPick)
+  {
+    synchronized (this) {
+      if (!historicalServers.isEmpty()) {
+        return strategy.pick(queryPriority, historicalServers, segment.get(), numServersToPick);
+      }
+      return strategy.pick(queryPriority, realtimeServers, segment.get(), numServersToPick);
+    }
+  }
+
+  @Nullable
+  public QueryableDruidServer pickForPriority(int queryPriority)
+  {
+    return Iterables.getOnlyElement(pickForPriority(queryPriority, 1), null);
   }
 
   @Override

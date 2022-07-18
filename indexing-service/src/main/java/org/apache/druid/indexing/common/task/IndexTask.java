@@ -1184,6 +1184,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
 
     private final AppendableIndexSpec appendableIndexSpec;
     private final int maxRowsInMemory;
+    private final int maxRowsInMemoryPerSegment;
     private final long maxBytesInMemory;
     private final boolean skipBytesInMemoryOverheadCheck;
     private final int maxColumnsToMerge;
@@ -1259,6 +1260,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
         @JsonProperty("maxRowsPerSegment") @Deprecated @Nullable Integer maxRowsPerSegment,
         @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
         @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
+        @JsonProperty("maxRowsInMemoryPerSegment") @Nullable Integer maxRowsInMemoryPerSegment,
         @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
         @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
         @JsonProperty("maxTotalRows") @Deprecated @Nullable Long maxTotalRows,
@@ -1285,6 +1287,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       this(
           appendableIndexSpec,
           maxRowsInMemory != null ? maxRowsInMemory : rowFlushBoundary_forBackCompatibility,
+          maxRowsInMemoryPerSegment != null ? maxRowsInMemoryPerSegment : maxRowsInMemory,
           maxBytesInMemory != null ? maxBytesInMemory : 0,
           skipBytesInMemoryOverheadCheck != null ? skipBytesInMemoryOverheadCheck : DEFAULT_SKIP_BYTES_IN_MEMORY_OVERHEAD_CHECK,
           getPartitionsSpec(
@@ -1318,12 +1321,13 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
 
     private IndexTuningConfig()
     {
-      this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+      this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     private IndexTuningConfig(
         @Nullable AppendableIndexSpec appendableIndexSpec,
         @Nullable Integer maxRowsInMemory,
+        @Nullable Integer maxRowsInMemoryPerSegment,
         @Nullable Long maxBytesInMemory,
         @Nullable Boolean skipBytesInMemoryOverheadCheck,
         @Nullable PartitionsSpec partitionsSpec,
@@ -1344,6 +1348,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
       this.maxRowsInMemory = maxRowsInMemory == null ? TuningConfig.DEFAULT_MAX_ROWS_IN_MEMORY : maxRowsInMemory;
+      this.maxRowsInMemoryPerSegment = maxRowsInMemoryPerSegment == null ? this.maxRowsInMemory : maxRowsInMemoryPerSegment;
       // initializing this to 0, it will be lazily initialized to a value
       // @see #getMaxBytesInMemoryOrDefault()
       this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
@@ -1393,6 +1398,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       return new IndexTuningConfig(
           appendableIndexSpec,
           maxRowsInMemory,
+          maxRowsInMemoryPerSegment,
           maxBytesInMemory,
           skipBytesInMemoryOverheadCheck,
           partitionsSpec,
@@ -1417,6 +1423,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
       return new IndexTuningConfig(
           appendableIndexSpec,
           maxRowsInMemory,
+          maxRowsInMemoryPerSegment,
           maxBytesInMemory,
           skipBytesInMemoryOverheadCheck,
           partitionsSpec,
@@ -1446,6 +1453,13 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     @JsonProperty
     @Override
     public int getMaxRowsInMemory()
+    {
+      return maxRowsInMemory;
+    }
+
+    @JsonProperty
+    @Override
+    public int getMaxRowsInMemoryPerSegment()
     {
       return maxRowsInMemory;
     }
@@ -1515,6 +1529,12 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     public boolean isReportParseExceptions()
     {
       return reportParseExceptions;
+    }
+
+    @Override
+    public boolean isEnableInMemoryBitmap()
+    {
+      return false;
     }
 
     @JsonProperty
@@ -1681,6 +1701,7 @@ public class IndexTask extends AbstractBatchIndexTask implements ChatHandler
     {
       return "IndexTuningConfig{" +
              "maxRowsInMemory=" + maxRowsInMemory +
+             ", maxRowsInMemoryPerSegment=" + maxRowsInMemoryPerSegment +
              ", maxBytesInMemory=" + maxBytesInMemory +
              ", skipBytesInMemoryOverheadCheck=" + skipBytesInMemoryOverheadCheck +
              ", maxColumnsToMerge=" + maxColumnsToMerge +

@@ -77,6 +77,7 @@ public class KinesisSupervisorTuningConfig extends KinesisIndexTaskTuningConfig
         null,
         null,
         null,
+        null,
         null
     );
   }
@@ -84,6 +85,7 @@ public class KinesisSupervisorTuningConfig extends KinesisIndexTaskTuningConfig
   public KinesisSupervisorTuningConfig(
       @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
       @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxRowsInMemoryPerSegment") Integer maxRowsInMemoryPerSegment,
       @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
@@ -120,6 +122,7 @@ public class KinesisSupervisorTuningConfig extends KinesisIndexTaskTuningConfig
     super(
         appendableIndexSpec,
         maxRowsInMemory,
+        maxRowsInMemoryPerSegment,
         maxBytesInMemory,
         skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
@@ -217,6 +220,7 @@ public class KinesisSupervisorTuningConfig extends KinesisIndexTaskTuningConfig
   {
     return "KinesisSupervisorTuningConfig{" +
            "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsInMemoryPerSegment=" + getMaxRowsInMemoryPerSegment() +
            ", maxBytesInMemory=" + getMaxBytesInMemory() +
            ", skipBytesInMemoryOverheadCheck=" + isSkipBytesInMemoryOverheadCheck() +
            ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
@@ -255,6 +259,7 @@ public class KinesisSupervisorTuningConfig extends KinesisIndexTaskTuningConfig
     return new KinesisIndexTaskTuningConfig(
         getAppendableIndexSpec(),
         getMaxRowsInMemory(),
+        getMaxRowsInMemoryPerSegment(),
         getMaxBytesInMemory(),
         isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),

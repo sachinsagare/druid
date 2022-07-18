@@ -19,7 +19,7 @@
 
 package org.apache.druid.query;
 
-import com.google.common.collect.ImmutableMap;
+
 import com.google.common.collect.Iterables;
 import org.apache.druid.collections.bitmap.BitmapFactory;
 import org.apache.druid.java.util.common.StringUtils;
@@ -145,9 +145,17 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public void exceptionName(String exceptionName)
+  {
+    setDimension("exceptionName", exceptionName);
+  }
+  @Override
   public void context(QueryType query)
   {
-    setDimension("context", query.getContext() == null ? ImmutableMap.of() : query.getContext());
+    if (query.getContext() != null) {
+      query.getContext().entrySet()
+              .forEach(k -> setDimension(k.getKey(), String.valueOf(k.getValue())));
+    }
   }
 
   @Override
@@ -299,10 +307,22 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   }
 
   @Override
+  public QueryMetrics<QueryType> reportTimeToAcquireHttpResource(long timeNs)
+  {
+    return reportMillisTimeMetric("query/wait/node/http", timeNs);
+  }
+
+  @Override
   public QueryMetrics<QueryType> reportParallelMergeParallelism(int parallelism)
   {
     // Don't emit by default.
     return this;
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportNodeException(long count)
+  {
+    return reportMetric("query/node/exception", count);
   }
 
   @Override
@@ -345,6 +365,19 @@ public class DefaultQueryMetrics<QueryType extends Query<?>> implements QueryMet
   {
     // Don't emit by default.
     return this;
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportNodeCount(int nodeCount)
+  {
+    return reportMetric("query/node/count", nodeCount);
+  }
+
+  @Override
+  public QueryMetrics<QueryType> reportTimeout(String host)
+  {
+    setDimension("node", host);
+    return reportMetric("query/node/timeout", 1);
   }
 
   @Override

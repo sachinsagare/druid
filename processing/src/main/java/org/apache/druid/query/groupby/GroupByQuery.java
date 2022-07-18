@@ -43,8 +43,10 @@ import org.apache.druid.java.util.common.guava.Sequence;
 import org.apache.druid.java.util.common.guava.Sequences;
 import org.apache.druid.query.BaseQuery;
 import org.apache.druid.query.DataSource;
+import org.apache.druid.query.PerSegmentQueryOptimizationContext;
 import org.apache.druid.query.Queries;
 import org.apache.druid.query.Query;
+import org.apache.druid.query.QueryContexts;
 import org.apache.druid.query.QueryDataSource;
 import org.apache.druid.query.TableDataSource;
 import org.apache.druid.query.aggregation.AggregatorFactory;
@@ -57,6 +59,7 @@ import org.apache.druid.query.groupby.orderby.DefaultLimitSpec;
 import org.apache.druid.query.groupby.orderby.LimitSpec;
 import org.apache.druid.query.groupby.orderby.NoopLimitSpec;
 import org.apache.druid.query.groupby.orderby.OrderByColumnSpec;
+import org.apache.druid.query.groupby.zerofill.ZeroFilledDimensionSpec;
 import org.apache.druid.query.ordering.StringComparator;
 import org.apache.druid.query.ordering.StringComparators;
 import org.apache.druid.query.spec.LegacySegmentSpec;
@@ -116,6 +119,8 @@ public class GroupByQuery extends BaseQuery<ResultRow>
 
   private final Function<Sequence<ResultRow>, Sequence<ResultRow>> postProcessingFn;
   private final RowSignature resultRowSignature;
+
+  @Nullable private final ZeroFilledDimensionSpec zeroFilledDimensionSpec;
 
   /**
    * This is set when we know that all rows will have the same timestamp, and allows us to not actually store
@@ -179,13 +184,20 @@ public class GroupByQuery extends BaseQuery<ResultRow>
           }
       );
     }
+
+    if (zeroFilledDimensionSpec != null) {
+      // We want to zero fill before limit spec and havingSpecs are applied
+      postProcessingFn = Functions.compose(
+          postProcessingFn,
+          input -> zeroFilledDimensionSpec.zeroFill(this, input));
+    }
     return postProcessingFn;
   }
 
   /**
-   * A private constructor that avoids recomputing postProcessingFn.
+   * A protected constructor that avoids recomputing postProcessingFn.
    */
-  private GroupByQuery(
+  protected GroupByQuery(
       final DataSource dataSource,
       final QuerySegmentSpec querySegmentSpec,
       final VirtualColumns virtualColumns,
@@ -214,7 +226,8 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     this.postAggregatorSpecs = Queries.prepareAggregations(
         this.dimensions.stream().map(DimensionSpec::getOutputName).collect(Collectors.toList()),
         this.aggregatorSpecs,
-        postAggregatorSpecs == null ? ImmutableList.of() : postAggregatorSpecs
+        postAggregatorSpecs == null ? ImmutableList.of() : postAggregatorSpecs,
+        QueryContexts.isIgnoreMissingDepPostAgg(this)
     );
 
     // Verify no duplicate names between dimensions, aggregators, and postAggregators.
@@ -229,12 +242,23 @@ public class GroupByQuery extends BaseQuery<ResultRow>
 
     this.postProcessingFn = postProcessingFn != null ? postProcessingFn : makePostProcessingFn();
 
+    this.zeroFilledDimensionSpec = getOrDefaultZeroFilledDimensionSpec();
+
     // Check if limit push down configuration is valid and check if limit push down will be applied
     this.canDoLimitPushDown = canDoLimitPushDown(
         this.limitSpec,
         this.havingSpec,
         this.subtotalsSpec
     );
+  }
+
+  @Nullable
+  private ZeroFilledDimensionSpec getOrDefaultZeroFilledDimensionSpec()
+  {
+    if (getContextValue(ZeroFilledDimensionSpec.ZERO_FILLED_DIMS_CONTEXT_KEY) == null) {
+      return null;
+    }
+    return new ZeroFilledDimensionSpec(getContext(), dimensions);
   }
 
   @Nullable
@@ -402,6 +426,14 @@ public class GroupByQuery extends BaseQuery<ResultRow>
   }
 
   /**
+   * Returns the position of the first dimension in ResultRows for this query.
+   */
+  public int getResultRowDimensionEnd()
+  {
+    return getResultRowDimensionStart() + dimensions.size();
+  }
+
+  /**
    * Returns the position of the first aggregator in ResultRows for this query.
    */
   public int getResultRowAggregatorStart()
@@ -474,10 +506,24 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     );
   }
 
+  @Override
+  public GroupByQuery optimizeForSegment(PerSegmentQueryOptimizationContext optimizationContext)
+  {
+    if (QueryContexts.isGroupByOptimizeAggregator(this)) {
+      List<AggregatorFactory> optimizedAggs = new ArrayList<>();
+      for (AggregatorFactory aggregatorFactory : aggregatorSpecs) {
+        optimizedAggs.add(aggregatorFactory.optimizeForSegment(optimizationContext));
+      }
+      return new Builder(this).setAggregatorSpecs(optimizedAggs).build();
+    }
+    return this;
+  }
+
   private boolean validateAndGetForceLimitPushDown()
   {
     final boolean forcePushDown = getContextBoolean(GroupByQueryConfig.CTX_KEY_FORCE_LIMIT_PUSH_DOWN, false);
-    if (forcePushDown) {
+    final boolean ignoreForcePushDownValidation = getContextBoolean(GroupByQueryConfig.CTX_KEY_IGNORE_FORCE_LIMIT_PUSH_DOWN_VALIDATION, false);
+    if (forcePushDown && !ignoreForcePushDownValidation) {
       if (!(limitSpec instanceof DefaultLimitSpec)) {
         throw new IAE("When forcing limit push down, a limit spec must be provided.");
       }
@@ -519,6 +565,10 @@ public class GroupByQuery extends BaseQuery<ResultRow>
       @Nullable List<List<String>> subtotalsSpec
   )
   {
+    // If we're zero filling dimensions we should not push limit down as it will complicate zero filling
+    if (zeroFilledDimensionSpec != null) {
+      return false;
+    }
     if (subtotalsSpec != null && !subtotalsSpec.isEmpty()) {
       return false;
     }
@@ -851,6 +901,7 @@ public class GroupByQuery extends BaseQuery<ResultRow>
     return new Builder(this).setLimitSpec(limitSpec).build();
   }
 
+  @Override
   public GroupByQuery withAggregatorSpecs(final List<AggregatorFactory> aggregatorSpecs)
   {
     return new Builder(this).setAggregatorSpecs(aggregatorSpecs).build();

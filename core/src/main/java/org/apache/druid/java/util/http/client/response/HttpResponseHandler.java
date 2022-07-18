@@ -73,6 +73,11 @@ public interface HttpResponseHandler<IntermediateType, FinalType>
       long chunkNum
   );
 
+  default void handleHttpConnectionAcquired()
+  {
+
+  }
+
   /**
    * Called after the final handleResponse() or handleChunk() call, signifying that no more data
    * will arrive.
@@ -84,6 +89,16 @@ public interface HttpResponseHandler<IntermediateType, FinalType>
   ClientResponse<FinalType> done(ClientResponse<IntermediateType> clientResponse);
 
   void exceptionCaught(ClientResponse<IntermediateType> clientResponse, Throwable e);
+
+  default boolean skipDataOnException()
+  {
+    return false;
+  }
+
+  default void reportExceptionMetric(String exceptionName)
+  {
+
+  }
 
   interface TrafficCop
   {

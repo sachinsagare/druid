@@ -55,18 +55,26 @@ public class FileRequestLogger implements RequestLogger
   private final ScheduledExecutorService exec;
   private final File baseDir;
   private final DateTimeFormatter filePattern;
+  private final long latencyThresholdMs;
 
   private final Object lock = new Object();
 
   private DateTime currentDay;
   private OutputStreamWriter fileWriter;
 
-  public FileRequestLogger(ObjectMapper objectMapper, ScheduledExecutorService exec, File baseDir, String filePattern)
+  public FileRequestLogger(
+      ObjectMapper objectMapper,
+      ScheduledExecutorService exec,
+      File baseDir,
+      String filePattern,
+      long latencyThresholdMs
+  )
   {
     this.exec = exec;
     this.objectMapper = objectMapper;
     this.baseDir = baseDir;
     this.filePattern = DateTimeFormat.forPattern(filePattern);
+    this.latencyThresholdMs = latencyThresholdMs;
   }
 
   @LifecycleStart
@@ -77,19 +85,19 @@ public class FileRequestLogger implements RequestLogger
       FileUtils.mkdirp(baseDir);
 
       MutableDateTime mutableDateTime = DateTimes.nowUtc().toMutableDateTime(ISOChronology.getInstanceUTC());
-      mutableDateTime.setMillisOfDay(0);
+      mutableDateTime.setMinuteOfHour(0);
       synchronized (lock) {
         currentDay = mutableDateTime.toDateTime(ISOChronology.getInstanceUTC());
 
         fileWriter = getFileWriter();
       }
-      long nextDay = currentDay.plusDays(1).getMillis();
-      Duration initialDelay = new Duration(nextDay - System.currentTimeMillis());
+      long nextHour = currentDay.plusHours(1).getMillis();
+      Duration initialDelay = new Duration(nextHour - System.currentTimeMillis());
 
       ScheduledExecutors.scheduleWithFixedDelay(
           exec,
           initialDelay,
-          Duration.standardDays(1),
+          Duration.standardHours(1),
           new Callable<ScheduledExecutors.Signal>()
           {
             @Override
@@ -141,13 +149,17 @@ public class FileRequestLogger implements RequestLogger
   @Override
   public void logNativeQuery(RequestLogLine requestLogLine) throws IOException
   {
-    logToFile(requestLogLine.getNativeQueryLine(objectMapper));
+    if (requestLogLine.getLatencyMs() >= latencyThresholdMs) {
+      logToFile(requestLogLine.getNativeQueryLine(objectMapper));
+    }
   }
 
   @Override
   public void logSqlQuery(RequestLogLine requestLogLine) throws IOException
   {
-    logToFile(requestLogLine.getSqlQueryLine(objectMapper));
+    if (requestLogLine.getLatencyMs() >= latencyThresholdMs) {
+      logToFile(requestLogLine.getSqlQueryLine(objectMapper));
+    }
   }
 
   private void logToFile(final String message) throws IOException

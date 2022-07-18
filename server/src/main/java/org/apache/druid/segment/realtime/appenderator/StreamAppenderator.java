@@ -72,7 +72,7 @@ import org.apache.druid.segment.realtime.FireHydrant;
 import org.apache.druid.segment.realtime.plumber.Sink;
 import org.apache.druid.server.coordination.DataSegmentAnnouncer;
 import org.apache.druid.timeline.DataSegment;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
@@ -134,7 +134,7 @@ public class StreamAppenderator implements Appenderator
    */
   private final ConcurrentMap<SegmentIdWithShardSpec, Sink> sinks = new ConcurrentHashMap<>();
   private final Set<SegmentIdWithShardSpec> droppingSinks = Sets.newConcurrentHashSet();
-  private final VersionedIntervalTimeline<String, Sink> sinkTimeline;
+  private final NamespacedVersionedIntervalTimeline<String, Sink> sinkTimeline;
   private final long maxBytesTuningConfig;
   private final boolean skipBytesInMemoryOverheadCheck;
 
@@ -203,7 +203,7 @@ public class StreamAppenderator implements Appenderator
     this.parseExceptionHandler = Preconditions.checkNotNull(parseExceptionHandler, "parseExceptionHandler");
 
     if (sinkQuerySegmentWalker == null) {
-      this.sinkTimeline = new VersionedIntervalTimeline<>(
+      this.sinkTimeline = new NamespacedVersionedIntervalTimeline<>(
           String.CASE_INSENSITIVE_ORDER
       );
     } else {
@@ -464,7 +464,8 @@ public class StreamAppenderator implements Appenderator
           tuningConfig.getAppendableIndexSpec(),
           tuningConfig.getMaxRowsInMemory(),
           maxBytesTuningConfig,
-          null
+          null,
+          false
       );
       bytesCurrentlyInMemory.addAndGet(calculateSinkMemoryInUsed(retVal));
 
@@ -479,7 +480,7 @@ public class StreamAppenderator implements Appenderator
 
       sinks.put(identifier, retVal);
       metrics.setSinkCount(sinks.size());
-      sinkTimeline.add(retVal.getInterval(), retVal.getVersion(), identifier.getShardSpec().createChunk(retVal));
+      sinkTimeline.add(NamespacedVersionedIntervalTimeline.getNamespace(identifier.getShardSpec().getIdentifier()), retVal.getInterval(), retVal.getVersion(), identifier.getShardSpec().createChunk(retVal));
     }
 
     return retVal;
@@ -1224,11 +1225,13 @@ public class StreamAppenderator implements Appenderator
             tuningConfig.getMaxRowsInMemory(),
             maxBytesTuningConfig,
             null,
-            hydrants
+            hydrants,
+            false
         );
         rowsSoFar += currSink.getNumRows();
         sinks.put(identifier, currSink);
         sinkTimeline.add(
+            NamespacedVersionedIntervalTimeline.getNamespace(identifier.getShardSpec().getIdentifier()),
             currSink.getInterval(),
             currSink.getVersion(),
             identifier.getShardSpec().createChunk(currSink)
@@ -1330,6 +1333,7 @@ public class StreamAppenderator implements Appenderator
 
             droppingSinks.remove(identifier);
             sinkTimeline.remove(
+                NamespacedVersionedIntervalTimeline.getNamespace(identifier.getShardSpec().getIdentifier()),
                 sink.getInterval(),
                 sink.getVersion(),
                 identifier.getShardSpec().createChunk(sink)

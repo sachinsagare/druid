@@ -52,6 +52,8 @@ Available Metrics
 |`query/node/bytes`|number of bytes returned from querying individual historical/realtime processes.|id, status, server.| |
 |`query/node/ttfb`|Time to first byte. Milliseconds elapsed until Broker starts receiving the response from individual historical/realtime processes.|id, status, server.|< 1s|
 |`query/node/backpressure`|Milliseconds that the channel to this process has spent suspended due to backpressure.|id, status, server.| |
+|`query/node/count`|Number of individual servers query is sent to run on. |datasource.||
+|`query/intervalChunk/time`|Only emitted if interval chunking is enabled. Milliseconds required to query an interval chunk. This metric is deprecated and will be removed in the future because interval chunking is deprecated. See [Query Context](../querying/query-context.md).|id, status, chunkInterval (if interval chunking is enabled).|< 1s|
 |`query/count`|number of total queries|This metric is only available if the QueryCountStatsMonitor module is included.||
 |`query/success/count`|number of queries successfully processed|This metric is only available if the QueryCountStatsMonitor module is included.||
 |`query/failed/count`|number of failed queries|This metric is only available if the QueryCountStatsMonitor module is included.||
@@ -153,6 +155,9 @@ These metrics are applicable for the Kafka Indexing Service.
 |`ingest/kafka/lag`|Total lag between the offsets consumed by the Kafka indexing tasks and latest offsets in Kafka brokers across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
 |`ingest/kafka/maxLag`|Max lag between the offsets consumed by the Kafka indexing tasks and latest offsets in Kafka brokers across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
 |`ingest/kafka/avgLag`|Average lag between the offsets consumed by the Kafka indexing tasks and latest offsets in Kafka brokers across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
+|`ingest/kafka/timeLag`|Total lag in milliseconds between the time records being put on kafka topic and the time records being processed by Druid across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
+|`ingest/kafka/maxTimeLag`|Max lag in milliseconds between the time records being put on kafka topic and the time records being processed by Druid across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
+|`ingest/kafka/avgTimeLag`|Average lag in milliseconds between the time records being put on kafka topic and the time records being processed by Druid across all partitions. Minimum emission period for this metric is a minute.|dataSource.|Greater than 0, should not be a very high number |
 
 ## Ingestion Metrics (Kinesis Indexing Service)
 
@@ -176,7 +181,14 @@ batch ingestion emit the following metrics. These metrics are deltas for each em
 |`ingest/events/duplicate`|Number of events rejected because the events are duplicated.|dataSource, taskId, taskType.|0|
 |`ingest/events/processed`|Number of events successfully processed per emission period.|dataSource, taskId, taskType.|Equal to your # of events per emission period.|
 |`ingest/rows/output`|Number of Druid rows persisted.|dataSource, taskId, taskType.|Your # of events with rollup.|
+|`ingest/rows/inMemory`|Number of Druid rows currently in memory.|dataSource.|Your # of events with rollup that are currently in memory.|
+|`ingest/rows/MaxInMemory`|Max number of Druid rows configured to be in memory before triggering persistence.|dataSource.|maxRowsInMemory in tuningConfig.|
+|`ingest/rows/MaxInMemoryPerSegment`|Max number of Druid rows configured to be in memory for a single segment before triggering persistence.|dataSource.|Defaults to maxRowsInMemory in tuningConfig.|
+|`ingest/bytes/inMemory`|Number of bytes of Druid rows currently in memory.|dataSource.|Bytes of your events with rollup that are currently in memory.|
+|`ingest/bytes/maxInMemory`|Max number of bytes of Druid rows configured to be in memory before triggering persistence.|dataSource.|maxBytesInMemory in tuningConfig.|
 |`ingest/persists/count`|Number of times persist occurred.|dataSource, taskId, taskType.|Depends on configuration.|
+|`ingest/persists/segment`|Number of times persist occurred for a single segment.|dataSource, taskId, taskType.|Depends on configuration.|
+|`ingest/persists/all`|Number of times persist occurred for all segments.|dataSource, taskId, taskType.|Depends on configuration.|
 |`ingest/persists/time`|Milliseconds spent doing intermediate persist.|dataSource, taskId, taskType.|Depends on configuration. Generally a few minutes at most.|
 |`ingest/persists/cpu`|Cpu time in Nanoseconds spent on doing intermediate persist.|dataSource, taskId, taskType.|Depends on configuration. Generally a few minutes at most.|
 |`ingest/persists/backPressure`|Milliseconds spent creating persist tasks and blocking waiting for them to finish.|dataSource, taskId, taskType.|0 or very low|

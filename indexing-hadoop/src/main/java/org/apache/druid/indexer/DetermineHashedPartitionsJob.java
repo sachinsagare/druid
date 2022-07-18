@@ -208,13 +208,13 @@ public class DetermineHashedPartitionsJob implements Jobby
             actualSpecs.add(
                 new HadoopyShardSpec(
                     new HashBasedNumberedShardSpec(
-                        i,
-                        numberOfShards,
-                        i,
-                        numberOfShards,
-                        null,
-                        partitionFunction,
-                        HadoopDruidIndexerConfig.JSON_MAPPER
+                            i,
+                            numberOfShards,
+                            i,
+                            numberOfShards,
+                            null,
+                            partitionFunction,
+                            HadoopDruidIndexerConfig.JSON_MAPPER
                     ),
                     shardCount++
                 )

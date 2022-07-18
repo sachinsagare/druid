@@ -501,12 +501,12 @@ public class BatchDeltaIngestionTest
                 new HadoopyShardSpec(
                     new HashBasedNumberedShardSpec(
                         0,
-                        1,
-                        0,
-                        1,
-                        null,
-                        HashPartitionFunction.MURMUR3_32_ABS,
-                        HadoopDruidIndexerConfig.JSON_MAPPER
+                           1,
+                            0,
+                         1,
+                    null,
+                            HashPartitionFunction.MURMUR3_32_ABS,
+                            HadoopDruidIndexerConfig.JSON_MAPPER
                     ),
                     0
                 )

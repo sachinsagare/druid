@@ -320,7 +320,7 @@ public abstract class BaseAppenderatorDriver implements Closeable
    *
    * @throws IOException if an exception occurs while allocating a segment
    */
-  private SegmentIdWithShardSpec getSegment(
+  public SegmentIdWithShardSpec getSegment(
       final InputRow row,
       final String sequenceName,
       final boolean skipSegmentLineageCheck

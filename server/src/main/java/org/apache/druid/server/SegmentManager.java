@@ -36,8 +36,8 @@ import org.apache.druid.segment.join.table.ReferenceCountingIndexedTable;
 import org.apache.druid.segment.loading.SegmentLoader;
 import org.apache.druid.segment.loading.SegmentLoadingException;
 import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 import org.apache.druid.timeline.SegmentId;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
 import org.apache.druid.timeline.partition.PartitionChunk;
 import org.apache.druid.timeline.partition.ShardSpec;
 import org.apache.druid.utils.CollectionUtils;
@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -67,8 +68,8 @@ public class SegmentManager
    */
   public static class DataSourceState
   {
-    private final VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline =
-        new VersionedIntervalTimeline<>(Ordering.natural());
+    private final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> timeline =
+        new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
 
     private final ConcurrentHashMap<SegmentId, ReferenceCountingIndexedTable> tablesLookup = new ConcurrentHashMap<>();
     private long totalSegmentSize;
@@ -86,7 +87,7 @@ public class SegmentManager
       numSegments--;
     }
 
-    public VersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline()
+    public NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> getTimeline()
     {
       return timeline;
     }
@@ -163,7 +164,7 @@ public class SegmentManager
    *
    * @throws IllegalStateException if 'analysis' does not represent a scan-based datasource of a single table
    */
-  public Optional<VersionedIntervalTimeline<String, ReferenceCountingSegment>> getTimeline(DataSourceAnalysis analysis)
+  public Optional<NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment>> getTimeline(DataSourceAnalysis analysis)
   {
     final TableDataSource tableDataSource = getTableDataSource(analysis);
     return Optional.ofNullable(dataSources.get(tableDataSource.getName())).map(DataSourceState::getTimeline);
@@ -210,11 +211,16 @@ public class SegmentManager
    * @param lazy    whether to lazy load columns metadata
    * @param loadFailed callBack to execute when segment lazy load failed
    *
+   * @param loadSegmentIntoPageCacheExec This thread pool is optional. Usually you can give one with
+   *                                     more capacity on bootstrap. If null is specified, the
+   *                                     thread pool to load segments into page cache on download
+   *                                     will be used.
+   *
    * @return true if the segment was newly loaded, false if it was already loaded
    *
    * @throws SegmentLoadingException if the segment cannot be loaded
    */
-  public boolean loadSegment(final DataSegment segment, boolean lazy, SegmentLazyLoadFailCallback loadFailed) throws SegmentLoadingException
+  public boolean loadSegment(final DataSegment segment, boolean lazy, SegmentLazyLoadFailCallback loadFailed, ExecutorService loadSegmentIntoPageCacheExec) throws SegmentLoadingException
   {
     final ReferenceCountingSegment adapter = getSegmentReference(segment, lazy, loadFailed);
 
@@ -225,12 +231,13 @@ public class SegmentManager
         segment.getDataSource(),
         (k, v) -> {
           final DataSourceState dataSourceState = v == null ? new DataSourceState() : v;
-          final VersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
+          final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
               dataSourceState.getTimeline();
           final PartitionChunk<ReferenceCountingSegment> entry = loadedIntervals.findChunk(
-              segment.getInterval(),
-              segment.getVersion(),
-              segment.getShardSpec().getPartitionNum()
+                  NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
+                  segment.getInterval(),
+                  segment.getVersion(),
+                  segment.getShardSpec().getPartitionNum()
           );
 
           if (entry != null) {
@@ -249,11 +256,13 @@ public class SegmentManager
               log.error("Cannot load segment[%s] without IndexedTable, all existing segments are joinable", segment.getId());
             }
             loadedIntervals.add(
+                NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
                 segment.getInterval(),
                 segment.getVersion(),
                 segment.getShardSpec().createChunk(adapter)
             );
             dataSourceState.addSegment(segment);
+            segmentLoader.loadSegmentIntoPageCache(segment, loadSegmentIntoPageCacheExec);
             resultSupplier.set(true);
 
           }
@@ -294,11 +303,12 @@ public class SegmentManager
             log.info("Told to delete a queryable for a dataSource[%s] that doesn't exist.", dataSourceName);
             return null;
           } else {
-            final VersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
+            final NamespacedVersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
                 dataSourceState.getTimeline();
 
             final ShardSpec shardSpec = segment.getShardSpec();
             final PartitionChunk<ReferenceCountingSegment> removed = loadedIntervals.remove(
+                NamespacedVersionedIntervalTimeline.getNamespace(segment.getShardSpec().getIdentifier()),
                 segment.getInterval(),
                 segment.getVersion(),
                 // remove() internally searches for a partitionChunk to remove which is *equal* to the given

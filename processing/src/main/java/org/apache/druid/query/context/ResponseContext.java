@@ -425,6 +425,15 @@ public abstract class ResponseContext
         false);
 
     /**
+     * The number of scanned segments (grouped by tiers and namespaces) for running a query. This
+     * can be used for measuring per-query cost at the client side. Example value format:
+     *   "tier1:namespace1:10,tier2:namespace2:20,tier3:namespace3:30"
+     */
+    public static final Key SEGMENT_COUNT_STATS = new LongKey(
+            "segmentCountStats",
+            false);
+
+    /**
      * The number of rows scanned by {@link org.apache.druid.query.scan.ScanQueryEngine}.
      *
      * Named "count" for backwards compatibility with older data servers that still send this, even though it's now

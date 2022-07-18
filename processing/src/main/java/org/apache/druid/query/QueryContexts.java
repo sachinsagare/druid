@@ -43,6 +43,8 @@ public class QueryContexts
   public static final String MAX_SCATTER_GATHER_BYTES_KEY = "maxScatterGatherBytes";
   public static final String MAX_QUEUED_BYTES_KEY = "maxQueuedBytes";
   public static final String DEFAULT_TIMEOUT_KEY = "defaultTimeout";
+  public static final String BROKER_ENABLE_SPECULATIVE_EXECUTION_KEY = "enableSpeculativeExecution";
+  public static final String BROKER_SPECULATIVE_EXECUTION_WAIT_TIME_MS_KEY = "speculativeExecutionWaitTimeMs";
   public static final String BROKER_PARALLEL_MERGE_KEY = "enableParallelMerge";
   public static final String BROKER_PARALLEL_MERGE_INITIAL_YIELD_ROWS_KEY = "parallelMergeInitialYieldRows";
   public static final String BROKER_PARALLEL_MERGE_SMALL_BATCH_ROWS_KEY = "parallelMergeSmallBatchRows";
@@ -68,6 +70,18 @@ public class QueryContexts
   public static final String ENABLE_DEBUG = "debug";
   public static final String BY_SEGMENT_KEY = "bySegment";
   public static final String BROKER_SERVICE_NAME = "brokerService";
+  public static final String BROKER_ALLOWED_SERVER_KEYWORD = "allowedServerKeyword";
+  public static final String INCLUDE_REALTIME_SERVERS = "includeRealtimeServers";
+  public static final String BROKER_RETURN_EMPTY_RESULTS = "returnEmptyResults";
+  public static final String BROKER_RETURN_SEGMENT_COUNT_STATS = "returnSegmentCountStats";
+  // In a table with multiple namesapces, a query could contains many aggregators that would be irrelevant,
+  // e.g. querying a metric that does not exist on the namespace, that could be expensive if the query requires scanning
+  // large number of rows. Turn this option on to skip executing those irrelevant aggregators.
+  public static final String GROUPBY_OPTIMIZE_AGGREGATOR = "groupbyOptimizeAggregator";
+  public static final String IGNORE_MISSING_DEP_POST_AGG = "ignoreMissingDepPostAgg";
+
+  @Deprecated
+  public static final String CHUNK_PERIOD_KEY = "chunkPeriod";
 
   public static final boolean DEFAULT_BY_SEGMENT = false;
   public static final boolean DEFAULT_POPULATE_CACHE = true;
@@ -90,6 +104,15 @@ public class QueryContexts
   public static final boolean DEFAULT_USE_FILTER_CNF = false;
   public static final boolean DEFAULT_SECONDARY_PARTITION_PRUNING = true;
   public static final boolean DEFAULT_ENABLE_DEBUG = false;
+  public static final boolean DEFAULT_ENABLE_SPECULATIVE_EXECUTION = false;
+  public static final int DEFAULT_SPECULATIVE_EXECUTION_WAIT_TIME_MS = 3000;
+  public static final int DEFAULT_SPECULATIVE_EXECUTION_REPLICAS_NEEDED = 2;
+  public static final boolean DEFAULT_INCLUDE_REALTIME_SERVERS = true;
+  public static final boolean DEFAULT_RETURN_EMPTY_RESULTS = false;
+  public static final boolean DEFAULT_RETURN_SEGMENT_COUNT_STATS = false;
+  public static final boolean DEFAULT_GROUPBY_OPTIMIZE_AGGREGATOR = false;
+  public static final boolean DEFAULT_IGNORE_MISSING_DEP_POST_AGG = false;
+
 
   @SuppressWarnings("unused") // Used by Jackson serialization
   public enum Vectorize
@@ -256,6 +279,16 @@ public class QueryContexts
     return parseInt(query, PRIORITY_KEY, defaultValue);
   }
 
+  public static <T> int getSpeculativeExecutionWaitTimeMs(Query<T> query)
+  {
+    return parseInt(query, BROKER_SPECULATIVE_EXECUTION_WAIT_TIME_MS_KEY, DEFAULT_SPECULATIVE_EXECUTION_WAIT_TIME_MS);
+  }
+
+  public static <T> boolean getEnableSpeculativeExecution(Query<T> query)
+  {
+    return parseBoolean(query, BROKER_ENABLE_SPECULATIVE_EXECUTION_KEY, DEFAULT_ENABLE_SPECULATIVE_EXECUTION);
+  }
+
   public static <T> String getLane(Query<T> query)
   {
     return (String) query.getContextValue(LANE_KEY);
@@ -319,6 +352,15 @@ public class QueryContexts
     return parseBoolean(context, SQL_JOIN_LEFT_SCAN_DIRECT, DEFAULT_ENABLE_SQL_JOIN_LEFT_SCAN_DIRECT);
   }
 
+  public static <T> boolean isReturnSegmentCountStats(Query<T> query)
+  {
+    return parseBoolean(
+            query,
+            BROKER_RETURN_SEGMENT_COUNT_STATS,
+            DEFAULT_RETURN_SEGMENT_COUNT_STATS
+    );
+  }
+
   public static <T> boolean isSecondaryPartitionPruningEnabled(Query<T> query)
   {
     return parseBoolean(query, SECONDARY_PARTITION_PRUNING_KEY, DEFAULT_SECONDARY_PARTITION_PRUNING);
@@ -332,6 +374,34 @@ public class QueryContexts
   public static boolean isDebug(Map<String, Object> queryContext)
   {
     return parseBoolean(queryContext, ENABLE_DEBUG, DEFAULT_ENABLE_DEBUG);
+  }
+
+  public static <T> String getAllowedServerKeyword(Query<T> query)
+  {
+    return query.getContextValue(BROKER_ALLOWED_SERVER_KEYWORD, null);
+  }
+
+  public static <T> boolean isIncludeRealtimeServers(Query<T> query)
+  {
+    return parseBoolean(query, INCLUDE_REALTIME_SERVERS, DEFAULT_INCLUDE_REALTIME_SERVERS);
+  }
+
+  public static <T> boolean isIgnoreMissingDepPostAgg(Query<T> query)
+  {
+    return parseBoolean(
+            query,
+            IGNORE_MISSING_DEP_POST_AGG,
+            DEFAULT_IGNORE_MISSING_DEP_POST_AGG
+    );
+  }
+
+  public static <T> boolean isGroupByOptimizeAggregator(Query<T> query)
+  {
+    return parseBoolean(
+            query,
+            GROUPBY_OPTIMIZE_AGGREGATOR,
+            DEFAULT_GROUPBY_OPTIMIZE_AGGREGATOR
+    );
   }
 
   public static <T> Query<T> withMaxScatterGatherBytes(Query<T> query, long maxScatterGatherBytesLimit)
@@ -394,6 +464,11 @@ public class QueryContexts
     final long timeout = parseLong(query, TIMEOUT_KEY, defaultTimeout);
     Preconditions.checkState(timeout >= 0, "Timeout must be a non negative value, but was [%s]", timeout);
     return timeout;
+  }
+
+  public static <T> Query<T> withIgnoreMissingDepPostAgg(Query<T> query)
+  {
+    return query.withOverriddenContext(ImmutableMap.of(IGNORE_MISSING_DEP_POST_AGG, true));
   }
 
   public static <T> Query<T> withTimeout(Query<T> query, long timeout)

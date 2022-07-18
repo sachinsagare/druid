@@ -74,6 +74,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -218,6 +219,11 @@ public class ForkingTaskRunner
                               new QuotableWhiteSpaceSplitter((String) taskJavaOpts)
                           );
                         }
+
+                        String javaOptGcLogLocation = StringUtils.format("-Xloggc:%s/gc.log", taskDir);
+                        LOGGER.info("Task gc log location: %s", javaOptGcLogLocation);
+                        Iterables.addAll(command, ForkingTaskRunnerConfig.JAVA_DEFAULT_GC_LOGGING_OPTS_ARRAY);
+                        Iterables.addAll(command, Collections.singleton(javaOptGcLogLocation));
 
                         for (String propName : props.stringPropertyNames()) {
                           for (String allowedPrefix : config.getAllowedPrefixes()) {

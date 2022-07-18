@@ -47,6 +47,9 @@ public class DruidMetrics
   public static final String DUTY = "duty";
   public static final String DUTY_GROUP = "dutyGroup";
 
+  public static final String NAMESPACE = "namespace";
+  public static final String RANGE = "range";
+
   public static int findNumComplexAggs(List<AggregatorFactory> aggs)
   {
     int retVal = 0;

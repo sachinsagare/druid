@@ -37,7 +37,7 @@ import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.segment.realtime.FireDepartmentMetrics;
 import org.apache.druid.server.coordination.DataSegmentAnnouncer;
 import org.apache.druid.server.coordination.NoopDataSegmentAnnouncer;
-import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.NamespacedVersionedIntervalTimeline;
 
 public class Appenderators
 {
@@ -72,7 +72,7 @@ public class Appenderators
         segmentAnnouncer,
         new SinkQuerySegmentWalker(
             schema.getDataSource(),
-            new VersionedIntervalTimeline<>(
+            new NamespacedVersionedIntervalTimeline<>(
                 String.CASE_INSENSITIVE_ORDER
             ),
             objectMapper,

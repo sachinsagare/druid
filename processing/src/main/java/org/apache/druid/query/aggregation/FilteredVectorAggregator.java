@@ -20,6 +20,7 @@
 package org.apache.druid.query.aggregation;
 
 import org.apache.druid.java.util.common.ISE;
+import org.apache.druid.java.util.common.logger.Logger;
 import org.apache.druid.query.filter.vector.ReadableVectorMatch;
 import org.apache.druid.query.filter.vector.VectorMatch;
 import org.apache.druid.query.filter.vector.VectorValueMatcher;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 
 public class FilteredVectorAggregator implements VectorAggregator
 {
+  private static final Logger log = new Logger(AggregatorFactory.class);
   private final VectorValueMatcher matcher;
   private final VectorAggregator delegate;
   private final int[] delegatePositions;

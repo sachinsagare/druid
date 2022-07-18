@@ -145,6 +145,9 @@ import java.util.stream.Stream;
 public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetType, RecordType extends ByteEntity> implements Supervisor
 {
   public static final String CHECKPOINTS_CTX_KEY = "checkpoints";
+  public static final String PARTITION_DIMENSIONS_CTX_KEY = "partitionDimensions";
+  public static final String STREAM_PARTITIONS_CTX_KEY = "streamPartitions";
+  public static final String PARTITION_FAN_OUT_SIZE = "partitionFanOutSize";
 
   private static final long MINIMUM_GET_OFFSET_PERIOD_MILLIS = 5000;
   private static final long INITIAL_GET_OFFSET_DELAY_MILLIS = 15000;
@@ -280,6 +283,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
     volatile TaskStatus status;
     volatile DateTime startTime;
     volatile Map<PartitionIdType, SequenceOffsetType> currentSequences = new HashMap<>();
+    volatile Map<PartitionIdType, Long> timestampGaps = new HashMap<>();
 
     @Override
     public String toString()
@@ -288,6 +292,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
              "status=" + status +
              ", startTime=" + startTime +
              ", checkpointSequences=" + currentSequences +
+             ", timestampGaps=" + timestampGaps +
              '}';
     }
   }
@@ -3525,6 +3530,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
         group.baseSequenceName,
         sortingMapper,
         group.checkpointSequences,
+        partitionGroups.values().stream().mapToInt(w -> w.size()).sum(),
         newIoConfig,
         taskTuningConfig,
         rowIngestionMetersFactory
@@ -3550,21 +3556,19 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
    * monitoring method, fetches current partition offsets and lag in a background reporting thread
    */
   @VisibleForTesting
-  public void updateCurrentAndLatestOffsets()
+  public Runnable updateCurrentAndLatestOffsetsAndTimestampGaps()
   {
-    // if we aren't in a steady state, chill out for a bit, don't worry, we'll get called later, but if we aren't
-    // healthy go ahead and try anyway to try if possible to provide insight into how much time is left to fix the
-    // issue for cluster operators since this feeds the lag metrics
-    if (stateManager.isSteadyState() || !stateManager.isHealthy()) {
+    return () -> {
       try {
         updateCurrentOffsets();
-        updatePartitionLagFromStream();
+        updateLatestOffsetsFromStream();
+        updateTimestampGaps();
         sequenceLastUpdated = DateTimes.nowUtc();
       }
       catch (Exception e) {
         log.warn(e, "Exception while getting current/latest sequences");
       }
-    }
+    };
   }
 
   private void updateCurrentOffsets() throws InterruptedException, ExecutionException, TimeoutException
@@ -3590,6 +3594,55 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
     ).collect(Collectors.toList());
 
     Futures.successfulAsList(futures).get(futureTimeoutInSeconds, TimeUnit.SECONDS);
+  }
+
+  private void updateTimestampGaps() throws InterruptedException, ExecutionException, TimeoutException
+  {
+    final List<ListenableFuture<Void>> futures = Stream.concat(
+        activelyReadingTaskGroups.values().stream().flatMap(taskGroup -> taskGroup.tasks.entrySet().stream()),
+        pendingCompletionTaskGroups.values()
+            .stream()
+            .flatMap(List::stream)
+            .flatMap(taskGroup -> taskGroup.tasks.entrySet().stream())
+    ).map(
+        task -> Futures.transform(
+            taskClient.getAndClearTimestampGapsAsync(task.getKey(), false),
+            (Function<Map<PartitionIdType, Long>, Void>) (timestampGaps) -> {
+
+              if (timestampGaps != null && !timestampGaps.isEmpty()) {
+                task.getValue().timestampGaps = timestampGaps;
+              }
+
+              return null;
+            }
+        )
+    ).collect(Collectors.toList());
+
+    Futures.successfulAsList(futures).get(futureTimeoutInSeconds, TimeUnit.SECONDS);
+  }
+
+  private void updateLatestOffsetsFromStream() throws InterruptedException
+  {
+    synchronized (recordSupplierLock) {
+      Set<PartitionIdType> partitionIds;
+      try {
+        partitionIds = recordSupplier.getPartitionIds(ioConfig.getStream());
+      }
+      catch (Exception e) {
+        log.warn("Could not fetch partitions for topic/stream [%s]", ioConfig.getStream());
+        throw new StreamException(e);
+      }
+
+      Set<StreamPartition<PartitionIdType>> partitions = partitionIds
+          .stream()
+          .map(e -> new StreamPartition<>(ioConfig.getStream(), e))
+          .collect(Collectors.toSet());
+
+      recordSupplier.assign(partitions);
+      recordSupplier.seekToLatest(partitions);
+      //commented beow lin as in 0.23 its not defined
+      //updateLatestSequenceFromStream(recordSupplier, partitions);
+    }
   }
 
   protected abstract void updatePartitionLagFromStream();
@@ -3627,6 +3680,23 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
       // if supervisor is suspended, no tasks are likely running so use offsets in metadata, if exist
       return getOffsetsFromMetadataStorage();
     }
+  }
+
+  protected abstract void updateLatestSequenceFromStream();
+
+
+  protected Map<PartitionIdType, Long> getTimeLagPerPartition()
+  {
+    return activelyReadingTaskGroups
+        .values()
+        .stream()
+        .flatMap(taskGroup -> taskGroup.tasks.entrySet().stream())
+        .flatMap(taskData -> taskData.getValue().timestampGaps.entrySet().stream())
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            Entry::getValue,
+            (v1, v2) -> v1.compareTo(v2) > 0 ? v1 : v2
+        ));
   }
 
   private OrderedSequenceNumber<SequenceOffsetType> makeSequenceNumber(SequenceOffsetType seq)
@@ -3754,6 +3824,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
       String baseSequenceName,
       ObjectMapper sortingMapper,
       TreeMap<Integer, Map<PartitionIdType, SequenceOffsetType>> sequenceOffsets,
+      Integer streamPartitions,
       SeekableStreamIndexTaskIOConfig taskIoConfig,
       SeekableStreamIndexTaskTuningConfig taskTuningConfig,
       RowIngestionMetersFactory rowIngestionMetersFactory
@@ -3824,7 +3895,7 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
     // Lag is collected with fixed delay instead of fixed rate as lag collection can involve calling external
     // services and with fixed delay, a cooling buffer is guaranteed between successive calls
     reportingExec.scheduleWithFixedDelay(
-        this::updateCurrentAndLatestOffsets,
+        this::updateCurrentAndLatestOffsetsAndTimestampGaps,
         ioConfig.getStartDelay().getMillis() + INITIAL_GET_OFFSET_DELAY_MILLIS, // wait for tasks to start up
         Math.max(
             tuningConfig.getOffsetFetchPeriod().getMillis(), MINIMUM_GET_OFFSET_PERIOD_MILLIS
