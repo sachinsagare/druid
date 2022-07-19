@@ -160,7 +160,11 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
       @JsonProperty("lasCompactionState") @Nullable CompactionState lastCompactionState,
       @JsonProperty("binaryVersion") Integer binaryVersion,
       @JsonProperty("size") long size,
-      @JsonProperty("overshadowed") boolean overshadowed
+      @JsonProperty("overshadowed") boolean overshadowed,
+      @JsonProperty("availableSupplimentalIndexes")
+      @JsonDeserialize(using = CommaListJoinDeserializer.class)
+      @Nullable
+      List<String> availableSupplimentalIndexes
   )
   {
     super(
@@ -173,7 +177,8 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
         shardSpec,
         lastCompactionState,
         binaryVersion,
-        size
+        size,
+        availableSupplimentalIndexes
     );
     this.overshadowed = overshadowed;
   }

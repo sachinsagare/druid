@@ -120,12 +120,6 @@ public class SingleDimensionShardSpec extends DimensionRangeShardSpec
     return createLookup(shardSpecs);
   }
 
-  @Override
-  public List<String> getDomainDimensions()
-  {
-    return null;
-  }
-
   static ShardSpecLookup createLookup(List<? extends ShardSpec> shardSpecs)
   {
     return (long timestamp, InputRow row) -> {
@@ -171,18 +165,6 @@ public class SingleDimensionShardSpec extends DimensionRangeShardSpec
     } else {
       return new NumberedPartitionChunk<>(getPartitionNum(), getNumCorePartitions(), obj);
     }
-  }
-
-  @Override
-  public int getPartitionNum()
-  {
-    return 0;
-  }
-
-  @Override
-  public int getNumCorePartitions()
-  {
-    return 0;
   }
 
   @VisibleForTesting

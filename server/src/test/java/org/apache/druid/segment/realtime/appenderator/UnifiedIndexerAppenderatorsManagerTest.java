@@ -178,8 +178,8 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
 
     // Three forms of persist.
 
-    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, null, null, null, null));
-    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, file, null, null));
+    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, null, null, null, null).lhs);
+    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, file, null, null).lhs);
 
     // Need a mocked index for this test, since getInterval is called on it.
     final IncrementalIndex index = EasyMock.createMock(IncrementalIndex.class);
@@ -309,7 +309,7 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     @Override
     public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
     {
-      throw new UOE(ERROR_MSG);
+      return persist(index, dataInterval, indexOutDir, null, indexSpec, segmentWriteOutMediumFactory);
     }
 
     @Override
@@ -332,7 +332,11 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     @Override
     public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
     {
-      throw new UOE(ERROR_MSG);
+      if (failCalls) {
+        throw new IOException("failed");
+      }
+
+      return new Pair<>(indexOutDir, null);
     }
 
     @Override
@@ -342,9 +346,12 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     }
 
     @Override
-    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge)
-    {
-      throw new UOE(ERROR_MSG);
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+      if (failCalls) {
+        throw new IOException("failed");
+      }
+
+      return new Pair<>(indexOutDir, null);
     }
 
     @Override
