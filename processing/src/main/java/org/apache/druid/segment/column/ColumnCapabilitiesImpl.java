@@ -76,6 +76,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
       capabilities.dictionaryEncoded = other.isDictionaryEncoded();
       capabilities.hasInvertedIndexes = other.hasBitmapIndexes();
       capabilities.hasSpatialIndexes = other.hasSpatialIndexes();
+      capabilities.hasBloomFilterIndexes = other.hasBloomFilterIndexes();
       capabilities.hasMultipleValues = other.hasMultipleValues();
       capabilities.dictionaryValuesSorted = other.areDictionaryValuesSorted();
       capabilities.dictionaryValuesUnique = other.areDictionaryValuesUnique();
@@ -138,7 +139,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
     merged.hasNulls = merged.hasNulls.or(other.hasNulls());
     merged.hasInvertedIndexes |= otherSnapshot.hasBitmapIndexes();
     merged.hasSpatialIndexes |= otherSnapshot.hasSpatialIndexes();
-    merged.hasBloomFilterIndexes |= other.hasBloomFilterIndexes();
+    merged.hasBloomFilterIndexes |= otherSnapshot.hasBloomFilterIndexes();
     merged.filterable &= otherSnapshot.isFilterable();
 
     return merged;
@@ -165,6 +166,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
                                                                  .setDictionaryEncoded(false)
                                                                  .setDictionaryValuesSorted(false)
                                                                  .setDictionaryValuesUnique(false)
+                                                                 .setHasBloomFilterIndexes(false)
                                                                  .setHasSpatialIndexes(false);
     if (NullHandling.replaceWithDefault()) {
       builder.setHasNulls(false);
@@ -184,6 +186,7 @@ public class ColumnCapabilitiesImpl implements ColumnCapabilities
                                        .setDictionaryValuesSorted(false)
                                        .setDictionaryValuesUnique(false)
                                        .setHasSpatialIndexes(false)
+                                       .setHasBloomFilterIndexes(false)
                                        .setHasNulls(true);
   }
 

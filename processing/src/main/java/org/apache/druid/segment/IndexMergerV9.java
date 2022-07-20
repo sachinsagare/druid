@@ -395,11 +395,12 @@ public class IndexMergerV9 implements IndexMerger
         // filter, but in the future there may be more kinds
         /************* Create supplimental index type: bloom filter **************/
         startTime = System.currentTimeMillis();
-        List<StringDimensionMergerV9> mergersWithBloomfilter =
+        List<DictionaryEncodedColumnMerger> mergersWithBloomfilter =
                 mergers.stream()
-                        .filter(m -> (m instanceof StringDimensionMergerV9) &&
-                                ((StringDimensionMergerV9) m).hasBloomFilterIndexes())
-                        .map(m -> (StringDimensionMergerV9) m)
+                        //.map(m -> (DictionaryEncodedColumnMerger) m).collect(Collectors.toList());
+                       .filter(m -> (m instanceof DictionaryEncodedColumnMerger) &&
+                               ((DictionaryEncodedColumnMerger) m).hasBloomFilterIndexes())
+                        .map(m -> (DictionaryEncodedColumnMerger) m)
                         .collect(Collectors.toList());
 
         if (!mergersWithBloomfilter.isEmpty()) {
@@ -417,7 +418,7 @@ public class IndexMergerV9 implements IndexMerger
                   new BloomFilterMetadata(
                           SupplimentalIndex.BLOOM_FILTERS.getCurVersion(),
                           mergersWithBloomfilter.stream()
-                                  .map(StringDimensionMergerV9::getDimensionName)
+                                  .map(DictionaryEncodedColumnMerger::getDimensionName)
                                   .collect(Collectors.toList())
                   )
           );
@@ -433,7 +434,7 @@ public class IndexMergerV9 implements IndexMerger
           );
           bloomFiltersWriter.open();
           bloomFiltersWriter.setObjectsNotSorted();
-          for (StringDimensionMergerV9 m : mergersWithBloomfilter) {
+          for (DictionaryEncodedColumnMerger m : mergersWithBloomfilter) {
             bloomFiltersWriter.write(m.getBloomFilter());
           }
           try (FileOutputStream out = new FileOutputStream(new File(bloomFilterDir, SupplimentalIndex.BLOOM_FILTERS.getBinFile()))) {
@@ -1435,6 +1436,11 @@ public class IndexMergerV9 implements IndexMerger
       @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
   ) throws IOException
   {
+    if (supplimentalIndexOutDir != null) {
+      FileUtils.deleteDirectory(supplimentalIndexOutDir);
+      FileUtils.mkdirp(supplimentalIndexOutDir);
+    }
+
     final List<String> mergedDimensions = IndexMerger.getMergedDimensions(indexes, dimensionsSpec);
 
     final List<String> mergedMetrics = IndexMerger.mergeIndexed(
