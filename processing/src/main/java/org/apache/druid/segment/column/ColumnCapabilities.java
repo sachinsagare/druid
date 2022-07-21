@@ -93,6 +93,7 @@ public interface ColumnCapabilities extends TypeSignature<ValueType>
    * do not support direct filtering, unless provided by through a custom implementation.
    */
   boolean isFilterable();
+  boolean hasBloomFilterIndexes();
 
   /**
    * Does this column contain null values? If so, callers, especially for primitive numeric columns, will need to check

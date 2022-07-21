@@ -402,6 +402,13 @@ public class CachingClusteredClient implements QuerySegmentWalker
       if (uncoveredIntervalsLimit > 0) {
         computeUncoveredIntervals(timeline);
       }
+      // For debugging purpose only, at this point, we have got the candidate segments to query but we will just return
+      // empty results without sending requests to data nodes. This is mainly used to profile broker side segment
+      // pruning performance.
+      if (QueryContexts.isReturnEmptyResults(query)) {
+        return (ClusterQueryResult<T>) Sequences.empty();
+      }
+
 
       final Set<SegmentServerSelector> segmentServers = computeSegmentsToQuery(timeline, specificSegments);
       @Nullable
@@ -491,7 +498,13 @@ public class CachingClusteredClient implements QuerySegmentWalker
       final Set<SegmentServerSelector> segments = new LinkedHashSet<>();
       final Map<String, Optional<RangeSet<String>>> dimensionRangeCache = new HashMap<>();
       // Filter unneeded chunks based on partition dimension
+      int numSegmentsBeforeFiltering = 0;
       for (TimelineObjectHolder<String, ServerSelector> holder : serversLookup) {
+        numSegmentsBeforeFiltering += holder.getObject()
+                .stream()
+                .count();
+
+        final long startNs = System.nanoTime();
         final Set<PartitionChunk<ServerSelector>> filteredChunks;
         if (QueryContexts.isSecondaryPartitionPruningEnabled(query)) {
           filteredChunks = DimFilterUtils.filterShards(
@@ -500,6 +513,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
               partitionChunk -> partitionChunk.getObject().getSegment().getShardSpec(),
               dimensionRangeCache
           );
+
+          final long segmentFilteringTime = System.nanoTime() - startNs;
+          queryMetrics.reportSegmentFilteringTime(segmentFilteringTime);
         } else {
           filteredChunks = Sets.newHashSet(holder.getObject());
         }
@@ -514,6 +530,9 @@ public class CachingClusteredClient implements QuerySegmentWalker
           segments.add(new SegmentServerSelector(server, segment));
         }
       }
+      queryMetrics.reportSegmentBeforeFilteringCount(numSegmentsBeforeFiltering);
+      queryMetrics.reportSegmentAfterFilteringCount(segments.size());
+
       return segments;
     }
 
@@ -982,7 +1001,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
               new NamespacedVersionedIntervalTimeline<>(Ordering.natural());
       for (SegmentDescriptor spec : specs) {
         PartitionChunk<ServerSelector> entry = null;
-        if (timeline instanceof  NamespacedVersionedIntervalTimeline) {
+        if (timeline instanceof NamespacedVersionedIntervalTimeline) {
           entry = ((NamespacedVersionedIntervalTimeline) timeline).findChunk(
                   NamespacedVersionedIntervalTimeline.getNamespace(spec.getPartitionIdentifier()),
                   spec.getInterval(),

@@ -29,47 +29,39 @@ import org.apache.druid.java.util.common.logger.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import static org.apache.druid.timeline.partition.ShardSpec.Type.STREAM_FANOUT_HASHED;
-
-public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumberedShardSpec
+public class StreamFanOutNamedHashBasedNumberedShardSpec extends StreamFanOutHashBasedNumberedShardSpec
 {
-  private static final Logger log = new Logger(StreamFanOutHashBasedNumberedShardSpec.class);
-
-  private static final int DEFAULT_FAN_OUT_SIZE = 1;
+  private static final Logger log = new Logger(StreamFanOutNamedHashBasedNumberedShardSpec.class);
 
   private final ObjectMapper jsonMapper;
 
   @JsonIgnore
-  private final Integer fanOutSize;
+  private final String partitionName;
 
   @JsonCreator
-  public StreamFanOutHashBasedNumberedShardSpec(
+  public StreamFanOutNamedHashBasedNumberedShardSpec(
       @JsonProperty("partitionNum") int partitionNum,
       @JsonProperty("partitions") int partitions,
-      @JsonProperty("bucketId") @Nullable Integer bucketId,
-      @JsonProperty("numBuckets") @Nullable Integer numBuckets,
       @JsonProperty("partitionDimensions") @Nullable List<String> partitionDimensions,
       @JsonProperty("streamPartitionIds") @Nullable Set<Integer> streamPartitionIds,
       @JsonProperty("streamPartitions") @Nullable Integer streamPartitions,
-      @JsonProperty("partitionFunction") @Nullable HashPartitionFunction partitionFunction,
       @JsonProperty("fanOutSize") @Nullable Integer fanOutSize,
+      @JsonProperty("partitionName") String partitionName,
       @JacksonInject ObjectMapper jsonMapper
   )
   {
-    super(partitionNum, partitions, bucketId, numBuckets, partitionDimensions, streamPartitionIds, partitionFunction, streamPartitions,
-        jsonMapper);
+    super(partitionNum, partitions, null, null, partitionDimensions, streamPartitionIds, streamPartitions, null, fanOutSize, jsonMapper);
     this.jsonMapper = jsonMapper;
-    this.fanOutSize = fanOutSize == null ? DEFAULT_FAN_OUT_SIZE : fanOutSize;
+    this.partitionName = partitionName;
   }
 
-  @JsonProperty("fanOutSize")
+  @JsonProperty("partitionName")
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public Integer getFanOutSize()
+  public String getPartitionName()
   {
-    return fanOutSize;
+    return partitionName;
   }
 
   @Override
@@ -78,7 +70,20 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
     return other == NumberedShardSpec.class ||
            other == NumberedOverwriteShardSpec.class ||
            other == StreamHashBasedNumberedShardSpec.class ||
-           other == StreamFanOutHashBasedNumberedShardSpec.class;
+           other == StreamFanOutHashBasedNumberedShardSpec.class ||
+           other == StreamFanOutNamedHashBasedNumberedShardSpec.class;
+  }
+
+  @Override
+  public <T> PartitionChunk<T> createChunk(T obj)
+  {
+    return NamedNumberedPartitionChunk.make(getPartitionNum(), getNumCorePartitions(), partitionName, obj);
+  }
+
+  @Override
+  public Object getIdentifier()
+  {
+    return this.partitionName + "_" + this.getPartitionNum();
   }
 
   @Override
@@ -91,6 +96,7 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
            ", streamPartitionIds=" + getStreamPartitionIds() +
            ", streamPartitions=" + getStreamPartitions() +
            ", fanOutSize=" + getFanOutSize() +
+           ", partitionName=" + getPartitionName() +
            '}';
   }
 
@@ -101,50 +107,13 @@ public class StreamFanOutHashBasedNumberedShardSpec extends StreamHashBasedNumbe
       return true;
     }
 
-    if (!(o instanceof StreamFanOutHashBasedNumberedShardSpec)) {
+    if (!(o instanceof StreamFanOutNamedHashBasedNumberedShardSpec)) {
       return false;
     }
 
-    final StreamFanOutHashBasedNumberedShardSpec that = (StreamFanOutHashBasedNumberedShardSpec) o;
-    if (getPartitionNum() != that.getPartitionNum()) {
-      return false;
-    }
-    return getNumCorePartitions() == that.getNumCorePartitions();
-  }
-
-  @Override
-  public int hashCode()
-  {
-    // partitionDimensions, streamPartitions and streamPartitionIds and fanOutSize are intentionally
-    // left unincluded in equals, and hashCode.
-    return Objects.hash(getPartitionNum(), getNumCorePartitions());
-  }
-
-  /*@Override*/
-  public String getType()
-  {
-    return STREAM_FANOUT_HASHED;
-  }
-
-
-  /*@Override*/
-  protected boolean groupKeyIsInChunk(List<Object> groupKey)
-  {
-    try {
-      Integer streamPartitions = getStreamPartitions();
-      Set streamPartitionIds = getStreamPartitionIds();
-      Integer fanOutSize = getFanOutSize();
-      int basePartitionId = Math.abs(Objects.hash(jsonMapper, groupKey) % streamPartitions);
-
-      for (int i = 0; i < fanOutSize; i++) {
-        if (streamPartitionIds.contains((basePartitionId + i) % streamPartitions)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    final StreamFanOutNamedHashBasedNumberedShardSpec that = (StreamFanOutNamedHashBasedNumberedShardSpec) o;
+    return (getPartitionNum() == that.getPartitionNum() &&
+            getNumCorePartitions() == that.getNumCorePartitions() &&
+            getPartitionName().compareTo(that.getPartitionName()) == 0);
   }
 }

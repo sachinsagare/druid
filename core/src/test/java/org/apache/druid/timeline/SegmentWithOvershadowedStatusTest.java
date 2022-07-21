@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.druid.TestObjectMapper;
 import org.apache.druid.jackson.CommaListJoinDeserializer;
@@ -71,7 +72,8 @@ public class SegmentWithOvershadowedStatusTest
         NoneShardSpec.instance(),
         null,
         TEST_VERSION,
-        1
+        1,
+        ImmutableList.of("supplimental_index1", "supplimental_index2")
     );
 
     return new SegmentWithOvershadowedStatus(dataSegment, OVERSHADOWED);
@@ -85,7 +87,7 @@ public class SegmentWithOvershadowedStatusTest
         JacksonUtils.TYPE_REFERENCE_MAP_STRING_OBJECT
     );
 
-    Assert.assertEquals(11, objectMap.size());
+    Assert.assertEquals(12, objectMap.size());
     Assert.assertEquals("something", objectMap.get("dataSource"));
     Assert.assertEquals(INTERVAL.toString(), objectMap.get("interval"));
     Assert.assertEquals("1", objectMap.get("version"));
@@ -95,6 +97,8 @@ public class SegmentWithOvershadowedStatusTest
     Assert.assertEquals(ImmutableMap.of("type", "none"), objectMap.get("shardSpec"));
     Assert.assertEquals(TEST_VERSION, objectMap.get("binaryVersion"));
     Assert.assertEquals(1, objectMap.get("size"));
+    Assert.assertEquals("supplimental_index1,supplimental_index2",
+            objectMap.get("availableSupplimentalIndexes"));
     Assert.assertEquals(OVERSHADOWED, objectMap.get("overshadowed"));
 
     final String json = MAPPER.writeValueAsString(SEGMENT);
@@ -114,6 +118,8 @@ public class SegmentWithOvershadowedStatusTest
     Assert.assertEquals(dataSegment.getShardSpec(), deserializedSegment.getShardSpec());
     Assert.assertEquals(dataSegment.getSize(), deserializedSegment.getSize());
     Assert.assertEquals(dataSegment.getId(), deserializedSegment.getId());
+    Assert.assertEquals(dataSegment.getAvailableSupplimentalIndexes(),
+            deserializedSegment.getAvailableSupplimentalIndexes());
   }
 
   // Previously, the implementation of SegmentWithOvershadowedStatus had @JsonCreator/@JsonProperty and @JsonUnwrapped
@@ -154,7 +160,11 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
       @JsonProperty("lasCompactionState") @Nullable CompactionState lastCompactionState,
       @JsonProperty("binaryVersion") Integer binaryVersion,
       @JsonProperty("size") long size,
-      @JsonProperty("overshadowed") boolean overshadowed
+      @JsonProperty("overshadowed") boolean overshadowed,
+      @JsonProperty("availableSupplimentalIndexes")
+      @JsonDeserialize(using = CommaListJoinDeserializer.class)
+      @Nullable
+      List<String> availableSupplimentalIndexes
   )
   {
     super(
@@ -167,7 +177,8 @@ class TestSegmentWithOvershadowedStatus extends DataSegment
         shardSpec,
         lastCompactionState,
         binaryVersion,
-        size
+        size,
+        availableSupplimentalIndexes
     );
     this.overshadowed = overshadowed;
   }

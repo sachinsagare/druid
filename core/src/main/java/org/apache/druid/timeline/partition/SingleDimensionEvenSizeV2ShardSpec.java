@@ -104,6 +104,7 @@ public class SingleDimensionEvenSizeV2ShardSpec extends SingleDimensionEvenSizeS
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+
     RangeSet<String> rangeSet = domain.get(getDimension());
     if (rangeSet == null) {
       return true;

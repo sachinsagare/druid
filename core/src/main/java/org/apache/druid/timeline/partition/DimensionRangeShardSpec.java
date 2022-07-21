@@ -38,7 +38,7 @@ import java.util.Objects;
 /**
  * {@link ShardSpec} for partitioning based on ranges of one or more dimensions.
  */
-public class DimensionRangeShardSpec implements ShardSpec
+public class DimensionRangeShardSpec extends BloomFilterShardSpec
 {
   public static final int UNKNOWN_NUM_CORE_PARTITIONS = -1;
 
@@ -223,6 +223,10 @@ public class DimensionRangeShardSpec implements ShardSpec
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+    if (!possibleInBloomFilter(domain)) {
+      return false;
+    }
+
     final StringTuple segmentStart = start == null ? new StringTuple(new String[dimensions.size()]) : start;
     final StringTuple segmentEnd = end == null ? new StringTuple(new String[dimensions.size()]) : end;
 

@@ -35,6 +35,7 @@ import org.apache.druid.indexer.partitions.PartitionsSpec;
 import org.apache.druid.indexing.worker.config.WorkerConfig;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.ISE;
+import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.UOE;
 import org.apache.druid.java.util.common.concurrent.Execs;
 import org.apache.druid.java.util.common.logger.Logger;
@@ -71,6 +72,7 @@ import org.joda.time.Period;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -597,20 +599,53 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
 
     @Override
     public File persist(
+            IncrementalIndex index,
+            Interval dataInterval,
+            File indexOutDir,
+            IndexSpec indexSpec,
+            ProgressIndicator progress,
+            @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
+    ) throws IOException
+    {
+      return persist(index, dataInterval, indexOutDir, null, indexSpec, progress, segmentWriteOutMediumFactory).lhs;
+    }
+
+    @Override
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
+      return persist(index, dataInterval, indexOutDir, null, indexSpec, new BaseProgressIndicator(), segmentWriteOutMediumFactory);
+    }
+
+    @Override
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory)
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> persist(
         IncrementalIndex index,
         Interval dataInterval,
-        File outDir,
+        File indexOutDir,
+        @Nullable File supplimentalIndexOutDir,
         IndexSpec indexSpec,
         ProgressIndicator progress,
         @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory
     )
     {
-      ListenableFuture<File> mergeFuture = mergeExecutor.submit(
+      ListenableFuture<Pair<File, File>> mergeFuture = mergeExecutor.submit(
           () ->
               baseMerger.persist(
                   index,
                   dataInterval,
-                  outDir,
+                  indexOutDir,
+                  supplimentalIndexOutDir,
                   indexSpec,
                   progress,
                   segmentWriteOutMediumFactory
@@ -641,11 +676,30 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
 
     @Override
     public File mergeQueryableIndex(
+            List<QueryableIndex> indexes,
+            boolean rollup,
+            AggregatorFactory[] metricAggs,
+            @Nullable DimensionsSpec dimensionsSpec,
+            File indexOutDir,
+            IndexSpec indexSpec,
+            IndexSpec indexSpecForIntermediatePersists,
+            ProgressIndicator progress,
+            @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
+            int maxColumnsToMerge
+    )
+    {
+      return mergeQueryableIndex(indexes, rollup, metricAggs, dimensionsSpec, indexOutDir, null, indexSpec, indexSpecForIntermediatePersists, progress,
+              segmentWriteOutMediumFactory, maxColumnsToMerge).lhs;
+
+    }
+    @Override
+    public Pair<File, File> mergeQueryableIndex(
         List<QueryableIndex> indexes,
         boolean rollup,
         AggregatorFactory[] metricAggs,
         @Nullable DimensionsSpec dimensionsSpec,
-        File outDir,
+        File indexOutDir,
+        @Nullable File supplimentalIndexDir,
         IndexSpec indexSpec,
         IndexSpec indexSpecForIntermediatePersists,
         ProgressIndicator progress,
@@ -653,14 +707,15 @@ public class UnifiedIndexerAppenderatorsManager implements AppenderatorsManager
         int maxColumnsToMerge
     )
     {
-      ListenableFuture<File> mergeFuture = mergeExecutor.submit(
+      ListenableFuture<Pair<File, File>> mergeFuture = mergeExecutor.submit(
           () ->
               baseMerger.mergeQueryableIndex(
                   indexes,
                   rollup,
                   metricAggs,
                   dimensionsSpec,
-                  outDir,
+                  indexOutDir,
+                  supplimentalIndexDir,
                   indexSpec,
                   indexSpecForIntermediatePersists,
                   new BaseProgressIndicator(),

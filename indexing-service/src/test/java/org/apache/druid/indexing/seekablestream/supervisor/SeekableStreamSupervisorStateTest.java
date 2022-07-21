@@ -1015,6 +1015,7 @@ public class SeekableStreamSupervisorStateTest extends EasyMockSupport
             null,
             null,
             false,
+            null,
             null
         )
         {

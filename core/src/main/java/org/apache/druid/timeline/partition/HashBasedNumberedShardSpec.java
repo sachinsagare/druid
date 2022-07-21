@@ -46,7 +46,7 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
 
   private final int bucketId;
 
-  /**
+    /**
    * Number of hash buckets
    */
   private final int numBuckets;
@@ -140,6 +140,10 @@ public class HashBasedNumberedShardSpec extends NumberedShardSpec
   @Override
   public boolean possibleInDomain(Map<String, RangeSet<String>> domain)
   {
+    if (!possibleInBloomFilter(domain)) {
+      return false;
+    }
+
     // partitionFunction should be used instead of HashPartitioner at query time.
     // We should process all segments if partitionFunction is null because we don't know what hash function
     // was used to create segments at ingestion time.

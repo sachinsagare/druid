@@ -545,6 +545,17 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
       }
 
       @Override
+      public DataSegment push(
+              File indexFilesDir,
+              File supplimentalIndexFilesDir,
+              DataSegment segment,
+              boolean useUniquePath
+      )
+      {
+        return push(indexFilesDir, segment, useUniquePath);
+      }
+
+      @Override
       public Map<String, Object> makeLoadSpec(URI uri)
       {
         throw new UnsupportedOperationException();
@@ -1209,6 +1220,17 @@ public class TaskLifecycleTest extends InitializedNullHandlingTest
       public DataSegment push(File file, DataSegment dataSegment, boolean useUniquePath)
       {
         throw new RuntimeException("FAILURE");
+      }
+
+      @Override
+      public DataSegment push(
+              File indexFilesDir,
+              File supplimentalIndexFilesDir,
+              DataSegment segment,
+              boolean useUniquePath
+      )
+      {
+        return push(indexFilesDir, segment, useUniquePath);
       }
 
       @Override

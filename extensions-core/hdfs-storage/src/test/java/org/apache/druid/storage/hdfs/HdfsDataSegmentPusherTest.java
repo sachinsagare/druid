@@ -462,6 +462,7 @@ public class HdfsDataSegmentPusherTest
 
     path = JobHelper.makeTmpPath(
         new Path(cfg.getSchema().getIOConfig().getSegmentOutputPath()),
+        JobHelper.INDEX_ZIP,
         new DistributedFileSystem(),
         new DataSegment(
             cfg.getSchema().getDataSchema().getDataSource(),
@@ -549,6 +550,7 @@ public class HdfsDataSegmentPusherTest
 
     path = JobHelper.makeTmpPath(
         new Path(cfg.getSchema().getIOConfig().getSegmentOutputPath()),
+        JobHelper.INDEX_ZIP,
         new LocalFileSystem(),
         new DataSegment(
             cfg.getSchema().getDataSchema().getDataSource(),

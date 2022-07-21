@@ -28,6 +28,8 @@ import org.apache.druid.data.input.impl.DimensionsSpec;
 import org.apache.druid.data.input.impl.TimestampSpec;
 import org.apache.druid.indexing.worker.config.WorkerConfig;
 import org.apache.druid.java.util.common.Intervals;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.java.util.common.UOE;
 import org.apache.druid.java.util.common.granularity.Granularities;
 import org.apache.druid.query.DefaultQueryRunnerFactoryConglomerate;
 import org.apache.druid.query.DirectQueryProcessingPool;
@@ -176,8 +178,8 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
 
     // Three forms of persist.
 
-    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, null, null, null));
-    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, null, null));
+    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, null, null, null, null).lhs);
+    Assert.assertEquals(file, limitedPoolIndexMerger.persist(null, null, file, file, null, null).lhs);
 
     // Need a mocked index for this test, since getInterval is called on it.
     final IncrementalIndex index = EasyMock.createMock(IncrementalIndex.class);
@@ -201,7 +203,7 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     Assert.assertThrows(
         "failed",
         RuntimeException.class, // Wrapped IOException
-        () -> limitedPoolIndexMerger.persist(null, null, file, null, null, null)
+        () -> limitedPoolIndexMerger.persist(null, null, file, null, null, null, null)
     );
   }
 
@@ -286,6 +288,7 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
   private static class NoopIndexMerger implements IndexMerger
   {
     private final boolean failCalls;
+    private static final String ERROR_MSG = "Shouldn't be called";
 
     public NoopIndexMerger(boolean failCalls)
     {
@@ -295,6 +298,18 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
     public NoopIndexMerger()
     {
       this(false);
+    }
+
+    @Override
+    public Pair<File, File> persist(IncrementalIndex index, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
+      return persist(index, dataInterval, indexOutDir, null, indexSpec, segmentWriteOutMediumFactory);
     }
 
     @Override
@@ -312,6 +327,31 @@ public class UnifiedIndexerAppenderatorsManagerTest extends InitializedNullHandl
       }
 
       return outDir;
+    }
+
+    @Override
+    public Pair<File, File> persist(IncrementalIndex index, Interval dataInterval, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory) throws IOException
+    {
+      if (failCalls) {
+        throw new IOException("failed");
+      }
+
+      return new Pair<>(indexOutDir, null);
+    }
+
+    @Override
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory)
+    {
+      throw new UOE(ERROR_MSG);
+    }
+
+    @Override
+    public Pair<File, File> mergeQueryableIndex(List<QueryableIndex> indexes, boolean rollup, AggregatorFactory[] metricAggs, @Nullable DimensionsSpec dimensionsSpec, File indexOutDir, @Nullable File supplimentalIndexOutDir, IndexSpec indexSpec, IndexSpec indexSpecForIntermediatePersists, ProgressIndicator progress, @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory, int maxColumnsToMerge) throws IOException {
+      if (failCalls) {
+        throw new IOException("failed");
+      }
+
+      return new Pair<>(indexOutDir, null);
     }
 
     @Override

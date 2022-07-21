@@ -83,7 +83,7 @@ public class TopNQueryEngine
         queryIntervals
     );
 
-    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", false);
+    final boolean useInMemoryBitmapInQuery = query.getContextBoolean("useInMemoryBitmapInQuery", true);
 
     return Sequences.filter(
         Sequences.map(

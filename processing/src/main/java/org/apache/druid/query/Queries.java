@@ -253,7 +253,8 @@ public class Queries
       final List<DimensionSpec> dimensions,
       final List<AggregatorFactory> aggregators,
       final List<String> additionalColumns
-  ) {
+  )
+  {
     final Set<String> requiredColumns = new HashSet<>();
 
     // Everyone needs __time (it's used by intervals filters).

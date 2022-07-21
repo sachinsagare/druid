@@ -51,7 +51,7 @@ public class HashBasedNumberedShardSpecTest
   public void testEquals()
   {
     EqualsVerifier.forClass(HashBasedNumberedShardSpec.class)
-                  .withIgnoredFields("jsonMapper")
+                  .withIgnoredFields("jsonMapper", "bloomFilters")
                   .withPrefabValues(ObjectMapper.class, new ObjectMapper(), new ObjectMapper())
                   .usingGetClass()
                   .verify();

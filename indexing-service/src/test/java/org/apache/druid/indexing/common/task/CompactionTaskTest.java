@@ -674,7 +674,7 @@ public class CompactionTaskTest
         null,
         null,
         null,
-        500000,
+        1000000,
         1000000L,
         null,
         null,
@@ -759,7 +759,7 @@ public class CompactionTaskTest
         null,
         null, // null to compute maxRowsPerSegment automatically
         null,
-        500000,
+        1000000,
         1000000L,
         null,
         null,
@@ -2362,7 +2362,7 @@ public class CompactionTaskTest
         boolean createBitmapIndex
     )
     {
-      super(name, multiValueHandling, createBitmapIndex);
+      super(name, multiValueHandling, createBitmapIndex, false);
     }
 
     @Override
