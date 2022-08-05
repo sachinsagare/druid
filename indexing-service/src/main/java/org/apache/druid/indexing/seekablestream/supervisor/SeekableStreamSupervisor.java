@@ -4007,6 +4007,22 @@ public abstract class SeekableStreamSupervisor<PartitionIdType, SequenceOffsetTy
       Map<PartitionIdType, Long> partitionRecordLags = getPartitionRecordLag();
       Map<PartitionIdType, Long> partitionTimeLags = getPartitionTimeLag();
 
+      //Added below code to record kafka ingestion lag to get a metric
+      Map<PartitionIdType, Long> partionKafkaTimeLags = getTimeLagPerPartition();
+
+      if (partionKafkaTimeLags != null) {
+        LagStats lagStatsKafka = computeLags(partionKafkaTimeLags);
+        emitter.emit(
+                ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/timeLag", lagStatsKafka.getTotalLag())
+        );
+        emitter.emit(
+                ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/maxTimeLag", lagStatsKafka.getMaxLag())
+        );
+        emitter.emit(
+                ServiceMetricEvent.builder().setDimension("dataSource", dataSource).build("ingest/kafka/avgTimeLag", lagStatsKafka.getAvgLag())
+        );
+      }
+
       if (partitionRecordLags == null && partitionTimeLags == null) {
         throw new ISE("Latest offsets have not been fetched");
       }
