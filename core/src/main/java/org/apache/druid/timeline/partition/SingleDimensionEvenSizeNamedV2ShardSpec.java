@@ -82,7 +82,7 @@ public class SingleDimensionEvenSizeNamedV2ShardSpec extends SingleDimensionEven
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
-           ", partitions=" + getPartitions() +
+           ", partitions=" + getNumCorePartitions() +
            ", partitionSize=" + getPartitionSize() +
            ", largePartitionDimensionValues=" + getLargePartitionDimensionValues() +
            ", groupKeyDimensions=" + getGroupKeyDimensions() +
