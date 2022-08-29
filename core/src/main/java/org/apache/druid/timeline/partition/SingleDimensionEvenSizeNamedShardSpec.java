@@ -62,7 +62,7 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
   @Override
   public <T> PartitionChunk<T> createChunk(T obj)
   {
-    return NamedNumberedPartitionChunk.make(getPartitionNum(), getPartitions(), partitionName, obj);
+    return NamedNumberedPartitionChunk.make(getPartitionNum(), getNumCorePartitions(), partitionName, obj);
   }
 
   @Override
@@ -79,7 +79,7 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
-           ", partitions=" + getPartitions() +
+           ", partitions=" + getNumCorePartitions() +
            ", partitionSize=" + getPartitionSize() +
            ", startCount=" + getStartCount() +
            ", endCount=" + getEndCount() +
