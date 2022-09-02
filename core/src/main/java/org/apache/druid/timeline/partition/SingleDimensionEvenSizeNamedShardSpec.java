@@ -79,7 +79,7 @@ public class SingleDimensionEvenSizeNamedShardSpec extends SingleDimensionEvenSi
            ", start='" + getStart() + '\'' +
            ", end='" + getEnd() + '\'' +
            ", partitionNum=" + getPartitionNum() +
-           ", partitions=" + getPartitions() +
+           ", partitions=" + getNumCorePartitions() +
            ", partitionSize=" + getPartitionSize() +
            ", startCount=" + getStartCount() +
            ", endCount=" + getEndCount() +

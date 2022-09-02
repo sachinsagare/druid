@@ -52,9 +52,13 @@ import java.util.Map;
     // See BucketShardSpec for more details.
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_HASH, value = HashBucketShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_SINGLE_DIM, value = SingleDimensionRangeBucketShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.SINGLE_EVEN_SIZE_V2, value = SingleDimensionEvenSizeV2ShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.SINGLE_EVEN_SIZE_NAMED_V2, value = SingleDimensionEvenSizeNamedV2ShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_FANOUT_HASHED, value = StreamFanOutHashBasedNumberedShardSpec.class),
     @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_HASHED, value = StreamHashBasedNumberedShardSpec.class),
-    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class)
+    @JsonSubTypes.Type(name = ShardSpec.Type.BUCKET_RANGE, value = DimensionRangeBucketShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_EVEN_HASHED, value = SingleDimensionEvenSizeShardSpec.class),
+    @JsonSubTypes.Type(name = ShardSpec.Type.STREAM_EVEN_SIZE_NAMED, value = SingleDimensionEvenSizeNamedShardSpec.class)
 })
 
 public interface ShardSpec
@@ -183,7 +187,13 @@ public interface ShardSpec
     String BUCKET_SINGLE_DIM = "bucket_single_dim";
     String BUCKET_RANGE = "bucket_range";
 
+    String SINGLE_EVEN_SIZE_V2 = "single_even_size_v2";
+    String SINGLE_EVEN_SIZE_NAMED_V2 = "single_even_size_named_v2";
+
     String STREAM_FANOUT_HASHED = "stream_fanout_hashed";
     String STREAM_HASHED = "stream_hashed";
+
+    String STREAM_EVEN_HASHED = "single_even_size";
+    String STREAM_EVEN_SIZE_NAMED = "single_even_size_named";
   }
 }
