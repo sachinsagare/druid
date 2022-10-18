@@ -70,7 +70,9 @@ import org.apache.druid.server.security.AuthTestUtils;
 import org.apache.druid.server.security.AuthenticationResult;
 import org.apache.druid.server.security.Authorizer;
 import org.apache.druid.server.security.AuthorizerMapper;
+import org.apache.druid.server.security.BrokerPinAuthorizationConfig;
 import org.apache.druid.server.security.ForbiddenException;
+import org.apache.druid.server.security.PinAuthenticator;
 import org.apache.druid.server.security.Resource;
 import org.apache.http.HttpStatus;
 import org.easymock.EasyMock;
@@ -221,7 +223,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             AuthTestUtils.TEST_AUTHORIZER_MAPPER,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -267,7 +270,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             AuthTestUtils.TEST_AUTHORIZER_MAPPER,
-            Suppliers.ofInstance(overrideConfig)
+            Suppliers.ofInstance(overrideConfig),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -319,7 +323,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             AuthTestUtils.TEST_AUTHORIZER_MAPPER,
-            Suppliers.ofInstance(overrideConfig)
+            Suppliers.ofInstance(overrideConfig),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -709,7 +714,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             authMapper,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -785,7 +791,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             AuthTestUtils.TEST_AUTHORIZER_MAPPER,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         jsonMapper,
@@ -883,7 +890,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             authMapper,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -1007,7 +1015,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             authMapper,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,
@@ -1266,7 +1275,8 @@ public class QueryResourceTest
             testRequestLogger,
             new AuthConfig(),
             AuthTestUtils.TEST_AUTHORIZER_MAPPER,
-            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of()))
+            Suppliers.ofInstance(new DefaultQueryConfig(ImmutableMap.of())),
+            new PinAuthenticator(new BrokerPinAuthorizationConfig())
         ),
         jsonMapper,
         smileMapper,

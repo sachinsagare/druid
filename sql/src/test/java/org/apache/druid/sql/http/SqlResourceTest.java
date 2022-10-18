@@ -65,7 +65,9 @@ import org.apache.druid.server.scheduling.HiLoQueryLaningStrategy;
 import org.apache.druid.server.scheduling.ManualQueryPrioritizationStrategy;
 import org.apache.druid.server.security.AuthConfig;
 import org.apache.druid.server.security.AuthenticationResult;
+import org.apache.druid.server.security.BrokerPinAuthorizationConfig;
 import org.apache.druid.server.security.ForbiddenException;
+import org.apache.druid.server.security.PinAuthenticator;
 import org.apache.druid.sql.SqlLifecycle;
 import org.apache.druid.sql.SqlLifecycleFactory;
 import org.apache.druid.sql.SqlLifecycleManager;
@@ -209,6 +211,7 @@ public class SqlResourceTest extends CalciteTestBase
     );
     final DruidOperatorTable operatorTable = CalciteTests.createOperatorTable();
     final ExprMacroTable macroTable = CalciteTests.createExprMacroTable();
+    final PinAuthenticator pinAuthenticator = new PinAuthenticator(new BrokerPinAuthorizationConfig());
     req = EasyMock.createStrictMock(HttpServletRequest.class);
     EasyMock.expect(req.getRemoteAddr()).andReturn(null).once();
     EasyMock.expect(req.getAttribute(AuthConfig.DRUID_AUTHENTICATION_RESULT))
@@ -238,7 +241,8 @@ public class SqlResourceTest extends CalciteTestBase
         plannerConfig,
         CalciteTests.TEST_AUTHORIZER_MAPPER,
         CalciteTests.getJsonMapper(),
-        CalciteTests.DRUID_SCHEMA_NAME
+        CalciteTests.DRUID_SCHEMA_NAME,
+        pinAuthenticator
     );
 
     lifecycleManager = new SqlLifecycleManager()
