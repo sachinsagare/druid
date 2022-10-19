@@ -217,6 +217,8 @@ public class SqlResourceTest extends CalciteTestBase
     EasyMock.expect(req.getAttribute(AuthConfig.DRUID_AUTHENTICATION_RESULT))
             .andReturn(CalciteTests.REGULAR_USER_AUTH_RESULT)
             .anyTimes();
+    EasyMock.expect(req.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    //EasyMock.expect(req.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(req.getAttribute(AuthConfig.DRUID_ALLOW_UNSECURED_PATH)).andReturn(null).anyTimes();
     EasyMock.expect(req.getAttribute(AuthConfig.DRUID_AUTHORIZATION_CHECKED))
             .andReturn(null)
@@ -307,6 +309,8 @@ public class SqlResourceTest extends CalciteTestBase
     EasyMock.expect(testRequest.getAttribute(AuthConfig.DRUID_AUTHENTICATION_RESULT))
             .andReturn(CalciteTests.REGULAR_USER_AUTH_RESULT)
             .anyTimes();
+    EasyMock.expect(testRequest.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    //EasyMock.expect(testRequest.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(testRequest.getAttribute(AuthConfig.DRUID_ALLOW_UNSECURED_PATH)).andReturn(null).anyTimes();
     EasyMock.expect(testRequest.getAttribute(AuthConfig.DRUID_AUTHORIZATION_CHECKED))
             .andReturn(null)

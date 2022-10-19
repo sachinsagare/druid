@@ -206,6 +206,8 @@ public class QueryResourceTest
     EasyMock.expect(testServletRequest.getHeader("Accept")).andReturn(MediaType.APPLICATION_JSON).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_IF_NONE_MATCH)).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_RETURN_SEGMENT_COUNT_STATS)).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getRemoteAddr()).andReturn("localhost").anyTimes();
     queryScheduler = QueryStackTests.DEFAULT_NOOP_SCHEDULER;
     testRequestLogger = new TestRequestLogger();
@@ -423,6 +425,8 @@ public class QueryResourceTest
     EasyMock.expect(testServletRequest.getContentType()).andReturn(contentTypeHeader).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_IF_NONE_MATCH)).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_RETURN_SEGMENT_COUNT_STATS)).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getRemoteAddr()).andReturn("localhost").anyTimes();
 
     EasyMock.replay(testServletRequest);
@@ -459,6 +463,8 @@ public class QueryResourceTest
     EasyMock.expect(testServletRequest.getContentType()).andReturn(contentTypeHeader).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_IF_NONE_MATCH)).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getHeader(QueryResource.HEADER_RETURN_SEGMENT_COUNT_STATS)).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    EasyMock.expect(testServletRequest.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(testServletRequest.getRemoteAddr()).andReturn("localhost").anyTimes();
 
     EasyMock.replay(testServletRequest);
@@ -502,6 +508,8 @@ public class QueryResourceTest
     EasyMock.expect(smileRequest.getHeader("Accept")).andReturn(SmileMediaTypes.APPLICATION_JACKSON_SMILE).anyTimes();
     EasyMock.expect(smileRequest.getHeader(QueryResource.HEADER_IF_NONE_MATCH)).andReturn(null).anyTimes();
     EasyMock.expect(smileRequest.getHeader(QueryResource.HEADER_RETURN_SEGMENT_COUNT_STATS)).andReturn(null).anyTimes();
+    EasyMock.expect(smileRequest.getHeader("use-pin-authentication")).andReturn(null).anyTimes();
+    EasyMock.expect(smileRequest.getHeader("x-forwarded-client-cert")).andReturn(null).anyTimes();
     EasyMock.expect(smileRequest.getRemoteAddr()).andReturn("localhost").anyTimes();
 
     EasyMock.replay(smileRequest);
